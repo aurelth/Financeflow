@@ -50,6 +50,6 @@ financeflow/
 
 | Branch | Descrição |
 |--------|-----------|
-| `main` | Produção |
+| `master` | Produção |
 | `develop` | Desenvolvimento / staging |
 | `feature/*` | Novas funcionalidades |
