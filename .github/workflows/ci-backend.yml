@@ -49,7 +49,7 @@ jobs:
 
       # Testes unitários
       - name: Run Unit Tests
-        run: dotnet test backend/FinanceFlow/tests/FinanceFlow.UnitTests/FinanceFlow.UnitTests.csproj
+        run: dotnet test backend/FinanceFlow/FinanceFlow.UnitTests/FinanceFlow.UnitTests.csproj
           --no-restore
           --no-build
           --configuration Release
@@ -58,7 +58,7 @@ jobs:
 
       # Testes de integração
       - name: Run Integration Tests
-        run: dotnet test backend/FinanceFlow/tests/FinanceFlow.IntegrationTests/FinanceFlow.IntegrationTests.csproj
+        run: dotnet test backend/FinanceFlow/FinanceFlow.IntegrationTests/FinanceFlow.IntegrationTests.csproj
           --no-restore
           --no-build
           --configuration Release
