@@ -9,7 +9,7 @@
     "tsc": "tsc --noEmit",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.8",
