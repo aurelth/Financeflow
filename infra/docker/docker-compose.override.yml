@@ -1,0 +1,15 @@
+services:
+
+  sqlserver:
+    environment:
+      # Habilita logs detalhados no dev
+      MSSQL_AGENT_ENABLED: "true"
+
+  kafka:
+    environment:
+      # Logs mais verbosos no dev
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+
+  redis:
+    # No dev, expõe o redis sem senha para facilitar inspeção
+    command: redis-server --appendonly yes --loglevel verbose

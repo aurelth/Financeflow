@@ -1,0 +1,88 @@
+services:
+
+  # ─── SQL Server 2022 ───────────────────────────────
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: financeflow-sqlserver
+    restart: unless-stopped
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SQL_SA_PASSWORD}
+      MSSQL_PID: Developer
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost",
+             "-U", "sa", "-P", "${SQL_SA_PASSWORD}",
+             "-Q", "SELECT 1", "-C"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ─── Zookeeper ─────────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: financeflow-zookeeper
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+
+  # ─── Kafka ─────────────────────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: financeflow-kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    ports:
+      - "${KAFKA_EXTERNAL_PORT}:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Listener interno (entre containers) e externo (host → container)
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # ─── Redis ─────────────────────────────────────────
+  redis:
+    image: redis:7.2-alpine
+    container_name: financeflow-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT}:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+# ─── Volumes persistentes ───────────────────────────
+volumes:
+  sqlserver_data:
+  zookeeper_data:
+  zookeeper_logs:
+  kafka_data:
+  redis_data:
