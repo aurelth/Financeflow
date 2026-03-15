@@ -1,0 +1,74 @@
+name: CI — Backend
+
+on:
+  push:
+    branches: [ develop, master ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/ci-backend.yml'
+  pull_request:
+    branches: [ develop, master ]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/ci-backend.yml'
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout do código
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Setup .NET 9
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      # Cache NuGet
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # Restore
+      - name: Restore dependencies
+        run: dotnet restore backend/FinanceFlow/FinanceFlow.sln
+
+      # Build
+      - name: Build
+        run: dotnet build backend/FinanceFlow/FinanceFlow.sln
+          --no-restore
+          --configuration Release
+
+      # Testes unitários
+      - name: Run Unit Tests
+        run: dotnet test backend/FinanceFlow/tests/FinanceFlow.UnitTests/FinanceFlow.UnitTests.csproj
+          --no-restore
+          --no-build
+          --configuration Release
+          --verbosity normal
+          --logger "trx;LogFileName=unit-tests.trx"
+
+      # Testes de integração
+      - name: Run Integration Tests
+        run: dotnet test backend/FinanceFlow/tests/FinanceFlow.IntegrationTests/FinanceFlow.IntegrationTests.csproj
+          --no-restore
+          --no-build
+          --configuration Release
+          --verbosity normal
+          --logger "trx;LogFileName=integration-tests.trx"
+
+      # Publicar resultados dos testes
+      - name: Publish Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-backend
+          path: '**/TestResults/*.trx'
