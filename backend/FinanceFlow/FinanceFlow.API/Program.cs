@@ -1,6 +1,7 @@
 using FinanceFlow.API.Extensions;
 using FinanceFlow.API.Middlewares;
 using FinanceFlow.Infrastructure;
+using FinanceFlow.Application;
 using FinanceFlow.Infrastructure.Persistence;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using Serilog;
@@ -13,6 +14,7 @@ builder.Host.UseSerilog((ctx, lc) => lc
 
 // Extensions
 builder.Services
+    .AddApplication()
     .AddInfrastructure(builder.Configuration)
     .AddApiServices()
     .AddSwaggerServices()

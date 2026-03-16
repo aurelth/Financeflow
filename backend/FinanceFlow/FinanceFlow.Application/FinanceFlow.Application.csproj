@@ -8,10 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="FluentValidation" Version="11.12.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.12.0" />
     <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.14" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.14" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,10 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\Behaviors\" />
     <Folder Include="Common\Interfaces\" />
-    <Folder Include="Common\Mappings\" />
-    <Folder Include="DTOs\" />
     <Folder Include="UseCases\Auth\Commands\" />
     <Folder Include="UseCases\Auth\Queries\" />
     <Folder Include="UseCases\Transactions\Commands\" />
