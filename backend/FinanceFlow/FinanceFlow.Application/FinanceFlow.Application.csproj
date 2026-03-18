@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <Folder Include="Common\Interfaces\" />
-    <Folder Include="UseCases\Auth\Commands\" />
     <Folder Include="UseCases\Auth\Queries\" />
     <Folder Include="UseCases\Transactions\Commands\" />
     <Folder Include="UseCases\Transactions\Queries\" />
