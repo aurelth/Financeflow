@@ -5,6 +5,7 @@ using FinanceFlow.Application;
 using FinanceFlow.Infrastructure.Persistence;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using Serilog;
+using AspNetCoreRateLimit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +19,13 @@ builder.Services
     .AddInfrastructure(builder.Configuration)
     .AddApiServices()
     .AddSwaggerServices()
-    .AddHealthCheckServices(builder.Configuration);
+    .AddHealthCheckServices(builder.Configuration)
+    .AddRateLimitServices(builder.Configuration);
 
 var app = builder.Build();
 
 // Middlewares
+app.UseIpRateLimiting();
 app.UseSerilogRequestLogging();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
