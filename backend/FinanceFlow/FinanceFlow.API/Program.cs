@@ -17,7 +17,7 @@ builder.Host.UseSerilog((ctx, lc) => lc
 builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration)
-    .AddApiServices()
+    .AddApiServices(builder.Configuration)
     .AddSwaggerServices()
     .AddHealthCheckServices(builder.Configuration)
     .AddRateLimitServices(builder.Configuration);

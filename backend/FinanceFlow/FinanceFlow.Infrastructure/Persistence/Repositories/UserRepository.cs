@@ -12,6 +12,7 @@ public class UserRepository(FinanceFlowDbContext context) : IUserRepository
         CancellationToken cancellationToken = default) =>
         await context.Users
             .AsNoTracking()
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
     public async Task<User?> GetByEmailAsync(
@@ -19,12 +20,14 @@ public class UserRepository(FinanceFlowDbContext context) : IUserRepository
         CancellationToken cancellationToken = default) =>
         await context.Users
             .AsNoTracking()
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 
     public async Task<bool> ExistsByEmailAsync(
         string email,
         CancellationToken cancellationToken = default) =>
         await context.Users
+            .IgnoreQueryFilters()
             .AnyAsync(u => u.Email == email, cancellationToken);
 
     public async Task AddAsync(

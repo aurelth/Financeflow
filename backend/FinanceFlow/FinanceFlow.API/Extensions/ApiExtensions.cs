@@ -1,6 +1,6 @@
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 namespace FinanceFlow.API.Extensions;
 
@@ -8,7 +8,7 @@ public static class ApiExtensions
 {
     public static IServiceCollection AddApiServices(
         this IServiceCollection services,
-        IConfiguration? configuration = null)
+        IConfiguration configuration)
     {
         services.AddControllers();
         services.AddEndpointsApiExplorer();
@@ -16,9 +16,12 @@ public static class ApiExtensions
         services.AddSignalR();
 
         // JWT Bearer
-        var secret = configuration["Jwt:Secret"]!;
-        var issuer = configuration["Jwt:Issuer"]!;
-        var audience = configuration["Jwt:Audience"]!;
+        var secret = configuration["Jwt:Secret"]
+            ?? throw new InvalidOperationException("Jwt:Secret não configurado.");
+        var issuer = configuration["Jwt:Issuer"]
+            ?? throw new InvalidOperationException("Jwt:Issuer não configurado.");
+        var audience = configuration["Jwt:Audience"]
+            ?? throw new InvalidOperationException("Jwt:Audience não configurado.");
 
         services
             .AddAuthentication(options =>
@@ -38,7 +41,7 @@ public static class ApiExtensions
                     ValidateAudience = true,
                     ValidAudience = audience,
                     ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero // sem tolerância de expiração
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 
@@ -49,7 +52,7 @@ public static class ApiExtensions
 
     public static WebApplication MapHubs(this WebApplication app)
     {
-        // Hubs SignalR       
+        // Hubs SignalR
         return app;
     }
 }
