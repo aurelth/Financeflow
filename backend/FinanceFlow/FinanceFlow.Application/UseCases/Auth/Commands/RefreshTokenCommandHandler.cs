@@ -46,6 +46,7 @@ public class RefreshTokenCommandHandler(
 
         return new AuthResponseDto(
             AccessToken: newAccessToken,
+            RefreshToken: newRefreshToken,
             TokenType: "Bearer",
             ExpiresIn: 15 * 60,
             User: mapper.Map<UserProfileDto>(user)

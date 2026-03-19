@@ -24,7 +24,7 @@ public class LoginUserCommandHandler(
 
         // Mensagem genérica — não revela se o email existe ou não
         if (user is null || !passwordService.Verify(request.Password, user.PasswordHash))
-            throw new UnauthorizedException("Email ou password incorrectos.");
+            throw new UnauthorizedException("Email ou password incorreto.");
 
         // Gera tokens
         var accessToken = tokenService.GenerateAccessToken(user);
@@ -35,6 +35,7 @@ public class LoginUserCommandHandler(
 
         return new AuthResponseDto(
             AccessToken: accessToken,
+            RefreshToken: refreshToken,
             TokenType: "Bearer",
             ExpiresIn: 15 * 60, // 15 minutos em segundos
             User: mapper.Map<UserProfileDto>(user)
