@@ -1,3 +1,4 @@
+
 using System.Net;
 using System.Text.Json;
 using FinanceFlow.Application.Common.Exceptions;
@@ -23,15 +24,30 @@ public class ExceptionHandlingMiddleware(
 
     private static Task HandleExceptionAsync(HttpContext context, Exception ex)
     {
+        context.Response.ContentType = "application/json";
+        
+        if (ex is ValidationException validationEx)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
+
+            var validationResponse = JsonSerializer.Serialize(new
+            {
+                status = (int)HttpStatusCode.UnprocessableEntity,
+                message = "Um ou mais erros de validação ocorreram.",
+                errors = validationEx.Errors,
+                traceId = context.TraceIdentifier
+            });
+
+            return context.Response.WriteAsync(validationResponse);
+        }
+
         var (statusCode, message) = ex switch
         {
             NotFoundException => (HttpStatusCode.NotFound, ex.Message),
-            ValidationException => (HttpStatusCode.UnprocessableEntity, ex.Message),
             UnauthorizedException => (HttpStatusCode.Unauthorized, ex.Message),
             _ => (HttpStatusCode.InternalServerError, "Ocorreu um erro interno. Tente novamente.")
         };
 
-        context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)statusCode;
 
         var response = JsonSerializer.Serialize(new

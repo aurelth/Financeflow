@@ -1,7 +1,11 @@
+using FinanceFlow.Domain.Interfaces;
+using FinanceFlow.Infrastructure.Auth;
 using FinanceFlow.Infrastructure.Persistence.Context;
+using FinanceFlow.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace FinanceFlow.Infrastructure;
 
@@ -17,6 +21,19 @@ public static class DependencyInjection
                 configuration.GetConnectionString("DefaultConnection"),
                 sql => sql.MigrationsAssembly(
                     typeof(FinanceFlowDbContext).Assembly.FullName)));
+
+        // Redis
+        services.AddSingleton<IConnectionMultiplexer>(_ =>
+            ConnectionMultiplexer.Connect(
+                configuration["Redis:ConnectionString"]!));
+
+        // Repositórios
+        services.AddScoped<IUserRepository, UserRepository>();
+
+        // Serviços de Auth
+        services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddScoped<IPasswordService, PasswordService>();
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
         return services;
     }
