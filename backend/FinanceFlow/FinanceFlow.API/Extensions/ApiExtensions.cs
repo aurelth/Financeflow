@@ -16,13 +16,6 @@ public static class ApiExtensions
         services.AddSignalR();
 
         // JWT Bearer
-        var secret = configuration["Jwt:Secret"]
-            ?? throw new InvalidOperationException("Jwt:Secret não configurado.");
-        var issuer = configuration["Jwt:Issuer"]
-            ?? throw new InvalidOperationException("Jwt:Issuer não configurado.");
-        var audience = configuration["Jwt:Audience"]
-            ?? throw new InvalidOperationException("Jwt:Audience não configurado.");
-
         services
             .AddAuthentication(options =>
             {
@@ -30,7 +23,27 @@ public static class ApiExtensions
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(options =>
+            {               
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = false,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+        
+        services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+            .Configure<IConfiguration>((options, config) =>
             {
+                var secret = config["Jwt:Secret"]
+                    ?? throw new InvalidOperationException("Jwt:Secret não configurado.");
+                var issuer = config["Jwt:Issuer"]
+                    ?? throw new InvalidOperationException("Jwt:Issuer não configurado.");
+                var audience = config["Jwt:Audience"]
+                    ?? throw new InvalidOperationException("Jwt:Audience não configurado.");
+
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,

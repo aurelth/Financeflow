@@ -24,7 +24,7 @@ public class LoginUserCommandHandler(
 
         // Mensagem genérica — não revela se o email existe ou não
         if (user is null || !passwordService.Verify(request.Password, user.PasswordHash))
-            throw new UnauthorizedException("Email ou password incorreto.");
+            throw new UnauthorizedException("Email ou senha incorreto.");
 
         // Gera tokens
         var accessToken = tokenService.GenerateAccessToken(user);
