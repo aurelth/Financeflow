@@ -11,7 +11,7 @@ const Placeholder = ({ title }: { title: string }) => (
   <div className="flex items-center justify-center h-full">
     <div className="text-center">
       <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
-      <p className="text-slate-400">Em desenvolvimento...</p>
+      <p className="text-slate-400">Em desenvolvimento... ♻️</p>
     </div>
   </div>
 )

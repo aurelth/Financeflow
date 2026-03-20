@@ -40,7 +40,7 @@ export default function Header() {
           className="relative text-slate-400 hover:text-slate-200 hover:bg-slate-800"
         >
           <Bell size={18} />
-          {/* Badge — será ativado na Fase 8 */}
+          {/* Badge — será ativado futuramente*/}
         </Button>
 
         {/* Avatar + Dropdown */}

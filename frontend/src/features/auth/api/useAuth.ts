@@ -48,7 +48,7 @@ export const useLogin = () => {
       navigate('/dashboard')
     },
     onError: () => {
-      toast.error('Email ou senha incorretos.')
+      toast.error('Email ou senha incorreto.')
     },
   })
 }

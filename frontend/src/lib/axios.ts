@@ -6,14 +6,14 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// ─── Request interceptor — injeta Access Token ──────────
+// Request interceptor — injeta Access Token
 api.interceptors.request.use(config => {
   const token = sessionStorage.getItem('accessToken')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-// ─── Response interceptor — renova token expirado ───────
+// Response interceptor — renova token expirado
 api.interceptors.response.use(
   res => res,
   async err => {
