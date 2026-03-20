@@ -22,23 +22,12 @@ public class FinanceFlowDbContext(DbContextOptions<FinanceFlowDbContext> options
             typeof(FinanceFlowDbContext).Assembly);
 
         // Filtro global de soft delete para todas as entidades BaseEntity
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
-            {
-                modelBuilder.Entity(entityType.ClrType)
-                    .HasQueryFilter(
-                        System.Linq.Expressions.Expression.Lambda(
-                            System.Linq.Expressions.Expression.Equal(
-                                System.Linq.Expressions.Expression.Property(
-                                    System.Linq.Expressions.Expression.Parameter(
-                                        entityType.ClrType, "e"),
-                                    nameof(BaseEntity.DeletedAt)),
-                                System.Linq.Expressions.Expression.Constant(null)),
-                            System.Linq.Expressions.Expression.Parameter(
-                                entityType.ClrType, "e")));
-            }
-        }
+        modelBuilder.Entity<User>().HasQueryFilter(u => u.DeletedAt == null);
+        modelBuilder.Entity<Category>().HasQueryFilter(c => c.DeletedAt == null);
+        modelBuilder.Entity<Subcategory>().HasQueryFilter(s => s.DeletedAt == null);
+        modelBuilder.Entity<Transaction>().HasQueryFilter(t => t.DeletedAt == null);
+        modelBuilder.Entity<Budget>().HasQueryFilter(b => b.DeletedAt == null);
+        modelBuilder.Entity<Notification>().HasQueryFilter(n => n.DeletedAt == null);
     }
 
     public override Task<int> SaveChangesAsync(
