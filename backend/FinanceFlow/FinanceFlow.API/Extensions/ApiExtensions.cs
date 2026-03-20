@@ -15,6 +15,21 @@ public static class ApiExtensions
         services.AddHttpContextAccessor();
         services.AddSignalR();
 
+        // CORS
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+            {
+                policy
+                    .WithOrigins(
+                        "http://localhost:3000",
+                        "https://localhost:3000")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials(); // necessário para cookies httpOnly
+            });
+        });
+
         // JWT Bearer
         services
             .AddAuthentication(options =>
