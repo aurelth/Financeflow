@@ -17,7 +17,7 @@ namespace FinanceFlow.API.Controllers;
 [Authorize]
 public class CategoriesController(IMediator mediator) : BaseController(mediator)
 {
-    // ─── Categorias ──────────────────────────────────────
+    // Categorias
 
     /// <summary>Lista todas as categorias visíveis para o utilizador.</summary>
     [HttpGet]
@@ -100,7 +100,7 @@ public class CategoriesController(IMediator mediator) : BaseController(mediator)
         return NoContent();
     }
 
-    // ─── Subcategorias ───────────────────────────────────
+    // Subcategorias
 
     /// <summary>Lista todas as subcategorias de uma categoria.</summary>
     [HttpGet("{categoryId:guid}/subcategories")]
