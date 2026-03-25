@@ -111,8 +111,7 @@ export const useCreateSubcategory = (categoryId: string) => {
         `/api/categories/${categoryId}/subcategories`, data
       ).then(r => r.data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['categories', categoryId, 'subcategories'] })
-      qc.invalidateQueries({ queryKey: ['categories', categoryId] })
+      qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Subcategoria criada com sucesso!')
     },
     onError: (err: any) => {
@@ -136,8 +135,7 @@ export const useUpdateSubcategory = (categoryId: string, subcategoryId: string) 
         `/api/categories/${categoryId}/subcategories/${subcategoryId}`, data
       ).then(r => r.data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['categories', categoryId, 'subcategories'] })
-      qc.invalidateQueries({ queryKey: ['categories', categoryId] })
+      qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Subcategoria atualizada com sucesso!')
     },
     onError: (err: any) => {
@@ -159,8 +157,7 @@ export const useDeleteSubcategory = (categoryId: string) => {
     mutationFn: (subcategoryId: string) =>
       api.delete(`/api/categories/${categoryId}/subcategories/${subcategoryId}`),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['categories', categoryId, 'subcategories'] })
-      qc.invalidateQueries({ queryKey: ['categories', categoryId] })
+      qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Subcategoria removida com sucesso!')
     },
     onError: (err: any) => {

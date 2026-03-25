@@ -81,4 +81,33 @@ public class CreateCategoryCommandHandlerTests
         _categoryRepository.Verify(r =>
             r.AddAsync(It.IsAny<Category>(), default), Times.Never);
     }
+
+    [Fact]
+
+    public async Task Handle_DeveLancarValidationException_QuandoNomeIgualACategoriaPadrao()
+    {
+        // Arrange
+        var command = new CreateCategoryCommand(
+            UserId: Guid.NewGuid(),
+            Name: "Alimentação",
+            Icon: "🍔",
+            Color: "#6366f1",
+            Type: TransactionType.Expense);
+
+        // Simula que já existe uma categoria padrão com esse nome e tipo
+        _categoryRepository
+            .Setup(r => r.ExistsByNameAsync(
+                command.Name, command.UserId, command.Type, default))
+            .ReturnsAsync(true);
+
+        // Act
+        var act = async () => await CreateHandler().Handle(command, default);
+
+        // Assert
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage("*Já existe uma categoria com este nome*");
+
+        _categoryRepository.Verify(r =>
+            r.AddAsync(It.IsAny<Category>(), default), Times.Never);
+    }
 }

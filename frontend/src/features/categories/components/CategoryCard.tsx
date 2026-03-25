@@ -2,6 +2,7 @@ import { Pencil, Trash2, ChevronDown, ChevronUp, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { TransactionType, type Category, type Subcategory } from '../types/category.types'
+import CategoryIcon from './CategoryIcon'
 
 interface CategoryCardProps {
   category:        Category
@@ -32,10 +33,10 @@ export default function CategoryCard({
 
         {/* Ícone */}
         <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: `${category.color}20`, border: `1px solid ${category.color}40` }}
         >
-          <span>{category.icon}</span>
+          <CategoryIcon icon={category.icon} color={category.color} />
         </div>
 
         {/* Info */}

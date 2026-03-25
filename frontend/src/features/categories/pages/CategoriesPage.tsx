@@ -102,17 +102,18 @@ export default function CategoriesPage() {
 
       {/* Lista */}
       {!isLoading && !isEmpty && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
           {filtered.map(category => (
-            <CategoryCard
-              key={category.id}
+            <div key={category.id} className="break-inside-avoid mb-4">
+              <CategoryCard            
               category={category}
               onEdit={openEditCategory}
               onDelete={openDeleteCategory}
               onAddSub={openAddSubcategory}
               onEditSub={openEditSubcategory}
               onDeleteSub={openDeleteSubcategory}
-            />
+              />
+            </div>            
           ))}
         </div>
       )}

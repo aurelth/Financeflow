@@ -109,4 +109,21 @@ describe('CategoryCard', () => {
     expect(screen.getByText('Restaurante')).toBeInTheDocument()
     expect(screen.getByText('Mercado')).toBeInTheDocument()
   })
+
+  it('deve renderizar ícone Lucide para categorias padrão', () => {
+  const categoryWithLucideIcon: Category = {
+    ...mockCategory,
+    icon:  'briefcase',
+    color: '#22c55e',
+  }
+  render(<CategoryCard category={categoryWithLucideIcon} {...defaultProps} />)
+  // O ícone Lucide deve ser renderizado sem exibir o nome do ícone como texto
+  expect(screen.queryByText('briefcase')).not.toBeInTheDocument()
+  })
+
+  it('deve renderizar emoji para categorias do utilizador', () => {
+    renderCard()
+    expect(screen.getByText('🍔')).toBeInTheDocument()
+    expect(screen.queryByText('utensils')).not.toBeInTheDocument()
+  })
 })

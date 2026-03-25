@@ -1,8 +1,8 @@
 // Enums
 
 export enum TransactionType {
-  Income  = 0,
-  Expense = 1,
+  Income  = 1,
+  Expense = 2,
 }
 
 // Subcategoria

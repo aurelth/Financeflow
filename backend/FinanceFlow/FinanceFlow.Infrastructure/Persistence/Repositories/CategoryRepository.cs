@@ -37,18 +37,18 @@ public class CategoryRepository(FinanceFlowDbContext context) : ICategoryReposit
             .FirstOrDefaultAsync(cancellationToken);
 
     public async Task<bool> ExistsByNameAsync(
-        string name,
-        Guid userId,
-        TransactionType type,
-        CancellationToken cancellationToken = default) =>
-        await context.Categories
-            .IgnoreQueryFilters()
-            .AnyAsync(c =>
-                c.Name == name &&
-                c.Type == type &&
-                c.DeletedAt == null &&
-                c.UserId == userId,
-            cancellationToken);
+    string name,
+    Guid userId,
+    TransactionType type,
+    CancellationToken cancellationToken = default) =>
+    await context.Categories
+        .IgnoreQueryFilters()
+        .AnyAsync(c =>
+            c.Name == name &&
+            c.Type == type &&
+            c.DeletedAt == null &&
+            (c.UserId == userId || c.UserId == null),
+        cancellationToken);
 
     public async Task<bool> HasTransactionsAsync(
         Guid categoryId,
