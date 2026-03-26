@@ -1,4 +1,4 @@
-# ─── .NET ───────────────────────────────────────────
+# .NET
 bin/
 obj/
 *.user
@@ -9,7 +9,7 @@ obj/
 *.cache
 appsettings.Development.json
 
-# ─── Node / React ────────────────────────────────────
+# Node / React
 node_modules/
 dist/
 .env
@@ -19,17 +19,17 @@ dist/
 .next/
 coverage/
 
-# ─── Docker ──────────────────────────────────────────
+# Docker
 infra/docker/.env
 
-# ─── Sistema Operacional ─────────────────────────────
+# Sistema Operacional
 .DS_Store
 Thumbs.db
 
-# ─── IDEs ────────────────────────────────────────────
+# IDEs
 .vscode/settings.json
 .idea/
 *.swp
 
-# ─── Storage local (gerado em runtime) ───────────────
+# Storage local (gerado em runtime)
 backend/storage/
