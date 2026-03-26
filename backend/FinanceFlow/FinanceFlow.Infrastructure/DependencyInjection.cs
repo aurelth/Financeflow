@@ -1,6 +1,7 @@
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.Infrastructure.Auth;
+using FinanceFlow.Infrastructure.Messaging;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using FinanceFlow.Infrastructure.Persistence.Repositories;
 using FinanceFlow.Infrastructure.Storage;
@@ -42,6 +43,9 @@ public static class DependencyInjection
 
         // Serviços de Storage
         services.AddScoped<IAttachmentService, LocalAttachmentService>();
+
+        // Messaging
+        services.AddSingleton<IEventPublisher, KafkaEventPublisher>();
 
         return services;
     }
