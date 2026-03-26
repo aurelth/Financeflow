@@ -1,7 +1,9 @@
+using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.Infrastructure.Auth;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using FinanceFlow.Infrastructure.Persistence.Repositories;
+using FinanceFlow.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,6 +39,9 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+
+        // Serviços de Storage
+        services.AddScoped<IAttachmentService, LocalAttachmentService>();
 
         return services;
     }
