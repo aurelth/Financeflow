@@ -59,7 +59,8 @@ public class FinanceFlowWebApplicationFactory
                 ["Kafka:BootstrapServers"] = "localhost:9092",
                 ["Kafka:GroupId"] = "financeflow-test-group",
                 ["Storage:BasePath"] = "storage",
-                ["ConnectionStrings:DefaultConnection"] = _sqlContainer.GetConnectionString()
+                ["ConnectionStrings:DefaultConnection"] = _sqlContainer.GetConnectionString(),
+                ["IpRateLimiting:EnableEndpointRateLimiting"] = "false",
             });
         });
 
