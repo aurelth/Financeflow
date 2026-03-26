@@ -21,7 +21,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
     );
 
     private static readonly CreateCategoryRequestDto ValidCategoryRequest = new(
-        Name: "Lazer",
+        Name: "Jogos Online",
         Icon: "🎮",
         Color: "#6366f1",
         Type: TransactionType.Expense
