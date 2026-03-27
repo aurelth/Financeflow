@@ -18,8 +18,8 @@ const FILTERS: { label: string; value: Filter }[] = [
 ]
 
 export default function CategoriesPage() {
-  const [filter, setFilter]     = useState<Filter>('all')
-  const [modal, setModal]       = useState<ModalState>(null)
+  const [filter, setFilter] = useState<Filter>('all')
+  const [modal, setModal] = useState<ModalState>(null)
 
   const { data: categories, isLoading } = useCategories()
 
