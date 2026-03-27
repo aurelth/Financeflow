@@ -1,3 +1,4 @@
+using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
@@ -23,7 +24,7 @@ public class FinanceFlowWebApplicationFactory
         .WithImage("redis:7.2-alpine")
         .Build();
 
-    // Container DO SQL Server para testes
+    // Container do SQL Server para testes
     private readonly MsSqlContainer _sqlContainer = new MsSqlBuilder()
         .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("Test@12345!")
@@ -38,7 +39,7 @@ public class FinanceFlowWebApplicationFactory
     }
 
     public new async Task DisposeAsync()
-    {        
+    {
         await Task.WhenAll(
             _sqlContainer.StopAsync(),
             _redisContainer.StopAsync());
@@ -83,6 +84,14 @@ public class FinanceFlowWebApplicationFactory
 
             services.AddSingleton<IConnectionMultiplexer>(_ =>
                 ConnectionMultiplexer.Connect(_redisContainer.GetConnectionString()));
+
+            // Substitui o Kafka publisher por um NoOp nos testes
+            var kafkaDescriptor = services.SingleOrDefault(d =>
+                d.ServiceType == typeof(IEventPublisher));
+            if (kafkaDescriptor != null)
+                services.Remove(kafkaDescriptor);
+
+            services.AddSingleton<IEventPublisher, NoOpEventPublisher>();
 
             // Sobrescreve APENAS os parâmetros de validação do JWT
             services.PostConfigure<JwtBearerOptions>(
