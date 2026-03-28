@@ -33,7 +33,7 @@ const mockCategories = [
   },
   {
     id:            'cat-2',
-    name:          'Salário',
+    name:          'Trabalho',
     icon:          'briefcase',
     color:         '#22c55e',
     type:          TransactionType.Income,
@@ -50,7 +50,7 @@ const mockTransactions = [
     amount:          2000,
     type:            TransactionType.Expense,
     date:            '2026-03-01T00:00:00Z',
-    description:     'Aluguel',
+    description:     'Aluguel Mensal',
     status:          TransactionStatus.Pending,
     isRecurring:     true,
     recurrenceType:  RecurrenceType.Monthly,
@@ -70,14 +70,14 @@ const mockTransactions = [
     amount:          5000,
     type:            TransactionType.Income,
     date:            '2026-03-05T00:00:00Z',
-    description:     'Salário',
+    description:     'Pagamento Freelance',
     status:          TransactionStatus.Paid,
     isRecurring:     false,
     recurrenceType:  RecurrenceType.None,
     attachmentPath:  null,
     tags:            [],
     categoryId:      'cat-2',
-    categoryName:    'Salário',
+    categoryName:    'Trabalho',
     categoryIcon:    'briefcase',
     categoryColor:   '#22c55e',
     subcategoryId:   null,
@@ -111,13 +111,13 @@ describe('TransactionsPage', () => {
 
   it('deve renderizar o título da página', () => {
     renderPage()
-    expect(screen.getByText('Transações')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Transações')
   })
 
   it('deve exibir todas as transações', () => {
     renderPage()
-    expect(screen.getByText('Aluguel')).toBeInTheDocument()
-    expect(screen.getByText('Salário')).toBeInTheDocument()
+    expect(screen.getByText('Aluguel Mensal')).toBeInTheDocument()
+    expect(screen.getByText('Pagamento Freelance')).toBeInTheDocument()
   })
 
   it('deve exibir o badge de recorrência para transações recorrentes', () => {
@@ -127,14 +127,14 @@ describe('TransactionsPage', () => {
 
   it('deve exibir o badge de status correto', () => {
     renderPage()
-    expect(screen.getByText('Pendente')).toBeInTheDocument()
-    expect(screen.getByText('Pago')).toBeInTheDocument()
+    expect(screen.getAllByText('Pendente').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Pago').length).toBeGreaterThan(0)
   })
 
   it('deve exibir o nome da categoria', () => {
     renderPage()
-    expect(screen.getByText('Moradia')).toBeInTheDocument()
-    expect(screen.getByText('Salário')).toBeInTheDocument()
+    expect(screen.getAllByText('Moradia').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Trabalho').length).toBeGreaterThan(0)
   })
 
   it('deve abrir modal ao clicar em nova transação', async () => {
@@ -144,7 +144,7 @@ describe('TransactionsPage', () => {
     await user.click(screen.getByRole('button', { name: /nova transação/i }))
 
     await waitFor(() => {
-      expect(screen.getByText('Nova transação')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Nova transação' })).toBeInTheDocument()
     })
   })
 
@@ -156,7 +156,7 @@ describe('TransactionsPage', () => {
     await user.click(editButtons[0])
 
     await waitFor(() => {
-      expect(screen.getByText('Editar transação')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Editar transação' })).toBeInTheDocument()
     })
   })
 
