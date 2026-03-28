@@ -36,8 +36,36 @@ export const useCreateTransaction = () => {
   const qc = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: CreateTransactionRequest) =>
-      api.post<Transaction>('/api/transactions', data).then(r => r.data),
+    mutationFn: ({ data, attachment }: {
+      data:       CreateTransactionRequest
+      attachment?: File
+    }) => {
+      const formData = new FormData()
+
+      // Campos escalares
+      formData.append('amount',         String(data.amount))
+      formData.append('type',           String(data.type))
+      formData.append('date',           data.date)
+      formData.append('description',    data.description)
+      formData.append('status',         String(data.status))
+      formData.append('isRecurring',    String(data.isRecurring))
+      formData.append('recurrenceType', String(data.recurrenceType))
+      formData.append('categoryId',     data.categoryId)
+
+      if (data.subcategoryId)
+        formData.append('subcategoryId', data.subcategoryId)
+
+      // Tags como array
+      data.tags.forEach(tag => formData.append('tags', tag))
+
+      // Anexo opcional
+      if (attachment)
+        formData.append('attachment', attachment)
+
+      return api.post<Transaction>('/api/transactions', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }).then(r => r.data)
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
       toast.success('Transação criada com sucesso!')

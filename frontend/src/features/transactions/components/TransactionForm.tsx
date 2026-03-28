@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { X } from 'lucide-react'
+import { X, Paperclip, FileText, Image } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCategories } from '../../categories/api/useCategories'
-import { useCreateTransaction, useUpdateTransaction } from '../api/useTransactions'
+import {
+  useCreateTransaction,
+  useUpdateTransaction,
+  useUploadAttachment,
+} from '../api/useTransactions'
 import { TransactionType } from '../../categories/types/category.types'
 import CategorySelect from './CategorySelect'
 import {
@@ -49,11 +53,14 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
         }
       : defaultForm
   )
-  const [tagInput, setTagInput] = useState('')
+  const [tagInput, setTagInput]       = useState('')
+  const [attachment, setAttachment]   = useState<File | null>(null)
+  const attachmentInputRef            = useRef<HTMLInputElement>(null)
 
   const { data: categories = [] } = useCategories()
   const createTransaction         = useCreateTransaction()
   const updateTransaction         = useUpdateTransaction(transaction?.id ?? '')
+  const uploadAttachment          = useUploadAttachment(transaction?.id ?? '')
 
   // Filtra categorias pelo tipo selecionado
   const filteredCategories = categories.filter(c => c.type === form.type)
@@ -74,9 +81,21 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
     if (!form.categoryId || form.amount <= 0) return
 
     if (isEditing) {
-      updateTransaction.mutate(form, { onSuccess: onClose })
+      updateTransaction.mutate(form, {
+        onSuccess: () => {
+          // Upload de anexo separado se houver ficheiro novo
+          if (attachment) {
+            uploadAttachment.mutate(attachment, { onSuccess: onClose })
+          } else {
+            onClose()
+          }
+        },
+      })
     } else {
-      createTransaction.mutate(form, { onSuccess: onClose })
+      createTransaction.mutate(
+        { data: form, attachment: attachment ?? undefined },
+        { onSuccess: onClose }
+      )
     }
   }
 
@@ -92,7 +111,10 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
     setForm(f => ({ ...f, tags: f.tags.filter(t => t !== tag) }))
   }
 
-  const isPending = createTransaction.isPending || updateTransaction.isPending
+  const isPending =
+    createTransaction.isPending ||
+    updateTransaction.isPending ||
+    uploadAttachment.isPending
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -252,6 +274,62 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                 <option value={RecurrenceType.Yearly}>Anual</option>
               </select>
             )}
+          </div>
+
+          {/* Comprovante */}
+          <div>
+            <label className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5 block">
+              Comprovante
+            </label>
+
+            {attachment ? (
+              <div className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5">
+                <div className="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
+                  {attachment.type.startsWith('image/')
+                    ? <Image size={16} className="text-indigo-400" />
+                    : <FileText size={16} className="text-indigo-400" />
+                  }
+                </div>
+                <span className="text-sm text-slate-300 truncate flex-1">{attachment.name}</span>
+                <button
+                  onClick={() => setAttachment(null)}
+                  className="text-slate-500 hover:text-red-400 transition-colors flex-shrink-0"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : transaction?.attachmentPath ? (
+              <div className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5">
+                <div className="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
+                  <FileText size={16} className="text-indigo-400" />
+                </div>
+                <span className="text-sm text-slate-300 truncate flex-1">
+                  {transaction.attachmentPath.split('/').pop()}
+                </span>
+                <button
+                  onClick={() => attachmentInputRef.current?.click()}
+                  className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex-shrink-0"
+                >
+                  Substituir
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => attachmentInputRef.current?.click()}
+                className="w-full flex items-center justify-center gap-2 border border-dashed border-slate-700 rounded-xl py-3 text-sm text-slate-500 hover:text-slate-300 hover:border-slate-600 transition-colors"
+              >
+                <Paperclip size={14} />
+                Adicionar comprovante
+              </button>
+            )}
+
+            <input
+              ref={attachmentInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              onChange={e => setAttachment(e.target.files?.[0] ?? null)}
+              className="hidden"
+            />
           </div>
 
           {/* Tags */}
