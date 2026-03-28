@@ -2,6 +2,7 @@ import { Search, X } from 'lucide-react'
 import { TransactionType } from '../../categories/types/category.types'
 import { TransactionStatus, type GetTransactionsQuery } from '../types/transaction.types'
 import type { Category } from '../../categories/types/category.types'
+import CategorySelect from './CategorySelect'
 
 interface TransactionFiltersProps {
   filters:    GetTransactionsQuery
@@ -66,20 +67,17 @@ export default function TransactionFilters({
         </select>
 
         {/* Categoria */}
-        <select
+        <CategorySelect
+          categories={categories}
           value={filters.categoryId ?? ''}
-          onChange={e => onChange({
+          onChange={categoryId => onChange({
             ...filters,
-            categoryId: e.target.value || undefined,
+            categoryId:    categoryId || undefined,
             subcategoryId: undefined,
           })}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
-        >
-          <option value="">Todas as categorias</option>
-          {categories.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
+          nullable
+          nullLabel="Todas as categorias"
+        />
 
         {/* Data início */}
         <input

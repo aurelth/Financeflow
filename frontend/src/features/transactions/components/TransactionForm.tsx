@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { useCategories } from '../../categories/api/useCategories'
 import { useCreateTransaction, useUpdateTransaction } from '../api/useTransactions'
 import { TransactionType } from '../../categories/types/category.types'
+import CategorySelect from './CategorySelect'
 import {
   TransactionStatus,
   RecurrenceType,
@@ -32,7 +33,7 @@ const defaultForm: CreateTransactionRequest = {
 export default function TransactionForm({ transaction, onClose }: TransactionFormProps) {
   const isEditing = !!transaction
 
-  const [form, setForm]     = useState<CreateTransactionRequest>(
+  const [form, setForm] = useState<CreateTransactionRequest>(
     transaction
       ? {
           amount:         transaction.amount,
@@ -58,10 +59,10 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
   const filteredCategories = categories.filter(c => c.type === form.type)
 
   // Subcategorias da categoria selecionada
-  const selectedCategory   = categories.find(c => c.id === form.categoryId)
-  const subcategories      = selectedCategory?.subcategories ?? []
+  const selectedCategory = categories.find(c => c.id === form.categoryId)
+  const subcategories    = selectedCategory?.subcategories ?? []
 
-  // Reset categoria ao mudar tipo
+  // Reset categoria apenas quando o utilizador muda o tipo após abrir o formulário
   const initialType = useRef(form.type)
 
   useEffect(() => {
@@ -197,16 +198,11 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
             <label className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5 block">
               Categoria
             </label>
-            <select
+            <CategorySelect
+              categories={filteredCategories}
               value={form.categoryId}
-              onChange={e => setForm(f => ({ ...f, categoryId: e.target.value, subcategoryId: null }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-            >
-              <option value="">Selecionar categoria</option>
-              {filteredCategories.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+              onChange={categoryId => setForm(f => ({ ...f, categoryId, subcategoryId: null }))}
+            />
           </div>
 
           {/* Subcategoria */}
