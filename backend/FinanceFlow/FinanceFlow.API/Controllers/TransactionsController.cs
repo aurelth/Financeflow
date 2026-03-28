@@ -5,6 +5,7 @@ using FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetTransactionById;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetTransactions;
+using FinanceFlow.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -55,14 +56,26 @@ public class TransactionsController(
         return Ok(result);
     }
 
-    /// <summary>Cria uma nova transação.</summary>
+    /// <summary>Cria uma nova transação com anexo opcional via multipart/form-data.</summary>
     [HttpPost]
     [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> Create(
-        [FromBody] CreateTransactionRequestDto request,
+        [FromForm] CreateTransactionRequestDto request,
+        IFormFile? attachment,
         CancellationToken cancellationToken)
     {
+        Stream? attachmentStream = null;
+        string? attachmentFileName = null;
+        string? attachmentContentType = null;
+
+        if (attachment != null && attachment.Length > 0)
+        {
+            attachmentStream = attachment.OpenReadStream();
+            attachmentFileName = attachment.FileName;
+            attachmentContentType = attachment.ContentType;
+        }
+
         var command = new CreateTransactionCommand(
             UserId: CurrentUserId,
             Amount: request.Amount,
@@ -74,9 +87,16 @@ public class TransactionsController(
             RecurrenceType: request.RecurrenceType,
             CategoryId: request.CategoryId,
             SubcategoryId: request.SubcategoryId,
-            Tags: request.Tags);
+            Tags: request.Tags,
+            AttachmentStream: attachmentStream,
+            AttachmentFileName: attachmentFileName,
+            AttachmentContentType: attachmentContentType);
 
         var result = await Mediator.Send(command, cancellationToken);
+
+        if (attachmentStream != null)
+            await attachmentStream.DisposeAsync();
+
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
@@ -121,7 +141,7 @@ public class TransactionsController(
         return NoContent();
     }
 
-    /// <summary>Faz upload de um anexo para uma transação.</summary>
+    /// <summary>Faz upload ou substituição de anexo numa transação existente.</summary>
     [HttpPost("{id:guid}/attachment")]
     [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

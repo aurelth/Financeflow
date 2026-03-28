@@ -15,6 +15,7 @@ public class CreateTransactionCommandHandler(
     ITransactionRepository transactionRepository,
     ICategoryRepository categoryRepository,
     IEventPublisher eventPublisher,
+    IAttachmentService attachmentService,
     IConfiguration configuration,
     IMapper mapper)
     : IRequestHandler<CreateTransactionCommand, TransactionDto>
@@ -33,6 +34,20 @@ public class CreateTransactionCommandHandler(
             throw new ValidationException(
                 "O tipo da transação não coincide com o tipo da categoria.");
 
+        // Processa o anexo se fornecido
+        string? attachmentPath = null;
+        if (request.AttachmentStream != null &&
+            request.AttachmentFileName != null &&
+            request.AttachmentContentType != null)
+        {
+            attachmentPath = await attachmentService.SaveAsync(
+                request.AttachmentStream,
+                request.AttachmentFileName,
+                request.AttachmentContentType,
+                request.UserId,
+                cancellationToken);
+        }
+
         var transaction = new Transaction
         {
             UserId = request.UserId,
@@ -46,6 +61,7 @@ public class CreateTransactionCommandHandler(
             CategoryId = request.CategoryId,
             SubcategoryId = request.SubcategoryId,
             Tags = JsonSerializer.Serialize(request.Tags),
+            AttachmentPath = attachmentPath,
         };
 
         await transactionRepository.AddAsync(transaction, cancellationToken);

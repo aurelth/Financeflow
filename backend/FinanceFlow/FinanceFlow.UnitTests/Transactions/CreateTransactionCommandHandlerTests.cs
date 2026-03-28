@@ -16,6 +16,7 @@ public class CreateTransactionCommandHandlerTests
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
     private readonly Mock<IEventPublisher> _eventPublisher = new();
+    private readonly Mock<IAttachmentService> _attachmentService = new();
     private readonly Mock<IConfiguration> _configuration = new();
     private readonly IMapper _mapper;
 
@@ -56,6 +57,7 @@ public class CreateTransactionCommandHandlerTests
         new(_transactionRepository.Object,
             _categoryRepository.Object,
             _eventPublisher.Object,
+            _attachmentService.Object,
             _configuration.Object,
             _mapper);
 

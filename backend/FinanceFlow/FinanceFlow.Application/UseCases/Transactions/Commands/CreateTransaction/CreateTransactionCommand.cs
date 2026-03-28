@@ -15,5 +15,9 @@ public record CreateTransactionCommand(
     RecurrenceType RecurrenceType,
     Guid CategoryId,
     Guid? SubcategoryId,
-    string[] Tags
+    string[] Tags,
+    // Anexo opcional
+    Stream? AttachmentStream = null,
+    string? AttachmentFileName = null,
+    string? AttachmentContentType = null
 ) : IRequest<TransactionDto>;
