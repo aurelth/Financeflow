@@ -6,6 +6,7 @@ import {
   useCreateTransaction,
   useUpdateTransaction,
   useUploadAttachment,
+  useRemoveAttachment,
 } from '../api/useTransactions'
 import { TransactionType } from '../../categories/types/category.types'
 import CategorySelect from './CategorySelect'
@@ -53,14 +54,15 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
         }
       : defaultForm
   )
-  const [tagInput, setTagInput]       = useState('')
-  const [attachment, setAttachment]   = useState<File | null>(null)
-  const attachmentInputRef            = useRef<HTMLInputElement>(null)
+  const [tagInput, setTagInput]     = useState('')
+  const [attachment, setAttachment] = useState<File | null>(null)
+  const attachmentInputRef          = useRef<HTMLInputElement>(null)
 
   const { data: categories = [] } = useCategories()
   const createTransaction         = useCreateTransaction()
   const updateTransaction         = useUpdateTransaction(transaction?.id ?? '')
   const uploadAttachment          = useUploadAttachment(transaction?.id ?? '')
+  const removeAttachment          = useRemoveAttachment(transaction?.id ?? '')
 
   // Filtra categorias pelo tipo selecionado
   const filteredCategories = categories.filter(c => c.type === form.type)
@@ -83,7 +85,6 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
     if (isEditing) {
       updateTransaction.mutate(form, {
         onSuccess: () => {
-          // Upload de anexo separado se houver ficheiro novo
           if (attachment) {
             uploadAttachment.mutate(attachment, { onSuccess: onClose })
           } else {
@@ -114,7 +115,8 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
   const isPending =
     createTransaction.isPending ||
     updateTransaction.isPending ||
-    uploadAttachment.isPending
+    uploadAttachment.isPending  ||
+    removeAttachment.isPending
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -283,6 +285,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
             </label>
 
             {attachment ? (
+              // Ficheiro novo selecionado localmente
               <div className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5">
                 <div className="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
                   {attachment.type.startsWith('image/')
@@ -299,6 +302,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                 </button>
               </div>
             ) : transaction?.attachmentPath ? (
+              // Anexo existente na transação
               <div className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5">
                 <div className="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
                   <FileText size={16} className="text-indigo-400" />
@@ -306,14 +310,25 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                 <span className="text-sm text-slate-300 truncate flex-1">
                   {transaction.attachmentPath.split('/').pop()}
                 </span>
-                <button
-                  onClick={() => attachmentInputRef.current?.click()}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex-shrink-0"
-                >
-                  Substituir
-                </button>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => attachmentInputRef.current?.click()}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    Substituir
+                  </button>
+                  <span className="text-slate-600">|</span>
+                  <button
+                    onClick={() => removeAttachment.mutate()}
+                    disabled={removeAttachment.isPending}
+                    className="text-xs text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors"
+                  >
+                    {removeAttachment.isPending ? 'Removendo...' : 'Remover'}
+                  </button>
+                </div>
               </div>
             ) : (
+              // Sem anexo
               <button
                 onClick={() => attachmentInputRef.current?.click()}
                 className="w-full flex items-center justify-center gap-2 border border-dashed border-slate-700 rounded-xl py-3 text-sm text-slate-500 hover:text-slate-300 hover:border-slate-600 transition-colors"

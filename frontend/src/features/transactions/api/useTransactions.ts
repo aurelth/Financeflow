@@ -148,3 +148,20 @@ export const useUploadAttachment = (id: string) => {
     },
   })
 }
+
+export const useRemoveAttachment = (id: string) => {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: () =>
+      api.delete(`/api/transactions/${id}/attachment`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['transactions'] })
+      toast.success('Comprovante removido com sucesso!')
+    },
+    onError: (err: any) => {
+      const msg = err.response?.data?.message
+      toast.error(msg ?? 'Erro ao remover comprovante. Tente novamente.')
+    },
+  })
+}

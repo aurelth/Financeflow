@@ -13,6 +13,7 @@ vi.mock('@/features/transactions/api/useTransactions', () => ({
   useUpdateTransaction: () => ({ mutate: vi.fn(), isPending: false }),
   useDeleteTransaction: () => ({ mutate: vi.fn(), isPending: false }),
   useUploadAttachment:  () => ({ mutate: vi.fn(), isPending: false }),
+  useRemoveAttachment:  () => ({ mutate: vi.fn(), isPending: false }),
 }))
 
 vi.mock('@/features/categories/api/useCategories', () => ({

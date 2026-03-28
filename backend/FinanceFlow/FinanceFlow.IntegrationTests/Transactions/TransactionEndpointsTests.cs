@@ -389,4 +389,52 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
         var response = await _client.PostAsync("/api/transactions", form);
         return await response.Content.ReadFromJsonAsync<TransactionDto>();
     }
+
+    [Fact]
+    public async Task RemoveAttachment_DeveRetornar204_QuandoAnexoExiste()
+    {
+        // Arrange
+        await AuthenticateAsync("removeattachment.tx@teste.com");
+
+        var category = await CreateCategoryAsync();
+        var transaction = await CreateTransactionAsync(category!.Id, 50.00m);
+
+        // Faz upload de um anexo primeiro
+        var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF }); // JPEG header
+        fileContent.Headers.ContentType =
+            new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+
+        var uploadForm = new MultipartFormDataContent();
+        uploadForm.Add(fileContent, "file", "comprovante.jpg");
+
+        await _client.PostAsync(
+            $"/api/transactions/{transaction!.Id}/attachment", uploadForm);
+
+        // Act — remove o anexo
+        var response = await _client.DeleteAsync(
+            $"/api/transactions/{transaction.Id}/attachment");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        // Verifica que o anexo foi removido
+        var getResponse = await _client.GetAsync(
+            $"/api/transactions/{transaction.Id}");
+        var result = await getResponse.Content.ReadFromJsonAsync<TransactionDto>();
+        result!.AttachmentPath.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RemoveAttachment_DeveRetornar404_QuandoTransacaoNaoExiste()
+    {
+        // Arrange
+        await AuthenticateAsync("removeattachment404.tx@teste.com");
+
+        // Act
+        var response = await _client.DeleteAsync(
+            $"/api/transactions/{Guid.NewGuid()}/attachment");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

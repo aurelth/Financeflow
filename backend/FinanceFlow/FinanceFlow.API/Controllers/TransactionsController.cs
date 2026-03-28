@@ -1,7 +1,8 @@
-using FinanceFlow.Application.DTOs;
 using FinanceFlow.Application.Common.Interfaces;
+using FinanceFlow.Application.DTOs;
 using FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransaction;
+using FinanceFlow.Application.UseCases.Transactions.Commands.RemoveAttachment;
 using FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetTransactionById;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetTransactions;
@@ -197,5 +198,18 @@ public class TransactionsController(
 
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>Remove o anexo de uma transação.</summary>
+    [HttpDelete("{id:guid}/attachment")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveAttachment(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new RemoveAttachmentCommand(id, CurrentUserId);
+        await Mediator.Send(command, cancellationToken);
+        return NoContent();
     }
 }
