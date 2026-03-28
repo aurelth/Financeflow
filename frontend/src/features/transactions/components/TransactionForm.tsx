@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCategories } from '../../categories/api/useCategories'
@@ -62,7 +62,10 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
   const subcategories      = selectedCategory?.subcategories ?? []
 
   // Reset categoria ao mudar tipo
+  const initialType = useRef(form.type)
+
   useEffect(() => {
+    if (form.type === initialType.current) return
     setForm(f => ({ ...f, categoryId: '', subcategoryId: null }))
   }, [form.type])
 
@@ -201,7 +204,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
             >
               <option value="">Selecionar categoria</option>
               {filteredCategories.map(c => (
-                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
           </div>

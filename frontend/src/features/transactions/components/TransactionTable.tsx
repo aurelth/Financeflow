@@ -2,6 +2,7 @@ import { Pencil, Trash2, Paperclip, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TransactionStatus, RecurrenceType, type Transaction } from '../types/transaction.types'
 import { TransactionType } from '../../categories/types/category.types'
+import CategoryIcon from '../../categories/components/CategoryIcon'
 
 interface TransactionTableProps {
   transactions: Transaction[]
@@ -107,10 +108,10 @@ export default function TransactionTable({
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
                   <span
-                    className="w-6 h-6 rounded-md flex items-center justify-center text-xs flex-shrink-0"
+                    className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: `${tx.categoryColor}20` }}
                   >
-                    {tx.categoryIcon}
+                    <CategoryIcon icon={tx.categoryIcon} color={tx.categoryColor} size={14} />
                   </span>
                   <div className="min-w-0">
                     <p className="text-slate-300 truncate">{tx.categoryName}</p>
