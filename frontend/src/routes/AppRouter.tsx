@@ -6,6 +6,7 @@ import PublicRoute  from './PublicRoute'
 import LoginPage    from '@/features/auth/pages/LoginPage'
 import RegisterPage from '@/features/auth/pages/RegisterPage'
 import CategoriesPage from '@/features/categories/pages/CategoriesPage'
+import TransactionsPage  from '@/features/transactions/pages/TransactionsPage'
 
 // Placeholder para fases futuras
 const Placeholder = ({ title }: { title: string }) => (
@@ -34,7 +35,7 @@ export default function AppRouter() {
         <Route element={<PrivateRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard"    element={<Placeholder title="Dashboard" />} />
-            <Route path="/transactions" element={<Placeholder title="Transações" />} />
+            <Route path="/transactions" element={<TransactionsPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/budgets"      element={<Placeholder title="Orçamentos" />} />
             <Route path="/reports"      element={<Placeholder title="Relatórios" />} />

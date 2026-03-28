@@ -33,7 +33,6 @@
     <Folder Include="Messaging\Consumers\" />
     <Folder Include="Messaging\Producers\" />
     <Folder Include="Persistence\Migrations\" />
-    <Folder Include="Storage\" />
   </ItemGroup>
 
 </Project>
