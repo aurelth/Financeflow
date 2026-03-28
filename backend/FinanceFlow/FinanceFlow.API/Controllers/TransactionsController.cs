@@ -61,7 +61,16 @@ public class TransactionsController(
     [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> Create(
-        [FromForm] CreateTransactionRequestDto request,
+        [FromForm] string amount,
+        [FromForm] int type,
+        [FromForm] string date,
+        [FromForm] string description,
+        [FromForm] int status,
+        [FromForm] bool isRecurring,
+        [FromForm] int recurrenceType,
+        [FromForm] string categoryId,
+        [FromForm] string? subcategoryId,
+        [FromForm] string[] tags,
         IFormFile? attachment,
         CancellationToken cancellationToken)
     {
@@ -78,16 +87,16 @@ public class TransactionsController(
 
         var command = new CreateTransactionCommand(
             UserId: CurrentUserId,
-            Amount: request.Amount,
-            Type: request.Type,
-            Date: request.Date,
-            Description: request.Description,
-            Status: request.Status,
-            IsRecurring: request.IsRecurring,
-            RecurrenceType: request.RecurrenceType,
-            CategoryId: request.CategoryId,
-            SubcategoryId: request.SubcategoryId,
-            Tags: request.Tags,
+            Amount: decimal.Parse(amount, System.Globalization.CultureInfo.InvariantCulture),
+            Type: (TransactionType)type,
+            Date: DateTime.Parse(date, null, System.Globalization.DateTimeStyles.RoundtripKind),
+            Description: description,
+            Status: (TransactionStatus)status,
+            IsRecurring: isRecurring,
+            RecurrenceType: (RecurrenceType)recurrenceType,
+            CategoryId: Guid.Parse(categoryId),
+            SubcategoryId: subcategoryId != null ? Guid.Parse(subcategoryId) : null,
+            Tags: tags,
             AttachmentStream: attachmentStream,
             AttachmentFileName: attachmentFileName,
             AttachmentContentType: attachmentContentType);

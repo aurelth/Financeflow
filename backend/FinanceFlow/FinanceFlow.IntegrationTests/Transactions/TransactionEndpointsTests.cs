@@ -43,6 +43,40 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
     }
 
+    // Cria multipart/form-data para o endpoint POST /api/transactions
+    private static MultipartFormDataContent BuildTransactionForm(
+        decimal amount,
+        TransactionType type,
+        DateTime date,
+        string description,
+        TransactionStatus status,
+        bool isRecurring,
+        RecurrenceType recurrenceType,
+        Guid categoryId,
+        Guid? subcategoryId,
+        string[] tags)
+    {
+        var form = new MultipartFormDataContent
+        {
+            { new StringContent(amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)), "amount" },
+            { new StringContent(((int)type).ToString()),           "type"           },
+            { new StringContent(date.ToString("o")),               "date"           },
+            { new StringContent(description),                      "description"    },
+            { new StringContent(((int)status).ToString()),         "status"         },
+            { new StringContent(isRecurring.ToString().ToLower()), "isRecurring"    },
+            { new StringContent(((int)recurrenceType).ToString()), "recurrenceType" },
+            { new StringContent(categoryId.ToString()),            "categoryId"     },
+        };
+
+        if (subcategoryId.HasValue)
+            form.Add(new StringContent(subcategoryId.Value.ToString()), "subcategoryId");
+
+        foreach (var tag in tags)
+            form.Add(new StringContent(tag), "tags");
+
+        return form;
+    }
+
     // GET /api/transactions
 
     [Fact]
@@ -137,20 +171,20 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         var category = await CreateCategoryAsync();
 
-        var request = new CreateTransactionRequestDto(
-            Amount: 75.00m,
-            Type: TransactionType.Expense,
-            Date: DateTime.UtcNow,
-            Description: "Cinema",
-            Status: TransactionStatus.Paid,
-            IsRecurring: false,
-            RecurrenceType: RecurrenceType.None,
-            CategoryId: category!.Id,
-            SubcategoryId: null,
-            Tags: ["lazer"]);
+        var form = BuildTransactionForm(
+            amount: 75.00m,
+            type: TransactionType.Expense,
+            date: DateTime.UtcNow,
+            description: "Cinema",
+            status: TransactionStatus.Paid,
+            isRecurring: false,
+            recurrenceType: RecurrenceType.None,
+            categoryId: category!.Id,
+            subcategoryId: null,
+            tags: ["lazer"]);
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/transactions", request);
+        var response = await _client.PostAsync("/api/transactions", form);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -168,20 +202,20 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Arrange
         await AuthenticateAsync("create422.tx@teste.com");
 
-        var request = new CreateTransactionRequestDto(
-            Amount: -10.00m,        // valor inválido
-            Type: TransactionType.Expense,
-            Date: DateTime.UtcNow,
-            Description: "Inválido",
-            Status: TransactionStatus.Paid,
-            IsRecurring: false,
-            RecurrenceType: RecurrenceType.None,
-            CategoryId: Guid.Empty,     // categoria inválida
-            SubcategoryId: null,
-            Tags: []);
+        var form = BuildTransactionForm(
+            amount: -10.00m,       // valor inválido
+            type: TransactionType.Expense,
+            date: DateTime.UtcNow,
+            description: "Inválido",
+            status: TransactionStatus.Paid,
+            isRecurring: false,
+            recurrenceType: RecurrenceType.None,
+            categoryId: Guid.Empty,    // categoria inválida
+            subcategoryId: null,
+            tags: []);
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/transactions", request);
+        var response = await _client.PostAsync("/api/transactions", form);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
@@ -195,20 +229,20 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         var category = await CreateCategoryAsync(); // Type = Expense
 
-        var request = new CreateTransactionRequestDto(
-            Amount: 100.00m,
-            Type: TransactionType.Income, // tipo errado
-            Date: DateTime.UtcNow,
-            Description: "Tipo errado",
-            Status: TransactionStatus.Paid,
-            IsRecurring: false,
-            RecurrenceType: RecurrenceType.None,
-            CategoryId: category!.Id,
-            SubcategoryId: null,
-            Tags: []);
+        var form = BuildTransactionForm(
+            amount: 100.00m,
+            type: TransactionType.Income, // tipo errado
+            date: DateTime.UtcNow,
+            description: "Tipo errado",
+            status: TransactionStatus.Paid,
+            isRecurring: false,
+            recurrenceType: RecurrenceType.None,
+            categoryId: category!.Id,
+            subcategoryId: null,
+            tags: []);
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/transactions", request);
+        var response = await _client.PostAsync("/api/transactions", form);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
@@ -338,18 +372,21 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
     private async Task<TransactionDto?> CreateTransactionAsync(
         Guid categoryId,
-        decimal amount) =>
-        await (await _client.PostAsJsonAsync("/api/transactions",
-            new CreateTransactionRequestDto(
-                Amount: amount,
-                Type: TransactionType.Expense,
-                Date: DateTime.UtcNow,
-                Description: "Transação de teste",
-                Status: TransactionStatus.Paid,
-                IsRecurring: false,
-                RecurrenceType: RecurrenceType.None,
-                CategoryId: categoryId,
-                SubcategoryId: null,
-                Tags: [])))
-            .Content.ReadFromJsonAsync<TransactionDto>();
+        decimal amount)
+    {
+        var form = BuildTransactionForm(
+            amount: amount,
+            type: TransactionType.Expense,
+            date: DateTime.UtcNow,
+            description: "Transação de teste",
+            status: TransactionStatus.Paid,
+            isRecurring: false,
+            recurrenceType: RecurrenceType.None,
+            categoryId: categoryId,
+            subcategoryId: null,
+            tags: []);
+
+        var response = await _client.PostAsync("/api/transactions", form);
+        return await response.Content.ReadFromJsonAsync<TransactionDto>();
+    }
 }
