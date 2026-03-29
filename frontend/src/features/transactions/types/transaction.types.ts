@@ -28,6 +28,7 @@ export interface Transaction {
   isRecurring:    boolean
   recurrenceType: RecurrenceType
   attachmentPath: string | null
+  attachmentName:  string | null
   tags:           string[]
   categoryId:     string
   categoryName:   string

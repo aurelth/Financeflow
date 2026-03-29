@@ -142,4 +142,139 @@ public class UpdateTransactionCommandHandlerTests
         // Assert
         await act.Should().ThrowAsync<NotFoundException>();
     }
+
+    [Fact]
+    public async Task Handle_DeveAtualizarAttachmentName_QuandoFornecido()
+    {
+        // Arrange
+        var command = new UpdateTransactionCommand(
+            Id: TransactionId,
+            UserId: UserId,
+            Amount: 100.00m,
+            Type: TransactionType.Expense,
+            Date: DateTime.UtcNow,
+            Description: "Com comprovante",
+            Status: TransactionStatus.Paid,
+            IsRecurring: false,
+            RecurrenceType: RecurrenceType.None,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: [],
+            AttachmentPath: "attachments/user/guid.jpg",
+            AttachmentName: "comprovante.jpg");
+
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(TransactionId, UserId, default))
+            .ReturnsAsync(ExistingTransaction);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+
+        var updatedTransaction = new Transaction
+        {
+            Id = TransactionId,
+            UserId = UserId,
+            Amount = 100.00m,
+            Type = TransactionType.Expense,
+            Date = ExistingTransaction.Date,
+            Description = "Com comprovante",
+            Status = TransactionStatus.Paid,
+            CategoryId = CategoryId,
+            Category = ValidCategory,
+            Tags = "[]",
+            AttachmentPath = "attachments/user/guid.jpg",
+            AttachmentName = "comprovante.jpg",
+        };
+
+        _transactionRepository
+            .Setup(r => r.UpdateAsync(It.IsAny<Transaction>(), default))
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
+            .SetupSequence(r => r.GetByIdAsync(TransactionId, UserId, default))
+            .ReturnsAsync(ExistingTransaction)
+            .ReturnsAsync(updatedTransaction);
+
+        // Act
+        var result = await CreateHandler().Handle(command, default);
+
+        // Assert
+        result.AttachmentName.Should().Be("comprovante.jpg");
+        result.AttachmentPath.Should().Be("attachments/user/guid.jpg");
+
+        _transactionRepository.Verify(r =>
+            r.UpdateAsync(
+                It.Is<Transaction>(t =>
+                    t.AttachmentPath == "attachments/user/guid.jpg" &&
+                    t.AttachmentName == "comprovante.jpg"),
+                default),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_NaoDeveAlterar_AttachmentName_QuandoNaoFornecido()
+    {
+        // Arrange — transação existente já tem anexo
+        var transactionWithAttachment = new Transaction
+        {
+            Id = TransactionId,
+            UserId = UserId,
+            Amount = 100.00m,
+            Type = TransactionType.Expense,
+            Date = DateTime.UtcNow,
+            Description = "Compra original",
+            Status = TransactionStatus.Paid,
+            CategoryId = CategoryId,
+            Category = ValidCategory,
+            Tags = "[]",
+            AttachmentPath = "attachments/user/antigo.jpg",
+            AttachmentName = "recibo_antigo.jpg",
+        };
+
+        var command = new UpdateTransactionCommand(
+            Id: TransactionId,
+            UserId: UserId,
+            Amount: 150.00m,
+            Type: TransactionType.Expense,
+            Date: DateTime.UtcNow,
+            Description: "Atualizado sem mexer no anexo",
+            Status: TransactionStatus.Paid,
+            IsRecurring: false,
+            RecurrenceType: RecurrenceType.None,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: []
+        // AttachmentPath e AttachmentName não fornecidos — devem ser mantidos
+        );
+
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(TransactionId, UserId, default))
+            .ReturnsAsync(transactionWithAttachment);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+
+        _transactionRepository
+            .Setup(r => r.UpdateAsync(It.IsAny<Transaction>(), default))
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
+            .SetupSequence(r => r.GetByIdAsync(TransactionId, UserId, default))
+            .ReturnsAsync(transactionWithAttachment)
+            .ReturnsAsync(transactionWithAttachment);
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert — anexo não foi alterado
+        _transactionRepository.Verify(r =>
+            r.UpdateAsync(
+                It.Is<Transaction>(t =>
+                    t.AttachmentPath == "attachments/user/antigo.jpg" &&
+                    t.AttachmentName == "recibo_antigo.jpg"),
+                default),
+            Times.Once);
+    }
 }

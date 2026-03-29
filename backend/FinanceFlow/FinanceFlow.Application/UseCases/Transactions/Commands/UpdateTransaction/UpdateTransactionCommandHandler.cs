@@ -18,17 +18,14 @@ public class UpdateTransactionCommandHandler(
         UpdateTransactionCommand request,
         CancellationToken cancellationToken)
     {
-        // Valida que a transação existe e pertence ao utilizador
         var transaction = await transactionRepository.GetByIdAsync(
             request.Id, request.UserId, cancellationToken)
             ?? throw new NotFoundException(nameof(Transaction), request.Id);
 
-        // Valida que a categoria existe e pertence ao utilizador
         var category = await categoryRepository.GetByIdAsync(
             request.CategoryId, request.UserId, cancellationToken)
             ?? throw new NotFoundException(nameof(Category), request.CategoryId);
 
-        // Valida que o tipo da transação coincide com o tipo da categoria
         if (category.Type != request.Type)
             throw new ValidationException(
                 "O tipo da transação não coincide com o tipo da categoria.");
@@ -43,6 +40,12 @@ public class UpdateTransactionCommandHandler(
         transaction.CategoryId = request.CategoryId;
         transaction.SubcategoryId = request.SubcategoryId;
         transaction.Tags = JsonSerializer.Serialize(request.Tags);
+
+        if (request.AttachmentPath != null)
+            transaction.AttachmentPath = request.AttachmentPath;
+
+        if (request.AttachmentName != null)
+            transaction.AttachmentName = request.AttachmentName;
 
         await transactionRepository.UpdateAsync(transaction, cancellationToken);
 

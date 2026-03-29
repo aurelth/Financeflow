@@ -364,31 +364,75 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
         getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    // Helpers
+    // GET /api/transactions/{id}/attachment
 
-    private async Task<CategoryDto?> CreateCategoryAsync() =>
-        await (await _client.PostAsJsonAsync("/api/categories", ValidCategoryRequest))
-            .Content.ReadFromJsonAsync<CategoryDto>();
-
-    private async Task<TransactionDto?> CreateTransactionAsync(
-        Guid categoryId,
-        decimal amount)
+    [Fact]
+    public async Task GetAttachment_DeveRetornar200_QuandoAnexoExiste()
     {
-        var form = BuildTransactionForm(
-            amount: amount,
-            type: TransactionType.Expense,
-            date: DateTime.UtcNow,
-            description: "Transação de teste",
-            status: TransactionStatus.Paid,
-            isRecurring: false,
-            recurrenceType: RecurrenceType.None,
-            categoryId: categoryId,
-            subcategoryId: null,
-            tags: []);
+        // Arrange
+        await AuthenticateAsync("getattachment.tx@teste.com");
 
-        var response = await _client.PostAsync("/api/transactions", form);
-        return await response.Content.ReadFromJsonAsync<TransactionDto>();
+        var category = await CreateCategoryAsync();
+        var transaction = await CreateTransactionAsync(category!.Id, 50.00m);
+
+        // Faz upload de um anexo
+        var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF });
+        fileContent.Headers.ContentType =
+            new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+
+        var uploadForm = new MultipartFormDataContent();
+        uploadForm.Add(fileContent, "file", "comprovante.jpg");
+
+        var uploadResponse = await _client.PostAsync(
+            $"/api/transactions/{transaction!.Id}/attachment", uploadForm);
+
+        // Só testa o GET se o upload foi bem-sucedido
+        uploadResponse.EnsureSuccessStatusCode();
+
+        // Verifica que o anexo foi guardado
+        var updated = await _client.GetAsync($"/api/transactions/{transaction.Id}");
+        var updatedTx = await updated.Content.ReadFromJsonAsync<TransactionDto>();
+        updatedTx!.AttachmentPath.Should().NotBeNullOrEmpty();
+
+        // Act
+        var response = await _client.GetAsync(
+            $"/api/transactions/{transaction.Id}/attachment");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("image/jpeg");
     }
+
+    [Fact]
+    public async Task GetAttachment_DeveRetornar404_QuandoTransacaoNaoTemAnexo()
+    {
+        // Arrange
+        await AuthenticateAsync("getattachment404.tx@teste.com");
+
+        var category = await CreateCategoryAsync();
+        var transaction = await CreateTransactionAsync(category!.Id, 50.00m);
+
+        // Act — transação sem anexo
+        var response = await _client.GetAsync(
+            $"/api/transactions/{transaction!.Id}/attachment");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GetAttachment_DeveRetornar404_QuandoTransacaoNaoExiste()
+    {
+        // Arrange
+        await AuthenticateAsync("getattachment404tx.tx@teste.com");
+
+        // Act
+        var response = await _client.GetAsync(
+            $"/api/transactions/{Guid.NewGuid()}/attachment");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }    
 
     [Fact]
     public async Task RemoveAttachment_DeveRetornar204_QuandoAnexoExiste()
@@ -436,5 +480,65 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GetAttachment_DeveRetornarNomeOriginal_QuandoAnexoTemNome()
+    {
+        // Arrange
+        await AuthenticateAsync("getattachmentname.tx@teste.com");
+
+        var category = await CreateCategoryAsync();
+        var transaction = await CreateTransactionAsync(category!.Id, 50.00m);
+
+        // Faz upload com nome original
+        var fileContent = new ByteArrayContent(new byte[] { 0xFF, 0xD8, 0xFF });
+        fileContent.Headers.ContentType =
+            new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+
+        var uploadForm = new MultipartFormDataContent();
+        uploadForm.Add(fileContent, "file", "meu_comprovante.jpg");
+
+        var uploadResponse = await _client.PostAsync(
+            $"/api/transactions/{transaction!.Id}/attachment", uploadForm);
+        uploadResponse.EnsureSuccessStatusCode();
+
+        // Act
+        var response = await _client.GetAsync(
+            $"/api/transactions/{transaction.Id}/attachment");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Verifica que o nome original foi preservado na transação
+        var getResponse = await _client.GetAsync($"/api/transactions/{transaction.Id}");
+        var updated = await getResponse.Content.ReadFromJsonAsync<TransactionDto>();
+        updated!.AttachmentName.Should().Be("meu_comprovante.jpg");
+    }
+
+    // Helpers
+
+    private async Task<CategoryDto?> CreateCategoryAsync() =>
+        await (await _client.PostAsJsonAsync("/api/categories", ValidCategoryRequest))
+            .Content.ReadFromJsonAsync<CategoryDto>();
+
+    private async Task<TransactionDto?> CreateTransactionAsync(
+        Guid categoryId,
+        decimal amount)
+    {
+        var form = BuildTransactionForm(
+            amount: amount,
+            type: TransactionType.Expense,
+            date: DateTime.UtcNow,
+            description: "Transação de teste",
+            status: TransactionStatus.Paid,
+            isRecurring: false,
+            recurrenceType: RecurrenceType.None,
+            categoryId: categoryId,
+            subcategoryId: null,
+            tags: []);
+
+        var response = await _client.PostAsync("/api/transactions", form);
+        return await response.Content.ReadFromJsonAsync<TransactionDto>();
     }
 }

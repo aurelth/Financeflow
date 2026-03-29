@@ -14,6 +14,7 @@ vi.mock('@/features/transactions/api/useTransactions', () => ({
   useUpdateTransaction: () => ({ mutate: mockMutate, isPending: false }),
   useUploadAttachment:  () => ({ mutate: mockMutate, isPending: false }),
   useRemoveAttachment:  () => ({ mutate: mockMutate, isPending: false }),
+  getAttachmentUrl:     (id: string) => `http://localhost/api/transactions/${id}/attachment`,
 }))
 
 vi.mock('@/features/categories/api/useCategories', () => ({
@@ -44,6 +45,7 @@ const mockTransaction: Transaction = {
   isRecurring:     false,
   recurrenceType:  RecurrenceType.None,
   attachmentPath:  null,
+  attachmentName:  null,
   tags:            [],
   categoryId:      'cat-1',
   categoryName:    'Moradia',
@@ -160,4 +162,40 @@ describe('TransactionForm', () => {
       expect(screen.queryByText('alimentação')).not.toBeInTheDocument()
     })
   })
+
+  it('deve esconder o comprovante após clicar em remover', async () => {
+  const mockRemoveMutate = vi.fn((_, options) => options?.onSuccess?.())
+  vi.mocked(mockMutate).mockImplementation(mockRemoveMutate)
+
+  renderForm(mockTransactionWithAttachment)
+  const user = userEvent.setup()
+
+  // Comprovante visível inicialmente
+  expect(screen.getByText('comprovante.pdf')).toBeInTheDocument()
+  expect(screen.getByText('Remover')).toBeInTheDocument()
+
+  await user.click(screen.getByText('Remover'))
+
+  // Comprovante deve desaparecer
+  await waitFor(() => {
+    expect(screen.queryByText('comprovante.pdf')).not.toBeInTheDocument()
+    expect(screen.queryByText('Remover')).not.toBeInTheDocument()
+    expect(screen.getByText('Adicionar comprovante')).toBeInTheDocument()
+  })
+ })
+
+it('deve mostrar botão de adicionar comprovante após remover', async () => {
+  const mockRemoveMutate = vi.fn((_, options) => options?.onSuccess?.())
+  vi.mocked(mockMutate).mockImplementation(mockRemoveMutate)
+
+  renderForm(mockTransactionWithAttachment)
+  const user = userEvent.setup()
+
+  await user.click(screen.getByText('Remover'))
+
+  await waitFor(() => {
+    expect(screen.getByText('Adicionar comprovante')).toBeInTheDocument()
+    expect(screen.queryByText('Substituir')).not.toBeInTheDocument()
+  })
+ })
 })

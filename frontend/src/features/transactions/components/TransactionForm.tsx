@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { X, Paperclip, FileText, Image } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import AttachmentViewer from './AttachmentViewer'
 import { useCategories } from '../../categories/api/useCategories'
 import {
   useCreateTransaction,
@@ -56,6 +57,12 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
   )
   const [tagInput, setTagInput]     = useState('')
   const [attachment, setAttachment] = useState<File | null>(null)
+  const [currentAttachmentPath, setCurrentAttachmentPath] = useState<string | null>(
+    transaction?.attachmentPath ?? null
+  )
+  const [currentAttachmentName, setCurrentAttachmentName] = useState<string | null>(
+    transaction?.attachmentName ?? null
+  )
   const attachmentInputRef          = useRef<HTMLInputElement>(null)
 
   const { data: categories = [] } = useCategories()
@@ -86,7 +93,14 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
       updateTransaction.mutate(form, {
         onSuccess: () => {
           if (attachment) {
-            uploadAttachment.mutate(attachment, { onSuccess: onClose })
+            uploadAttachment.mutate(attachment, { 
+              onSuccess: (updated) => {
+                setCurrentAttachmentPath(updated.attachmentPath)
+                setCurrentAttachmentName(updated.attachmentName ?? null)
+                setAttachment(null)
+                onClose ()
+              }
+            })
           } else {
             onClose()
           }
@@ -301,14 +315,18 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   <X size={14} />
                 </button>
               </div>
-            ) : transaction?.attachmentPath ? (
+            ) : currentAttachmentPath ? (
               // Anexo existente na transação
               <div className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5">
                 <div className="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0">
-                  <FileText size={16} className="text-indigo-400" />
-                </div>
+                  <AttachmentViewer
+                    transactionId={transaction!.id}
+                    fileName={currentAttachmentName ?? currentAttachmentPath.split('/').pop() ?? 'comprovante'}
+                    triggerIcon="file"
+                />
+              </div>
                 <span className="text-sm text-slate-300 truncate flex-1">
-                  {transaction.attachmentPath.split('/').pop()}
+                  {currentAttachmentName ?? currentAttachmentPath.split('/').pop()}
                 </span>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
@@ -319,7 +337,12 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   </button>
                   <span className="text-slate-600">|</span>
                   <button
-                    onClick={() => removeAttachment.mutate()}
+                    onClick={() => removeAttachment.mutate(undefined, {
+                      onSuccess: () => {
+                        setCurrentAttachmentPath(null)
+                        setCurrentAttachmentName(null)
+                      }
+                    })}
                     disabled={removeAttachment.isPending}
                     className="text-xs text-red-400 hover:text-red-300 disabled:opacity-50 transition-colors"
                   >

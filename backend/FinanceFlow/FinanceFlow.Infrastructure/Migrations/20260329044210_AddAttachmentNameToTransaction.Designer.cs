@@ -4,6 +4,7 @@ using FinanceFlow.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinanceFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(FinanceFlowDbContext))]
-    partial class FinanceFlowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260329044210_AddAttachmentNameToTransaction")]
+    partial class AddAttachmentNameToTransaction
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -194,8 +197,7 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("AttachmentName")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AttachmentPath")
                         .HasMaxLength(1000)

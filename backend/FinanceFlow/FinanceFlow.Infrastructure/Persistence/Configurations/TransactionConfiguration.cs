@@ -17,6 +17,7 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.Property(t => t.Status).IsRequired();
         builder.Property(t => t.Tags).HasMaxLength(500).HasDefaultValue("[]");
         builder.Property(t => t.AttachmentPath).HasMaxLength(1000);
+        builder.Property(t => t.AttachmentName).HasMaxLength(255);
         builder.HasOne(t => t.User)
                .WithMany(u => u.Transactions)
                .HasForeignKey(t => t.UserId)

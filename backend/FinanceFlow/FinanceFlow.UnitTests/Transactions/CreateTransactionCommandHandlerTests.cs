@@ -185,4 +185,86 @@ public class CreateTransactionCommandHandlerTests
         _transactionRepository.Verify(r =>
             r.AddAsync(It.IsAny<Transaction>(), default), Times.Never);
     }
+
+    [Fact]
+    public async Task Handle_DeveGuardarAttachmentName_QuandoAnexoFornecido()
+    {
+        // Arrange
+        var command = new CreateTransactionCommand(
+            UserId: UserId,
+            Amount: 75.00m,
+            Type: TransactionType.Expense,
+            Date: DateTime.UtcNow,
+            Description: "Com comprovante",
+            Status: TransactionStatus.Paid,
+            IsRecurring: false,
+            RecurrenceType: RecurrenceType.None,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: [],
+            AttachmentStream: new MemoryStream(new byte[] { 0xFF, 0xD8 }),
+            AttachmentFileName: "comprovante.jpg",
+            AttachmentContentType: "image/jpeg");
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+
+        _attachmentService
+            .Setup(s => s.SaveAsync(
+                It.IsAny<Stream>(),
+                "comprovante.jpg",
+                "image/jpeg",
+                UserId,
+                default))
+            .ReturnsAsync(("attachments/user/guid.jpg", "comprovante.jpg"));
+
+        var createdTransaction = new Transaction
+        {
+            Id = Guid.NewGuid(),
+            UserId = UserId,
+            Amount = command.Amount,
+            Type = command.Type,
+            Date = command.Date,
+            Description = command.Description,
+            Status = command.Status,
+            CategoryId = CategoryId,
+            Category = ValidCategory,
+            Tags = "[]",
+            AttachmentPath = "attachments/user/guid.jpg",
+            AttachmentName = "comprovante.jpg",
+        };
+
+        _transactionRepository
+            .Setup(r => r.AddAsync(It.IsAny<Transaction>(), default))
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
+            .ReturnsAsync(createdTransaction);
+
+        // Act
+        var result = await CreateHandler().Handle(command, default);
+
+        // Assert
+        result.AttachmentName.Should().Be("comprovante.jpg");
+        result.AttachmentPath.Should().Be("attachments/user/guid.jpg");
+
+        _attachmentService.Verify(s =>
+            s.SaveAsync(
+                It.IsAny<Stream>(),
+                "comprovante.jpg",
+                "image/jpeg",
+                UserId,
+                default),
+            Times.Once);
+
+        _transactionRepository.Verify(r =>
+            r.AddAsync(
+                It.Is<Transaction>(t =>
+                    t.AttachmentPath == "attachments/user/guid.jpg" &&
+                    t.AttachmentName == "comprovante.jpg"),
+                default),
+            Times.Once);
+    }
 }

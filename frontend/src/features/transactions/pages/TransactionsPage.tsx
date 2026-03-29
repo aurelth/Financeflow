@@ -9,19 +9,33 @@ import TransactionForm from '../components/TransactionForm'
 import DeleteTransactionDialog from '../components/DeleteTransactionDialog'
 import type { Transaction, GetTransactionsQuery } from '../types/transaction.types'
 
-const DEFAULT_FILTERS: GetTransactionsQuery = {
-  page:     1,
-  pageSize: 20,
+function getDefaultFilters(): GetTransactionsQuery {
+  const now      = new Date()
+  const year     = now.getFullYear()
+  const month    = now.getMonth()
+  const firstDay = new Date(year, month, 1)
+  const lastDay  = new Date(year, month + 1, 0)
+
+  const toDateString = (d: Date) => d.toISOString().split('T')[0]
+
+  return {
+    page:     1,
+    pageSize: 20,
+    dateFrom: toDateString(firstDay),
+    dateTo:   toDateString(lastDay),
+  }
 }
 
-export default function TransactionsPage() {
-  const [filters, setFilters]               = useState<GetTransactionsQuery>(DEFAULT_FILTERS)
-  const [showForm, setShowForm]             = useState(false)
-  const [editingTx, setEditingTx]           = useState<Transaction | null>(null)
-  const [deletingTx, setDeletingTx]         = useState<Transaction | null>(null)
+const DEFAULT_FILTERS: GetTransactionsQuery = getDefaultFilters()
 
-  const { data, isLoading }                 = useTransactions(filters)
-  const { data: categories = [] }           = useCategories()
+export default function TransactionsPage() {
+  const [filters, setFilters]   = useState<GetTransactionsQuery>(DEFAULT_FILTERS)
+  const [showForm, setShowForm] = useState(false)
+  const [editingTx, setEditingTx]   = useState<Transaction | null>(null)
+  const [deletingTx, setDeletingTx] = useState<Transaction | null>(null)
+
+  const { data, isLoading }       = useTransactions(filters)
+  const { data: categories = [] } = useCategories()
 
   const transactions = data?.items      ?? []
   const totalPages   = data?.totalPages ?? 1
