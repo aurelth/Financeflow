@@ -56,6 +56,7 @@ const mockTransactions = [
     isRecurring:     true,
     recurrenceType:  RecurrenceType.Monthly,
     attachmentPath:  null,
+    attachmentName:  null,
     tags:            ['moradia'],
     categoryId:      'cat-1',
     categoryName:    'Moradia',
@@ -76,6 +77,7 @@ const mockTransactions = [
     isRecurring:     false,
     recurrenceType:  RecurrenceType.None,
     attachmentPath:  null,
+    attachmentName:  null,
     tags:            [],
     categoryId:      'cat-2',
     categoryName:    'Trabalho',
@@ -172,4 +174,21 @@ describe('TransactionsPage', () => {
       expect(screen.getByText('Remover transação')).toBeInTheDocument()
     })
   })
+
+  it('deve iniciar com filtro do mês atual por defeito', () => {
+  renderPage()
+
+  const now      = new Date()
+  const year     = now.getFullYear()
+  const month    = now.getMonth()
+  const firstDay = new Date(year, month, 1).toISOString().split('T')[0]
+  const lastDay  = new Date(year, month + 1, 0).toISOString().split('T')[0]
+
+  // Verifica que os inputs de data têm os valores do mês atual
+  const dateInputs = screen.getAllByDisplayValue(firstDay)
+  expect(dateInputs.length).toBeGreaterThan(0)
+
+  const dateInputsEnd = screen.getAllByDisplayValue(lastDay)
+  expect(dateInputsEnd.length).toBeGreaterThan(0)
+ })
 })

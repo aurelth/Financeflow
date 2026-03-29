@@ -24,28 +24,31 @@ public class CreateTransactionCommandHandler(
         CreateTransactionCommand request,
         CancellationToken cancellationToken)
     {
-        // Valida que a categoria existe e pertence ao utilizador
         var category = await categoryRepository.GetByIdAsync(
             request.CategoryId, request.UserId, cancellationToken)
             ?? throw new NotFoundException(nameof(Category), request.CategoryId);
 
-        // Valida que o tipo da transação coincide com o tipo da categoria
         if (category.Type != request.Type)
             throw new ValidationException(
                 "O tipo da transação não coincide com o tipo da categoria.");
 
         // Processa o anexo se fornecido
         string? attachmentPath = null;
+        string? attachmentName = null;
+
         if (request.AttachmentStream != null &&
             request.AttachmentFileName != null &&
             request.AttachmentContentType != null)
         {
-            attachmentPath = await attachmentService.SaveAsync(
+            var result = await attachmentService.SaveAsync(
                 request.AttachmentStream,
                 request.AttachmentFileName,
                 request.AttachmentContentType,
                 request.UserId,
                 cancellationToken);
+
+            attachmentPath = result.Path;
+            attachmentName = result.Name;
         }
 
         var transaction = new Transaction
@@ -62,11 +65,11 @@ public class CreateTransactionCommandHandler(
             SubcategoryId = request.SubcategoryId,
             Tags = JsonSerializer.Serialize(request.Tags),
             AttachmentPath = attachmentPath,
+            AttachmentName = attachmentName,
         };
 
         await transactionRepository.AddAsync(transaction, cancellationToken);
 
-        // Publica evento Kafka
         var topic = configuration["Kafka:Topics:TransactionCreated"]
                     ?? "finance.transactions.created";
 
@@ -83,7 +86,6 @@ public class CreateTransactionCommandHandler(
             CreatedAt: transaction.CreatedAt),
             cancellationToken);
 
-        // Recarrega com as navegações para o mapeamento
         var created = await transactionRepository.GetByIdAsync(
             transaction.Id, request.UserId, cancellationToken);
 

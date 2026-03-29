@@ -1,8 +1,9 @@
-import { Pencil, Trash2, Paperclip, RefreshCw } from 'lucide-react'
+import { Pencil, Trash2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TransactionStatus, RecurrenceType, type Transaction } from '../types/transaction.types'
 import { TransactionType } from '../../categories/types/category.types'
 import CategoryIcon from '../../categories/components/CategoryIcon'
+import AttachmentViewer from './AttachmentViewer'
 
 interface TransactionTableProps {
   transactions: Transaction[]
@@ -81,8 +82,12 @@ export default function TransactionTable({
                     {tx.description || '—'}
                   </span>
                   {tx.attachmentPath && (
-                    <Paperclip size={12} className="text-slate-500 flex-shrink-0" />
-                  )}
+                    <AttachmentViewer
+                      transactionId={tx.id}
+                      fileName={tx.attachmentName ?? tx.attachmentPath.split('/').pop() ?? 'comprovante'}
+                      triggerIcon="paperclip"
+                  />
+)}
                   {tx.isRecurring && recurrenceLabel[tx.recurrenceType] && (
                     <span className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex-shrink-0">
                       <RefreshCw size={10} />

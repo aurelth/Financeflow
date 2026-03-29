@@ -12,6 +12,7 @@ public record TransactionDto(
     bool IsRecurring,
     RecurrenceType RecurrenceType,
     string? AttachmentPath,
+    string? AttachmentName,
     string[] Tags,
     Guid CategoryId,
     string CategoryName,

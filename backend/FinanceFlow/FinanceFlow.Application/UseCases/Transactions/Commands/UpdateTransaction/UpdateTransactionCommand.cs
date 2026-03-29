@@ -16,5 +16,7 @@ public record UpdateTransactionCommand(
     RecurrenceType RecurrenceType,
     Guid CategoryId,
     Guid? SubcategoryId,
-    string[] Tags
+    string[] Tags,
+    string? AttachmentPath = null,
+    string? AttachmentName = null
 ) : IRequest<TransactionDto>;

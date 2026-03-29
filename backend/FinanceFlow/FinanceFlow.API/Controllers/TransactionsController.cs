@@ -174,14 +174,14 @@ public class TransactionsController(
 
         // Salva o novo anexo
         await using var stream = file.OpenReadStream();
-        var attachmentPath = await attachmentService.SaveAsync(
+        var (attachmentPath, attachmentName) = await attachmentService.SaveAsync(
             stream,
             file.FileName,
             file.ContentType,
             CurrentUserId,
             cancellationToken);
 
-        // Atualiza a transação com o novo caminho
+        // Atualiza a transação com o novo caminho e nome
         var command = new UpdateTransactionCommand(
             Id: id,
             UserId: CurrentUserId,
@@ -194,7 +194,9 @@ public class TransactionsController(
             RecurrenceType: transaction.RecurrenceType,
             CategoryId: transaction.CategoryId,
             SubcategoryId: transaction.SubcategoryId,
-            Tags: transaction.Tags);
+            Tags: transaction.Tags,
+            AttachmentPath: attachmentPath,
+            AttachmentName: attachmentName);
 
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
@@ -211,5 +213,42 @@ public class TransactionsController(
         var command = new RemoveAttachmentCommand(id, CurrentUserId);
         await Mediator.Send(command, cancellationToken);
         return NoContent();
+    }
+
+    /// <summary>Retorna o ficheiro de anexo de uma transação.</summary>
+    [HttpGet("{id:guid}/attachment")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAttachment(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetTransactionByIdQuery(id, CurrentUserId);
+        var transaction = await Mediator.Send(query, cancellationToken);
+
+        if (string.IsNullOrEmpty(transaction.AttachmentPath))
+            return NotFound("Esta transação não tem anexo.");
+
+        var absolutePath = attachmentService.GetAbsolutePath(transaction.AttachmentPath);
+
+        if (!System.IO.File.Exists(absolutePath))
+            return NotFound("Ficheiro não encontrado.");
+
+        var extension = Path.GetExtension(absolutePath).ToLowerInvariant();
+        var contentType = extension switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".webp" => "image/webp",
+            ".pdf" => "application/pdf",
+            _ => "application/octet-stream"
+        };
+
+        // Usa o nome original se disponível
+        var fileName = transaction.AttachmentName
+                         ?? Path.GetFileName(absolutePath);
+        var fileStream = System.IO.File.OpenRead(absolutePath);
+
+        return File(fileStream, contentType, fileName);
     }
 }

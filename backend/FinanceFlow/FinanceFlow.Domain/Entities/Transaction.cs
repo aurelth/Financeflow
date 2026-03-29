@@ -10,6 +10,7 @@ public class Transaction : BaseEntity
     public bool IsRecurring { get; set; } = false;
     public RecurrenceType RecurrenceType { get; set; } = RecurrenceType.None;
     public string? AttachmentPath { get; set; }
+    public string? AttachmentName { get; set; }
     public string Tags { get; set; } = string.Empty; // JSON serializado
 
     public Guid UserId { get; set; }

@@ -14,9 +14,10 @@ public record CreateTransactionCommand(
     bool IsRecurring,
     RecurrenceType RecurrenceType,
     Guid CategoryId,
-    Guid? SubcategoryId,
+    Guid? SubcategoryId,    
     string[] Tags,
     // Anexo opcional
+    string? AttachmentName = null,
     Stream? AttachmentStream = null,
     string? AttachmentFileName = null,
     string? AttachmentContentType = null

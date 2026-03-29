@@ -18,7 +18,7 @@ export const useTransactions = (filters: GetTransactionsQuery = {}) =>
       api.get<PagedResult<Transaction>>('/api/transactions', {
         params: filters,
       }).then(r => r.data),
-    staleTime: 1 * 60 * 1000,
+    staleTime: 0,
   })
 
 export const useTransaction = (id: string) =>
@@ -165,3 +165,6 @@ export const useRemoveAttachment = (id: string) => {
     },
   })
 }
+
+export const getAttachmentUrl = (transactionId: string): string =>
+  `${import.meta.env.VITE_API_URL}/api/transactions/${transactionId}/attachment`
