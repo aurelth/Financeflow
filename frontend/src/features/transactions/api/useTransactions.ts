@@ -139,7 +139,7 @@ export const useUploadAttachment = (id: string) => {
       ).then(r => r.data)
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['transactions', id] })
+      qc.invalidateQueries({ queryKey: ['transactions'] })
       toast.success('Anexo enviado com sucesso!')
     },
     onError: (err: any) => {

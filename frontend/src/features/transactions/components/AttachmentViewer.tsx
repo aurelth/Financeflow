@@ -9,8 +9,8 @@ interface AttachmentViewerProps {
   triggerIcon?:  'paperclip' | 'file'
 }
 
-const MIN_ZOOM = 25
-const MAX_ZOOM = 300
+const MIN_ZOOM  = 25
+const MAX_ZOOM  = 300
 const ZOOM_STEP = 25
 
 export default function AttachmentViewer({
@@ -19,12 +19,14 @@ export default function AttachmentViewer({
   triggerIcon = 'paperclip',
 }: AttachmentViewerProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [openUpward, setOpenUpward]     = useState(false)
   const [previewOpen, setPreviewOpen]   = useState(false)
   const [loading, setLoading]           = useState(false)
   const [objectUrl, setObjectUrl]       = useState<string | null>(null)
   const [contentType, setContentType]   = useState<string>('')
   const [zoom, setZoom]                 = useState(100)
   const dropdownRef                     = useRef<HTMLDivElement>(null)
+  const triggerRef                      = useRef<HTMLButtonElement>(null)
 
   const url = getAttachmentUrl(transactionId)
 
@@ -47,6 +49,15 @@ export default function AttachmentViewer({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  function handleToggleDropdown() {
+    if (!dropdownOpen && triggerRef.current) {
+      const rect       = triggerRef.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      setOpenUpward(spaceBelow < 100)
+    }
+    setDropdownOpen(o => !o)
+  }
 
   async function handleVisualize() {
     setDropdownOpen(false)
@@ -94,7 +105,8 @@ export default function AttachmentViewer({
       {/* Trigger + Dropdown */}
       <div ref={dropdownRef} className="relative inline-flex">
         <button
-          onClick={() => setDropdownOpen(o => !o)}
+          ref={triggerRef}
+          onClick={handleToggleDropdown}
           className="p-1 text-slate-500 hover:text-indigo-400 transition-colors"
           title="Ver comprovante"
         >
@@ -105,7 +117,9 @@ export default function AttachmentViewer({
         </button>
 
         {dropdownOpen && (
-          <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-1 w-36 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden">
+          <div className={`absolute z-50 left-1/2 -translate-x-1/2 w-36 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden ${
+            openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
+          }`}>
             <button
               onClick={handleVisualize}
               className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-300 hover:bg-slate-700 hover:text-slate-100 transition-colors"
