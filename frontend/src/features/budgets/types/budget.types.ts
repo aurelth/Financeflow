@@ -45,3 +45,12 @@ export interface GetBudgetsQuery {
   month: number
   year:  number
 }
+
+// Sumário do dashboard
+export interface DashboardSummary {
+  totalIncome:   number
+  totalExpenses: number
+  balance:       number
+  month:         number
+  year:          number
+}
