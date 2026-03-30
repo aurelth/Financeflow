@@ -8,7 +8,7 @@ import RegisterPage from '@/features/auth/pages/RegisterPage'
 import CategoriesPage   from '@/features/categories/pages/CategoriesPage'
 import TransactionsPage from '@/features/transactions/pages/TransactionsPage'
 import BudgetsPage      from '@/features/budgets/pages/BudgetsPage'
-import DashboardPage    from '@/features/budgets/pages/DashboardPage'
+import DashboardPage    from '@/features/dashboard/pages/DashboardPage'
 
 // Placeholder para fases futuras
 const Placeholder = ({ title }: { title: string }) => (
