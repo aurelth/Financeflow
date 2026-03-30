@@ -7,7 +7,6 @@ import type {
   CreateBudgetRequest,
   UpdateBudgetRequest,
   GetBudgetsQuery,
-  DashboardSummary,
 } from '../types/budget.types'
 
 // Queries
@@ -27,16 +26,6 @@ export const useBudgetSummary = (filters: GetBudgetsQuery) =>
     queryKey: ['budgets', 'summary', filters],
     queryFn:  () =>
       api.get<BudgetSummary[]>('/api/budgets/summary', {
-        params: filters,
-      }).then(r => r.data),
-    staleTime: 0,
-  })
-
-export const useDashboardSummary = (filters: GetBudgetsQuery) =>
-  useQuery({
-    queryKey: ['dashboard', 'summary', filters],
-    queryFn:  () =>
-      api.get<DashboardSummary>('/api/dashboard/summary', {
         params: filters,
       }).then(r => r.data),
     staleTime: 0,

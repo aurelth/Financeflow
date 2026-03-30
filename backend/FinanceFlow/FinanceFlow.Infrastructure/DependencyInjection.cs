@@ -1,6 +1,7 @@
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.Infrastructure.Auth;
+using FinanceFlow.Infrastructure.Caching;
 using FinanceFlow.Infrastructure.Messaging;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using FinanceFlow.Infrastructure.Persistence.Repositories;
@@ -36,6 +37,9 @@ public static class DependencyInjection
         services.AddScoped<ISubcategoryRepository, SubcategoryRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IBudgetRepository, BudgetRepository>();
+
+        // Caching
+        services.AddScoped<ICacheService, RedisCacheService>();
 
         // Serviços de Auth
         services.AddScoped<ITokenService, JwtTokenService>();
