@@ -61,7 +61,18 @@ public class FinanceFlowWebApplicationFactory
                 ["Kafka:GroupId"] = "financeflow-test-group",
                 ["Storage:BasePath"] = "storage",
                 ["ConnectionStrings:DefaultConnection"] = _sqlContainer.GetConnectionString(),
+
+                // Rate limiting completamente desativado nos testes
                 ["IpRateLimiting:EnableEndpointRateLimiting"] = "false",
+                ["IpRateLimiting:StackBlockedRequests"] = "false",
+                ["IpRateLimiting:GeneralRules:0:Period"] = "1h",
+                ["IpRateLimiting:GeneralRules:0:Limit"] = "10000",
+                ["IpRateLimiting:GeneralRules:1:Period"] = "1h",
+                ["IpRateLimiting:GeneralRules:1:Limit"] = "10000",
+                ["IpRateLimiting:GeneralRules:2:Period"] = "1h",
+                ["IpRateLimiting:GeneralRules:2:Limit"] = "10000",
+                ["IpRateLimiting:GeneralRules:3:Period"] = "1h",
+                ["IpRateLimiting:GeneralRules:3:Limit"] = "10000",
             });
         });
 
