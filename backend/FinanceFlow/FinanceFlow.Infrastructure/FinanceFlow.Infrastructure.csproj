@@ -28,7 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Caching\" />
     <Folder Include="Jobs\" />
     <Folder Include="Messaging\Consumers\" />
     <Folder Include="Messaging\Producers\" />
