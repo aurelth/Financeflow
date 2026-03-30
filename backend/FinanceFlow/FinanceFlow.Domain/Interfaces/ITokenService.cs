@@ -11,6 +11,12 @@ public interface ITokenService
     string GenerateAccessToken(User user);
 
     /// <summary>
+    /// Gera um Access Token JWT para um serviço interno (worker).
+    /// Expira em 60 minutos.
+    /// </summary>
+    (string AccessToken, DateTime ExpiresAt) GenerateServiceToken(Guid serviceUserId, string serviceName);
+
+    /// <summary>
     /// Gera um Refresh Token opaco (GUID).
     /// Expira em 7 dias — armazenado no Redis.
     /// </summary>

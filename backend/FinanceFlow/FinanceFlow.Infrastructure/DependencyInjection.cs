@@ -35,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ISubcategoryRepository, SubcategoryRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddScoped<IBudgetRepository, BudgetRepository>();
 
         // Serviços de Auth
         services.AddScoped<ITokenService, JwtTokenService>();
