@@ -32,17 +32,31 @@ public class GetDashboardSummaryQueryHandler(
             cancellationToken: cancellationToken);
 
         var totalIncome = transactions
-            .Where(t => t.Type == TransactionType.Income)
+            .Where(t => t.Type == TransactionType.Income && t.Status != TransactionStatus.Scheduled)
             .Sum(t => t.Amount);
 
         var totalExpenses = transactions
-            .Where(t => t.Type == TransactionType.Expense)
+            .Where(t => t.Type == TransactionType.Expense && t.Status != TransactionStatus.Scheduled)
             .Sum(t => t.Amount);
+
+        var balance = totalIncome - totalExpenses;
+
+        // Saldo projetado = saldo atual + transações agendadas
+        var projectedIncome = transactions
+            .Where(t => t.Type == TransactionType.Income && t.Status == TransactionStatus.Scheduled)
+            .Sum(t => t.Amount);
+
+        var projectedExpenses = transactions
+            .Where(t => t.Type == TransactionType.Expense && t.Status == TransactionStatus.Scheduled)
+            .Sum(t => t.Amount);
+
+        var projectedBalance = balance + projectedIncome - projectedExpenses;
 
         return new DashboardSummaryDto(
             TotalIncome: totalIncome,
             TotalExpenses: totalExpenses,
-            Balance: totalIncome - totalExpenses,
+            Balance: balance,
+            ProjectedBalance: projectedBalance,
             Month: request.Month,
             Year: request.Year);
     }
