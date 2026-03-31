@@ -9,6 +9,7 @@ import CategoriesPage   from '@/features/categories/pages/CategoriesPage'
 import TransactionsPage from '@/features/transactions/pages/TransactionsPage'
 import BudgetsPage      from '@/features/budgets/pages/BudgetsPage'
 import DashboardPage    from '@/features/dashboard/pages/DashboardPage'
+import ComparisonPage from '@/features/dashboard/pages/ComparisonPage'
 
 // Placeholder para fases futuras
 const Placeholder = ({ title }: { title: string }) => (
@@ -40,6 +41,7 @@ export default function AppRouter() {
             <Route path="/transactions" element={<TransactionsPage />} />
             <Route path="/categories"   element={<CategoriesPage />} />
             <Route path="/budgets"      element={<BudgetsPage />} />
+            <Route path="/comparison"   element={<ComparisonPage />} />
             <Route path="/reports"      element={<Placeholder title="Relatórios" />} />
             <Route path="/exports"      element={<Placeholder title="Exportar" />} />
             <Route path="/profile"      element={<Placeholder title="Perfil" />} />

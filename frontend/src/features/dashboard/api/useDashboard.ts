@@ -6,6 +6,8 @@ import type {
   ExpensesByCategory,
   WeeklyComparison,
   DashboardQuery,
+  PeriodComparison,
+  PeriodComparisonQuery,
 } from '../types/dashboard.types'
 
 export const useDashboardSummary = (filters: DashboardQuery) =>
@@ -46,4 +48,20 @@ export const useWeeklyComparison = (filters: DashboardQuery) =>
         params: filters,
       }).then(r => r.data),
     staleTime: 0,
+  })
+
+  export const usePeriodComparison = (query: PeriodComparisonQuery, enabled = true) =>
+  useQuery({
+    queryKey: ['dashboard', 'period-comparison', query.periods],
+    queryFn:  () =>
+      api.get<PeriodComparison>('/api/dashboard/period-comparison', {
+        params: { periods: query.periods },
+        paramsSerializer: params => {
+          return params.periods
+            .map((p: string) => `periods=${encodeURIComponent(p)}`)
+            .join('&')
+        },
+      }).then(r => r.data),
+    staleTime: 0,
+    enabled:   enabled && query.periods.length > 0,
   })

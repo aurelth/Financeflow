@@ -39,3 +39,32 @@ export interface DashboardQuery {
   month: number
   year:  number
 }
+
+// Comparativo histórico
+
+export interface PeriodData {
+  month:         number
+  year:          number
+  totalIncome:   number
+  totalExpenses: number
+  balance:       number
+}
+
+export interface CategoryComparison {
+  categoryId:    string
+  categoryName:  string
+  categoryIcon:  string
+  categoryColor: string
+  values:        number[]
+  variations:    (number | null)[]
+}
+
+export interface PeriodComparison {
+  periods:             PeriodData[]
+  categoryComparisons: CategoryComparison[]
+}
+
+// Filtro para comparativo de períodos
+export interface PeriodComparisonQuery {
+  periods: string[] // formato YYYY-MM
+}

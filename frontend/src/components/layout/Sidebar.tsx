@@ -5,6 +5,7 @@ import {
   Tag,
   PiggyBank,
   BarChart3,
+  GitCompare,
   FileText,
   Settings,
 } from 'lucide-react'
@@ -15,6 +16,7 @@ const navItems = [
   { to: '/transactions', icon: ArrowLeftRight,  label: 'Transações'   },
   { to: '/categories',   icon: Tag,             label: 'Categorias'   },
   { to: '/budgets',      icon: PiggyBank,       label: 'Orçamentos'   },
+  { to: '/comparison',   icon: GitCompare,      label: 'Comparativo'  },
   { to: '/reports',      icon: BarChart3,       label: 'Relatórios'   },
   { to: '/exports',      icon: FileText,        label: 'Exportar'     },
 ]
