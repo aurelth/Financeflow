@@ -1,10 +1,13 @@
+using FinanceFlow.API.Hubs;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Application.UseCases.Reports.Commands.RequestReport;
+using FinanceFlow.Application.UseCases.Reports.Commands.UpdateReportStatus;
 using FinanceFlow.Application.UseCases.Reports.Queries.GetReportDownload;
 using FinanceFlow.Application.UseCases.Reports.Queries.GetReports;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace FinanceFlow.API.Controllers;
 
@@ -55,5 +58,38 @@ public class ReportsController(IMediator mediator) : BaseController(mediator)
 
         var stream = System.IO.File.OpenRead(result.FilePath);
         return File(stream, result.ContentType, result.FileName);
+    }
+
+    /// <summary>Atualiza o status de um relatório (uso interno do Worker).</summary>
+    [HttpPut("{id:guid}/status")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateStatus(
+        Guid id,
+        [FromBody] UpdateReportStatusDto request,
+        CancellationToken cancellationToken)
+    {
+        var command = new UpdateReportStatusCommand(id, request.Status, request.FilePath, request.FileName);
+        await Mediator.Send(command, cancellationToken);
+        return Ok();
+    }
+
+    /// <summary>Notifica o usuário via SignalR quando o relatório estiver pronto.</summary>
+    [HttpPost("notify")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Notify(
+        [FromBody] NotifyReportDto request,
+        [FromServices] IHubContext<ReportHub> hubContext,
+        CancellationToken cancellationToken)
+    {
+        await hubContext.Clients
+            .Group(request.UserId.ToString())
+            .SendAsync("ReportReady", new
+            {
+                reportId = request.ReportId,
+                fileName = request.FileName,
+            }, cancellationToken);
+
+        return Ok();
     }
 }

@@ -20,6 +20,7 @@ builder.Services.AddHttpClient("FinanceFlowApi", client =>
 // Serviços do Worker
 builder.Services.AddSingleton<ApiAuthService>();
 builder.Services.AddSingleton<BudgetAlertService>();
+builder.Services.AddSingleton<ReportGeneratorService>();
 
 // Quartz
 builder.Services.AddQuartz(q =>
@@ -31,6 +32,18 @@ builder.Services.AddQuartz(q =>
     q.AddTrigger(opts => opts
         .ForJob(jobKey)
         .WithIdentity("BudgetAlertConsumerJob-trigger")
+        .WithSimpleSchedule(s => s
+            .WithIntervalInSeconds(30)
+            .RepeatForever()));
+
+
+    var reportJobKey = new JobKey("ReportConsumerJob");
+
+    q.AddJob<ReportConsumerJob>(opts => opts.WithIdentity(reportJobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(reportJobKey)
+        .WithIdentity("ReportConsumerJob-trigger")
         .WithSimpleSchedule(s => s
             .WithIntervalInSeconds(30)
             .RepeatForever()));
