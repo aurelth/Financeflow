@@ -17,6 +17,7 @@ import PieChartCard from '../components/PieChartCard'
 import BarChartCard from '../components/BarChartCard'
 import RecentTransactionsWidget from '../components/RecentTransactionsWidget'
 import TopBudgetsWidget from '../components/TopBudgetsWidget'
+import PdfExportButton from '@/features/reports/components/PdfExportButton'
 
 function getCurrentPeriod() {
   const now = new Date()
@@ -24,10 +25,10 @@ function getCurrentPeriod() {
 }
 
 interface SummaryCardProps {
-  title:    string
-  value:    number
-  icon:     React.ReactNode
-  color:    string
+  title:     string
+  value:     number
+  icon:      React.ReactNode
+  color:     string
   subtitle?: string
 }
 
@@ -58,24 +59,20 @@ export default function DashboardPage() {
     year:  'numeric',
   })
 
-  // Filtro de datas para transações recentes
   const dateFrom = new Date(period.year, period.month - 1, 1).toISOString().split('T')[0]
   const dateTo   = new Date(period.year, period.month, 0).toISOString().split('T')[0]
 
-  const { data: summary,            isLoading: l1 } = useDashboardSummary(period)
+  const { data: summary,               isLoading: l1 } = useDashboardSummary(period)
   const { data: balanceEvolution = [], isLoading: l2 } = useBalanceEvolution(period)
   const { data: expensesByCategory = [], isLoading: l3 } = useExpensesByCategory(period)
   const { data: weeklyComparison = [],   isLoading: l4 } = useWeeklyComparison(period)
   const { data: budgetSummaries = [],    isLoading: l5 } = useBudgetSummary(period)
   const { data: transactionsData,        isLoading: l6 } = useTransactions({
-    page:     1,
-    pageSize: 5,
-    dateFrom,
-    dateTo,
+    page: 1, pageSize: 5, dateFrom, dateTo,
   })
 
-  const isLoading       = l1 || l2 || l3 || l4 || l5 || l6
-  const recentTx        = transactionsData?.items ?? []
+  const isLoading = l1 || l2 || l3 || l4 || l5 || l6
+  const recentTx  = transactionsData?.items ?? []
 
   function handlePrevMonth() {
     setPeriod(p => {
@@ -95,11 +92,14 @@ export default function DashboardPage() {
     <div className="space-y-6">
 
       {/* Cabeçalho */}
-      <div>
-        <h1 className="text-xl font-semibold text-white">Dashboard</h1>
-        <p className="text-slate-400 text-sm mt-0.5">
-          Visão geral das suas finanças
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-white">Dashboard</h1>
+          <p className="text-slate-400 text-sm mt-0.5">
+            Visão geral das suas finanças
+          </p>
+        </div>
+        <PdfExportButton defaultMonth={period.month} defaultYear={period.year} />
       </div>
 
       {/* Seletor de mês/ano */}
