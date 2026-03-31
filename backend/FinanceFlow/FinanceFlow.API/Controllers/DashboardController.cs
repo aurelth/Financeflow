@@ -2,6 +2,7 @@ using FinanceFlow.Application.DTOs;
 using FinanceFlow.Application.UseCases.Dashboard.Queries.GetBalanceEvolution;
 using FinanceFlow.Application.UseCases.Dashboard.Queries.GetDashboardSummary;
 using FinanceFlow.Application.UseCases.Dashboard.Queries.GetExpensesByCategory;
+using FinanceFlow.Application.UseCases.Dashboard.Queries.GetPeriodComparison;
 using FinanceFlow.Application.UseCases.Dashboard.Queries.GetWeeklyComparison;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -60,6 +61,39 @@ public class DashboardController(IMediator mediator) : BaseController(mediator)
         CancellationToken cancellationToken)
     {
         var query = new GetWeeklyComparisonQuery(CurrentUserId, month, year);
+        var result = await Mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Retorna o comparativo histórico entre até 3 períodos.
+    /// Exemplo: GET /api/dashboard/period-comparison?periods=2026-01&periods=2026-02&periods=2026-03
+    /// </summary>
+    [HttpGet("period-comparison")]
+    [ProducesResponseType(typeof(PeriodComparisonDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetPeriodComparison(
+        [FromQuery] string[] periods,
+        CancellationToken cancellationToken)
+    {
+        if (periods.Length == 0 || periods.Length > 3)
+            return BadRequest("Informe entre 1 e 3 períodos no formato YYYY-MM.");
+
+        var parsedPeriods = new List<(int Month, int Year)>();
+
+        foreach (var period in periods)
+        {
+            var parts = period.Split('-');
+            if (parts.Length != 2 ||
+                !int.TryParse(parts[0], out var year) ||
+                !int.TryParse(parts[1], out var month) ||
+                month < 1 || month > 12)
+                return BadRequest($"Período inválido: '{period}'. Use o formato YYYY-MM.");
+
+            parsedPeriods.Add((month, year));
+        }
+
+        var query = new GetPeriodComparisonQuery(CurrentUserId, parsedPeriods);
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);
     }
