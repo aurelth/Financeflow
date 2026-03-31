@@ -23,11 +23,14 @@ public class GetPeriodComparisonQueryHandler(
 
         return await cache.GetOrSetAsync(cacheKey, async () =>
         {
-            // Busca transações de todos os períodos em paralelo
-            var tasks = periods.Select(p => FetchPeriodDataAsync(
-                request.UserId, p.Month, p.Year, cancellationToken));
-
-            var results = await Task.WhenAll(tasks);
+            // Execução sequencial para evitar conflito no DbContext
+            var results = new List<PeriodResult>();
+            foreach (var p in periods)
+            {
+                var result = await FetchPeriodDataAsync(
+                    request.UserId, p.Month, p.Year, cancellationToken);
+                results.Add(result);
+            }
 
             // Monta os dados por período
             var periodDtos = results.Select(r => new PeriodDataDto(
@@ -83,10 +86,10 @@ public class GetPeriodComparisonQueryHandler(
     }
 
     private async Task<PeriodResult> FetchPeriodDataAsync(
-        Guid userId,
-        int month,
-        int year,
-        CancellationToken cancellationToken)
+    Guid userId,
+    int month,
+    int year,
+    CancellationToken cancellationToken)
     {
         var dateFrom = new DateTime(year, month, 1);
         var dateTo = dateFrom.AddMonths(1).AddDays(-1);
@@ -99,7 +102,7 @@ public class GetPeriodComparisonQueryHandler(
             dateTo: dateTo,
             categoryId: null,
             subcategoryId: null,
-            type: TransactionType.Expense,
+            type: null,
             status: null,
             amountMin: null,
             amountMax: null,
@@ -110,9 +113,11 @@ public class GetPeriodComparisonQueryHandler(
             .Where(t => t.Status != TransactionStatus.Scheduled)
             .ToList();
 
-        var income = 0m; // só despesas para comparação por categoria
+        var income = filtered.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount);
+        var expenses = filtered.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount);
 
         var byCategory = filtered
+            .Where(t => t.Type == TransactionType.Expense)
             .GroupBy(t => t.CategoryId)
             .ToDictionary(
                 g => g.Key,
@@ -121,8 +126,6 @@ public class GetPeriodComparisonQueryHandler(
                     Icon: g.First().Category.Icon,
                     Color: g.First().Category.Color,
                     Total: g.Sum(t => t.Amount)));
-
-        var expenses = filtered.Sum(t => t.Amount);
 
         return new PeriodResult(month, year, income, expenses, byCategory);
     }
