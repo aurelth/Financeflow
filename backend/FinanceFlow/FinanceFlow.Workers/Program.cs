@@ -47,6 +47,15 @@ builder.Services.AddQuartz(q =>
         .WithSimpleSchedule(s => s
             .WithIntervalInSeconds(30)
             .RepeatForever()));
+
+    var monthlyReportJobKey = new JobKey("MonthlyReportJob");
+
+    q.AddJob<MonthlyReportJob>(opts => opts.WithIdentity(monthlyReportJobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(monthlyReportJobKey)
+        .WithIdentity("MonthlyReportJob-trigger")
+        .WithCronSchedule("0 0 1 * * ?", x => x.InTimeZone(TimeZoneInfo.Utc))); // 1º dia de cada mês às 00:00
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);

@@ -92,4 +92,20 @@ public class ReportsController(IMediator mediator) : BaseController(mediator)
 
         return Ok();
     }
+
+    /// <summary>Solicita relatório mensalmente para um usuário específico (uso interno do Job).</summary>
+    [HttpPost("request-internal")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    public async Task<IActionResult> RequestInternal(
+        [FromBody] RequestInternalReportDto request,
+        CancellationToken cancellationToken)
+    {
+        var command = new RequestReportCommand(
+            UserId: request.UserId,
+            Month: request.Month,
+            Year: request.Year);
+
+        var result = await Mediator.Send(command, cancellationToken);
+        return CreatedAtAction(nameof(GetAll), new { }, result);
+    }
 }

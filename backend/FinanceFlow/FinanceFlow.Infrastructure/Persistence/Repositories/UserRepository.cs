@@ -45,4 +45,12 @@ public class UserRepository(FinanceFlowDbContext context) : IUserRepository
         context.Users.Update(user);
         await context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<Guid>> GetAllIdsAsync(
+    CancellationToken cancellationToken = default) =>
+    await context.Users
+        .IgnoreQueryFilters()
+        .Where(u => u.DeletedAt == null)
+        .Select(u => u.Id)
+        .ToListAsync(cancellationToken);
 }
