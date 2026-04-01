@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react'
-import { FileText, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { FileText, X, Loader2 } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { useDashboardSummary } from '@/features/dashboard/api/useDashboard'
 import { useTransactions } from '@/features/transactions/api/useTransactions'
+import MonthYearPicker from '@/components/ui/MonthYearPicker'
 import ReportTemplate from './ReportTemplate'
 
 interface PdfExportButtonProps {
@@ -10,40 +11,23 @@ interface PdfExportButtonProps {
   defaultYear?:  number
 }
 
-const MONTHS = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-]
-
 export default function PdfExportButton({
   defaultMonth,
   defaultYear,
 }: PdfExportButtonProps) {
   const now         = new Date()
-  const [showModal, setShowModal] = useState(false)
-  const [month, setMonth]         = useState(defaultMonth ?? now.getMonth() + 1)
-  const [year,  setYear]          = useState(defaultYear  ?? now.getFullYear())
-  const [generating, setGenerating] = useState(false)
+  const [showModal,    setShowModal]    = useState(false)
+  const [month,        setMonth]        = useState(defaultMonth ?? now.getMonth() + 1)
+  const [year,         setYear]         = useState(defaultYear  ?? now.getFullYear())
+  const [generating,   setGenerating]   = useState(false)
   const templateRef = useRef<HTMLDivElement>(null)
 
   const dateFrom = new Date(year, month - 1, 1).toISOString().split('T')[0]
   const dateTo   = new Date(year, month, 0).toISOString().split('T')[0]
 
-  const { data: summary }      = useDashboardSummary({ month, year })
-  const { data: txData }       = useTransactions({ page: 1, pageSize: 1000, dateFrom, dateTo })
-  const transactions           = txData?.items ?? []
-
-  function handlePrevMonth() {
-    const date = new Date(year, month - 2)
-    setMonth(date.getMonth() + 1)
-    setYear(date.getFullYear())
-  }
-
-  function handleNextMonth() {
-    const date = new Date(year, month)
-    setMonth(date.getMonth() + 1)
-    setYear(date.getFullYear())
-  }
+  const { data: summary }  = useDashboardSummary({ month, year })
+  const { data: txData }   = useTransactions({ page: 1, pageSize: 1000, dateFrom, dateTo })
+  const transactions        = txData?.items ?? []
 
   async function handleGenerate() {
     if (!templateRef.current) return
@@ -51,15 +35,13 @@ export default function PdfExportButton({
 
     try {
       const html2pdf = (await import('html2pdf.js')).default
-
-      const options = {
+      const options  = {
         margin:      [10, 10, 10, 10] as [number, number, number, number],
-        filename:    `FinanceFlow_${MONTHS[month - 1]}_${year}.pdf`,
-        image:       { type: 'jpeg' as 'jpeg', quality: 0.98 },
+        filename:    `FinanceFlow_${month}_${year}.pdf`,
+        image:       { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
-        jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' as 'portrait' },
+        jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' as const },
       }
-
       await html2pdf().set(options).from(templateRef.current).save()
       setShowModal(false)
     } catch (err) {
@@ -100,25 +82,14 @@ export default function PdfExportButton({
                 <label className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2 block">
                   Período
                 </label>
-                <div className="flex items-center justify-between bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5">
-                  <button
-                    onClick={handlePrevMonth}
-                    className="p-1 text-slate-400 hover:text-slate-200 transition-colors"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <span className="text-slate-200 text-sm font-medium">
-                    {MONTHS[month - 1]} {year}
-                  </span>
-                  <button
-                    onClick={handleNextMonth}
-                    className="p-1 text-slate-400 hover:text-slate-200 transition-colors"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
+                <MonthYearPicker
+                  month={month}
+                  year={year}
+                  onChange={(m, y) => { setMonth(m); setYear(y) }}
+                  maxMonth={now.getMonth() + 1}
+                  maxYear={now.getFullYear()}
+                />
               </div>
-
               <p className="text-xs text-slate-500">
                 O PDF será gerado diretamente no seu navegador com todas as transações do período selecionado.
               </p>
@@ -147,7 +118,7 @@ export default function PdfExportButton({
         </div>
       )}
 
-      {/* Template oculto para geração do PDF */}
+      {/* Template oculto */}
       {showModal && createPortal(
         <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
           <ReportTemplate

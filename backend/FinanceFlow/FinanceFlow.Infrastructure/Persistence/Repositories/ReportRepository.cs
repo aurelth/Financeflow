@@ -1,5 +1,6 @@
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
+using FinanceFlow.Domain.Enums;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,20 @@ public class ReportRepository(FinanceFlowDbContext context) : IReportRepository
             .Where(r => r.Id == id)
             .FirstOrDefaultAsync(cancellationToken);
 
+    public async Task<Report?> GetLastCompletedAsync(
+        Guid userId,
+        int month,
+        int year,
+        CancellationToken cancellationToken = default) =>
+        await context.Reports
+            .Where(r =>
+                r.UserId == userId &&
+                r.Month == month &&
+                r.Year == year &&
+                r.Status == ReportStatus.Completed)
+            .OrderByDescending(r => r.CompletedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+
     public async Task AddAsync(
         Report report,
         CancellationToken cancellationToken = default)
@@ -45,6 +60,14 @@ public class ReportRepository(FinanceFlowDbContext context) : IReportRepository
         CancellationToken cancellationToken = default)
     {
         context.Reports.Update(report);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(
+        Report report,
+        CancellationToken cancellationToken = default)
+    {
+        context.Reports.Remove(report);
         await context.SaveChangesAsync(cancellationToken);
     }
 }

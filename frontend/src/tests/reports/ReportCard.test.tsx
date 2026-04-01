@@ -1,10 +1,23 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
 import ReportCard from '@/features/reports/components/ReportCard'
 import { ReportStatus, ReportType } from '@/features/reports/types/report.types'
 import type { Report } from '@/features/reports/types/report.types'
+
+const mockDeleteMutate = vi.fn()
+
+vi.mock('@/features/reports/api/useReports', () => ({
+  useDeleteReport: () => ({ mutate: mockDeleteMutate, isPending: false }),
+}))
+
+vi.mock('@/lib/axios', () => ({
+  default: {
+    get: vi.fn().mockResolvedValue({ data: new Blob() }),
+  },
+}))
 
 const mockReportCompleted: Report = {
   id:          'report-1',
@@ -84,5 +97,42 @@ describe('ReportCard', () => {
   it('deve exibir a data de conclusão quando disponível', () => {
     renderCard(mockReportCompleted)
     expect(screen.getByText(/Concluído em/i)).toBeInTheDocument()
+  })
+
+  it('deve exibir botão de excluir', () => {
+    renderCard(mockReportCompleted)
+    expect(screen.getByTitle('Remover relatório')).toBeInTheDocument()
+  })
+
+  it('deve mostrar confirmação ao clicar em excluir', async () => {
+    renderCard(mockReportCompleted)
+    const user = userEvent.setup()
+    await user.click(screen.getByTitle('Remover relatório'))
+    await waitFor(() => {
+      expect(screen.getByText('Confirmar?')).toBeInTheDocument()
+      expect(screen.getByText('Sim')).toBeInTheDocument()
+      expect(screen.getByText('Não')).toBeInTheDocument()
+    })
+  })
+
+  it('deve cancelar exclusão ao clicar em Não', async () => {
+    renderCard(mockReportCompleted)
+    const user = userEvent.setup()
+    await user.click(screen.getByTitle('Remover relatório'))
+    await user.click(screen.getByText('Não'))
+    await waitFor(() => {
+      expect(screen.queryByText('Confirmar?')).not.toBeInTheDocument()
+    })
+  })
+
+  it('deve chamar mutate ao confirmar exclusão', async () => {
+    renderCard(mockReportCompleted)
+    const user = userEvent.setup()
+    await user.click(screen.getByTitle('Remover relatório'))
+    await user.click(screen.getByText('Sim'))
+    expect(mockDeleteMutate).toHaveBeenCalledWith(
+      mockReportCompleted.id,
+      expect.any(Object)
+    )
   })
 })

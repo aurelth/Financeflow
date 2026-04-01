@@ -30,6 +30,11 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('pt-BR')
 }
 
+function renderIcon(icon: string): string {
+  const isEmoji = /\p{Emoji}/u.test(icon) && !/^[a-z]/.test(icon)
+  return isEmoji ? `${icon} ` : ''
+}
+
 const ReportTemplate = forwardRef<HTMLDivElement, ReportTemplateProps>(
   ({ month, year, summary, transactions }, ref) => {
     const periodLabel = `${MONTHS[month - 1]} de ${year}`
@@ -134,7 +139,9 @@ const ReportTemplate = forwardRef<HTMLDivElement, ReportTemplateProps>(
                     : '—'
                   return (
                     <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '8px' }}>{cat.icon} {cat.name}</td>
+                      <td style={{ padding: '8px' }}>
+                        {renderIcon(cat.icon)}{cat.name}
+                      </td>
                       <td style={{ padding: '8px', textAlign: 'right', color: '#ef4444', fontWeight: 'bold' }}>
                         {formatCurrency(cat.total)}
                       </td>
@@ -177,7 +184,9 @@ const ReportTemplate = forwardRef<HTMLDivElement, ReportTemplateProps>(
                 <tr key={tx.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ padding: '7px 8px', whiteSpace: 'nowrap' }}>{formatDate(tx.date)}</td>
                   <td style={{ padding: '7px 8px', maxWidth: '200px' }}>{tx.description || '—'}</td>
-                  <td style={{ padding: '7px 8px' }}>{tx.categoryIcon} {tx.categoryName}</td>
+                  <td style={{ padding: '7px 8px' }}>
+                    {renderIcon(tx.categoryIcon)}{tx.categoryName}
+                  </td>
                   <td style={{ padding: '7px 8px' }}>{statusLabel[tx.status]}</td>
                   <td style={{
                     padding:    '7px 8px',

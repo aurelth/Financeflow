@@ -251,4 +251,30 @@ public class TransactionsController(
 
         return File(fileStream, contentType, fileName);
     }
+
+    /// <summary>Lista transações de um utilizador específico (uso interno do Worker).</summary>
+    [HttpGet("internal")]
+    [ProducesResponseType(typeof(PagedResultDto<TransactionDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAllInternal(
+        [FromQuery] GetTransactionsQueryDto filters,
+        [FromQuery] Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetTransactionsQuery(
+            UserId: userId,
+            Page: filters.Page,
+            PageSize: filters.PageSize,
+            DateFrom: filters.DateFrom,
+            DateTo: filters.DateTo,
+            CategoryId: filters.CategoryId,
+            SubcategoryId: filters.SubcategoryId,
+            Type: filters.Type,
+            Status: filters.Status,
+            AmountMin: filters.AmountMin,
+            AmountMax: filters.AmountMax,
+            Search: filters.Search);
+
+        var result = await Mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
 }

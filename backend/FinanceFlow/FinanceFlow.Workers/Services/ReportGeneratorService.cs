@@ -76,7 +76,7 @@ public class ReportGeneratorService(
 
         do
         {
-            var url = $"api/transactions?page={page}&pageSize=100&dateFrom={dateFrom}&dateTo={dateTo}";
+            var url = $"api/transactions/internal?page={page}&pageSize=100&dateFrom={dateFrom}&dateTo={dateTo}&userId={userId}";
             var response = await client.GetAsync(url, cancellationToken);
             response.EnsureSuccessStatusCode();
 
@@ -101,7 +101,8 @@ public class ReportGeneratorService(
         List<TransactionResponse> transactions,
         CancellationToken cancellationToken)
     {
-        var dir = Path.Combine("storage", "reports", userId.ToString());
+        var solutionDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
+        var dir = Path.Combine(solutionDir, "storage", "reports", userId.ToString());
         Directory.CreateDirectory(dir);
 
         var fileName = $"relatorio_{year}_{month:00}_{DateTime.UtcNow:yyyyMMddHHmmss}.csv";

@@ -42,11 +42,11 @@ builder.Services.AddQuartz(q =>
     q.AddJob<ReportConsumerJob>(opts => opts.WithIdentity(reportJobKey));
 
     q.AddTrigger(opts => opts
-        .ForJob(reportJobKey)
-        .WithIdentity("ReportConsumerJob-trigger")
-        .WithSimpleSchedule(s => s
-            .WithIntervalInSeconds(30)
-            .RepeatForever()));
+    .ForJob(reportJobKey)
+    .WithIdentity("ReportConsumerJob-trigger")
+    .WithSimpleSchedule(s => s
+        .WithIntervalInSeconds(5)
+        .RepeatForever()));
 
     var monthlyReportJobKey = new JobKey("MonthlyReportJob");
 

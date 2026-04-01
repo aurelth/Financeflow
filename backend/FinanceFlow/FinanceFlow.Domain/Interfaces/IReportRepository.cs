@@ -33,4 +33,12 @@ public interface IReportRepository
     Task UpdateAsync(
         Report report,
         CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(Report report, CancellationToken cancellationToken = default);
+
+    Task<Report?> GetLastCompletedAsync(
+    Guid userId,
+    int month,
+    int year,
+    CancellationToken cancellationToken = default);
 }

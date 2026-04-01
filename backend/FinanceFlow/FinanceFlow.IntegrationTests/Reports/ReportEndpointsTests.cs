@@ -128,4 +128,93 @@ public class ReportEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
+
+    // DELETE /api/reports/{id}
+
+    [Fact]
+    public async Task Delete_DeveRetornar401_QuandoSemToken()
+    {
+        var client = CreateClient();
+        var response = await client.DeleteAsync($"/api/reports/{Guid.NewGuid()}");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Delete_DeveRetornar404_QuandoRelatorioNaoExiste()
+    {
+        var client = CreateClient();
+        await AuthenticateAsync(client, "delete.notfound.reports@teste.com");
+
+        var response = await client.DeleteAsync($"/api/reports/{Guid.NewGuid()}");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Delete_DeveRetornar204_QuandoRelatorioExiste()
+    {
+        var client = CreateClient();
+        await AuthenticateAsync(client, "delete.exists.reports@teste.com");
+
+        // Cria relatório
+        var requestResponse = await client.PostAsJsonAsync("/api/reports/request",
+            new CreateReportRequestDto(Month: 3, Year: 2026));
+        var report = await requestResponse.Content.ReadFromJsonAsync<ReportDto>();
+
+        // Deleta
+        var response = await client.DeleteAsync($"/api/reports/{report!.Id}");
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    // Validação de mudanças nas transações
+
+    [Fact]
+    public async Task Request_DeveRetornar422_QuandoJaExisteRelatorioSemMudancas()
+    {
+        var client = CreateClient();
+        await AuthenticateAsync(client, "request.nomudanca.reports@teste.com");
+
+        // Solicita primeiro relatório — vai ficar Pending (sem Worker)
+        // Para simular Completed, usamos status update interno
+        var requestResponse = await client.PostAsJsonAsync("/api/reports/request",
+            new CreateReportRequestDto(Month: 1, Year: 2020));
+
+        requestResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var report = await requestResponse.Content.ReadFromJsonAsync<ReportDto>();
+
+        // Atualiza para Completed via endpoint interno
+        await client.PutAsJsonAsync($"/api/reports/{report!.Id}/status",
+            new UpdateReportStatusDto("Completed", "storage/test.csv", "test.csv"));
+
+        // Tenta gerar novo relatório para o mesmo período sem mudanças
+        var secondResponse = await client.PostAsJsonAsync("/api/reports/request",
+            new CreateReportRequestDto(Month: 1, Year: 2020));
+
+        secondResponse.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task Request_DevePermitir_QuandoRelatorioAnteriorFoiDeletado()
+    {
+        var client = CreateClient();
+        await AuthenticateAsync(client, "request.deleted.reports@teste.com");
+
+        // Solicita primeiro relatório
+        var requestResponse = await client.PostAsJsonAsync("/api/reports/request",
+            new CreateReportRequestDto(Month: 1, Year: 2021));
+
+        var report = await requestResponse.Content.ReadFromJsonAsync<ReportDto>();
+
+        // Atualiza para Completed
+        await client.PutAsJsonAsync($"/api/reports/{report!.Id}/status",
+            new UpdateReportStatusDto("Completed", "storage/test.csv", "test.csv"));
+
+        // Deleta o relatório
+        await client.DeleteAsync($"/api/reports/{report.Id}");
+
+        // Tenta gerar novo relatório — deve ser permitido pois o anterior foi deletado
+        var secondResponse = await client.PostAsJsonAsync("/api/reports/request",
+            new CreateReportRequestDto(Month: 1, Year: 2021));
+
+        secondResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
 }

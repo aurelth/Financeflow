@@ -1,5 +1,6 @@
 using FinanceFlow.API.Hubs;
 using FinanceFlow.Application.DTOs;
+using FinanceFlow.Application.UseCases.Reports.Commands.DeleteReport;
 using FinanceFlow.Application.UseCases.Reports.Commands.RequestReport;
 using FinanceFlow.Application.UseCases.Reports.Commands.UpdateReportStatus;
 using FinanceFlow.Application.UseCases.Reports.Queries.GetReportDownload;
@@ -58,6 +59,19 @@ public class ReportsController(IMediator mediator) : BaseController(mediator)
 
         var stream = System.IO.File.OpenRead(result.FilePath);
         return File(stream, result.ContentType, result.FileName);
+    }
+
+    /// <summary>Remove um relatório e o arquivo CSV associado.</summary>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new DeleteReportCommand(id, CurrentUserId);
+        await Mediator.Send(command, cancellationToken);
+        return NoContent();
     }
 
     /// <summary>Atualiza o status de um relatório (uso interno do Worker).</summary>

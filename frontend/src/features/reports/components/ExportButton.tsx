@@ -1,50 +1,50 @@
 import { useState } from 'react'
-import { FileDown, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { FileDown, X } from 'lucide-react'
 import { useRequestReport } from '../api/useReports'
+import MonthYearPicker from '@/components/ui/MonthYearPicker'
 
 interface ExportButtonProps {
   defaultMonth?: number
   defaultYear?:  number
 }
 
-const MONTHS = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-]
-
 export default function ExportButton({
   defaultMonth,
   defaultYear,
 }: ExportButtonProps) {
-  const now   = new Date()
+  const now = new Date()
+
+  const initialMonth = defaultMonth ?? now.getMonth() + 1
+  const initialYear  = defaultYear  ?? now.getFullYear()
+
   const [showModal, setShowModal] = useState(false)
-  const [month, setMonth]         = useState(defaultMonth ?? now.getMonth() + 1)
-  const [year,  setYear]          = useState(defaultYear  ?? now.getFullYear())
+  const [month, setMonth]         = useState(initialMonth)
+  const [year,  setYear]          = useState(initialYear)
 
   const requestReport = useRequestReport()
 
-  function handlePrevMonth() {
-    const date = new Date(year, month - 2)
-    setMonth(date.getMonth() + 1)
-    setYear(date.getFullYear())
+  function handleOpen() {
+    setMonth(initialMonth)
+    setYear(initialYear)
+    setShowModal(true)
   }
 
-  function handleNextMonth() {
-    const date = new Date(year, month)
-    setMonth(date.getMonth() + 1)
-    setYear(date.getFullYear())
+  function handleClose() {
+    setMonth(initialMonth)
+    setYear(initialYear)
+    setShowModal(false)
   }
 
   function handleRequest() {
     requestReport.mutate({ month, year }, {
-      onSuccess: () => setShowModal(false),
+      onSuccess: () => handleClose(),
     })
   }
 
   return (
     <>
       <button
-        onClick={() => setShowModal(true)}
+        onClick={handleOpen}
         className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-800 hover:text-slate-200 transition-colors"
       >
         <FileDown size={16} />
@@ -59,7 +59,7 @@ export default function ExportButton({
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
               <h2 className="text-slate-100 font-semibold text-lg">Exportar CSV</h2>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={handleClose}
                 className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-all"
               >
                 <X size={18} />
@@ -72,25 +72,14 @@ export default function ExportButton({
                 <label className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2 block">
                   Período
                 </label>
-                <div className="flex items-center justify-between bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5">
-                  <button
-                    onClick={handlePrevMonth}
-                    className="p-1 text-slate-400 hover:text-slate-200 transition-colors"
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                  <span className="text-slate-200 text-sm font-medium">
-                    {MONTHS[month - 1]} {year}
-                  </span>
-                  <button
-                    onClick={handleNextMonth}
-                    className="p-1 text-slate-400 hover:text-slate-200 transition-colors"
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
+                <MonthYearPicker
+                  month={month}
+                  year={year}
+                  onChange={(m, y) => { setMonth(m); setYear(y) }}
+                  maxMonth={now.getMonth() + 1}
+                  maxYear={now.getFullYear()}
+                />
               </div>
-
               <p className="text-xs text-slate-500">
                 O arquivo CSV será gerado em background. Você receberá uma notificação quando estiver pronto para download.
               </p>
@@ -99,7 +88,7 @@ export default function ExportButton({
             {/* Footer */}
             <div className="flex gap-3 px-6 py-4 border-t border-slate-800">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={handleClose}
                 className="flex-1 px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-800 transition-colors"
               >
                 Cancelar

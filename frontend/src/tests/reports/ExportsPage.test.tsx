@@ -30,8 +30,9 @@ const mockReports = [
 ]
 
 vi.mock('@/features/reports/api/useReports', () => ({
-  useReports:       () => ({ data: mockReports, isLoading: false }),
-  useRequestReport: () => ({ mutate: vi.fn(), isPending: false }),
+  useReports:           () => ({ data: mockReports, isLoading: false }),
+  useRequestReport:     () => ({ mutate: vi.fn(), isPending: false }),
+  useDeleteReport:      () => ({ mutate: vi.fn(), isPending: false }),
   getReportDownloadUrl: (id: string) => `/api/reports/${id}/download`,
 }))
 
@@ -83,9 +84,7 @@ describe('ExportsPage', () => {
   it('deve abrir modal ao clicar em Exportar CSV', async () => {
     renderPage()
     const user = userEvent.setup()
-
     await user.click(screen.getByText('Exportar CSV'))
-
     await waitFor(() => {
       expect(screen.getByText('Solicitar')).toBeInTheDocument()
     })
@@ -94,9 +93,7 @@ describe('ExportsPage', () => {
   it('deve abrir modal ao clicar em Exportar PDF', async () => {
     renderPage()
     const user = userEvent.setup()
-
     await user.click(screen.getByText('Exportar PDF'))
-
     await waitFor(() => {
       expect(screen.getByText('Gerar PDF')).toBeInTheDocument()
     })
