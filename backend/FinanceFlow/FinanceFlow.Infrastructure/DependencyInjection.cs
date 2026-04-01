@@ -38,6 +38,8 @@ public static class DependencyInjection
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IBudgetRepository, BudgetRepository>();
         services.AddScoped<IReportRepository, ReportRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+
 
         // Caching
         services.AddScoped<ICacheService, RedisCacheService>();

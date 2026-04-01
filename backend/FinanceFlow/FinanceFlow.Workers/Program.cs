@@ -21,14 +21,14 @@ builder.Services.AddHttpClient("FinanceFlowApi", client =>
 builder.Services.AddSingleton<ApiAuthService>();
 builder.Services.AddSingleton<BudgetAlertService>();
 builder.Services.AddSingleton<ReportGeneratorService>();
+builder.Services.AddSingleton<NotificationDispatchService>();
 
 // Quartz
 builder.Services.AddQuartz(q =>
 {
+    // BudgetAlertConsumerJob
     var jobKey = new JobKey("BudgetAlertConsumerJob");
-
     q.AddJob<BudgetAlertConsumerJob>(opts => opts.WithIdentity(jobKey));
-
     q.AddTrigger(opts => opts
         .ForJob(jobKey)
         .WithIdentity("BudgetAlertConsumerJob-trigger")
@@ -36,11 +36,9 @@ builder.Services.AddQuartz(q =>
             .WithIntervalInSeconds(30)
             .RepeatForever()));
 
-
+    // ReportConsumerJob
     var reportJobKey = new JobKey("ReportConsumerJob");
-
     q.AddJob<ReportConsumerJob>(opts => opts.WithIdentity(reportJobKey));
-
     q.AddTrigger(opts => opts
     .ForJob(reportJobKey)
     .WithIdentity("ReportConsumerJob-trigger")
@@ -48,14 +46,24 @@ builder.Services.AddQuartz(q =>
         .WithIntervalInSeconds(5)
         .RepeatForever()));
 
+    // MonthlyReportJob
     var monthlyReportJobKey = new JobKey("MonthlyReportJob");
-
     q.AddJob<MonthlyReportJob>(opts => opts.WithIdentity(monthlyReportJobKey));
 
     q.AddTrigger(opts => opts
         .ForJob(monthlyReportJobKey)
         .WithIdentity("MonthlyReportJob-trigger")
         .WithCronSchedule("0 0 1 * * ?", x => x.InTimeZone(TimeZoneInfo.Utc))); // 1º dia de cada mês às 00:00
+
+    // NotificationConsumerJob
+    var notificationJobKey = new JobKey("NotificationConsumerJob");
+    q.AddJob<NotificationConsumerJob>(opts => opts.WithIdentity(notificationJobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(notificationJobKey)
+        .WithIdentity("NotificationConsumerJob-trigger")
+        .WithSimpleSchedule(s => s
+            .WithIntervalInSeconds(10)
+            .RepeatForever()));
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
