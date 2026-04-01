@@ -13,4 +13,5 @@ public class User : BaseEntity
     public ICollection<Transaction> Transactions { get; set; } = [];
     public ICollection<Budget> Budgets { get; set; } = [];
     public ICollection<Notification> Notifications { get; set; } = [];
+    public ICollection<Report> Reports { get; set; } = [];
 }

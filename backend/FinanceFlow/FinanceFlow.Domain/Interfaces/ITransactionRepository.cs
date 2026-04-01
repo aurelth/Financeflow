@@ -4,9 +4,6 @@ namespace FinanceFlow.Domain.Interfaces;
 
 public interface ITransactionRepository
 {
-    /// <summary>
-    /// Retorna transações paginadas do utilizador com filtros opcionais.
-    /// </summary>
     Task<(IEnumerable<Transaction> Items, int TotalCount)> GetPagedByUserAsync(
         Guid userId,
         int page,
@@ -22,23 +19,22 @@ public interface ITransactionRepository
         string? search,
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Retorna uma transação pelo Id, validando que pertence ao utilizador.
-    /// </summary>
     Task<Transaction?> GetByIdAsync(
         Guid id,
         Guid userId,
         CancellationToken cancellationToken = default);
 
-    Task AddAsync(
-        Transaction transaction,
+    /// <summary>
+    /// Verifica se houve transações criadas ou alteradas no período após a data informada.
+    /// </summary>
+    Task<bool> HasChangedSinceAsync(
+        Guid userId,
+        int month,
+        int year,
+        DateTime since,
         CancellationToken cancellationToken = default);
 
-    Task UpdateAsync(
-        Transaction transaction,
-        CancellationToken cancellationToken = default);
-
-    Task DeleteAsync(
-        Transaction transaction,
-        CancellationToken cancellationToken = default);
+    Task AddAsync(Transaction transaction, CancellationToken cancellationToken = default);
+    Task UpdateAsync(Transaction transaction, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Transaction transaction, CancellationToken cancellationToken = default);
 }

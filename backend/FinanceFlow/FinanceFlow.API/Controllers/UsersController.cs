@@ -1,6 +1,7 @@
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Application.UseCases.Users.Commands.UpdateUserProfile;
 using FinanceFlow.Application.UseCases.Users.Queries.GetUserProfile;
+using FinanceFlow.Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,9 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace FinanceFlow.API.Controllers;
 
 [Authorize]
-public class UsersController(IMediator mediator) : BaseController(mediator)
+public class UsersController(
+    IMediator mediator,
+    IUserRepository userRepository) : BaseController(mediator)
 {
-    /// <summary>Retorna o perfil do utilizador autenticado.</summary>
+    /// <summary>Retorna o perfil do usuário autenticado.</summary>
     [HttpGet("profile")]
     [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -22,7 +25,7 @@ public class UsersController(IMediator mediator) : BaseController(mediator)
         return Ok(result);
     }
 
-    /// <summary>Actualiza o perfil do utilizador autenticado.</summary>
+    /// <summary>Atualiza o perfil do usuário autenticado.</summary>
     [HttpPut("profile")]
     [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -40,5 +43,14 @@ public class UsersController(IMediator mediator) : BaseController(mediator)
 
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>Retorna IDs de todos os usuários (uso interno do Worker).</summary>
+    [HttpGet("internal")]
+    [ProducesResponseType(typeof(IEnumerable<Guid>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAllIds(CancellationToken cancellationToken)
+    {
+        var ids = await userRepository.GetAllIdsAsync(cancellationToken);
+        return Ok(ids);
     }
 }

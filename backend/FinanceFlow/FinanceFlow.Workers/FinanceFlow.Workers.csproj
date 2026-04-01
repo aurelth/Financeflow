@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Confluent.Kafka" Version="2.13.2" />
+    <PackageReference Include="CsvHelper" Version="33.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.14" />
     <PackageReference Include="Quartz" Version="3.16.1" />
     <PackageReference Include="Quartz.Extensions.Hosting" Version="3.16.1" />

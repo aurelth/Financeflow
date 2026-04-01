@@ -9,4 +9,7 @@ public interface IUserRepository
     Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default);
     Task AddAsync(User user, CancellationToken cancellationToken = default);
     Task UpdateAsync(User user, CancellationToken cancellationToken = default);
+
+    /// <summary>Retorna IDs de todos os usuários ativos (uso interno do Worker).</summary>
+    Task<IEnumerable<Guid>> GetAllIdsAsync(CancellationToken cancellationToken = default);
 }

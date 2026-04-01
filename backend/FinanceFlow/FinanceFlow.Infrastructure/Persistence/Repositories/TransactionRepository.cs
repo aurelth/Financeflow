@@ -109,4 +109,25 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
         context.Transactions.Remove(transaction);
         await context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<bool> HasChangedSinceAsync(
+    Guid userId,
+    int month,
+    int year,
+    DateTime since,
+    CancellationToken cancellationToken = default)
+    {
+        var dateFrom = new DateTime(year, month, 1);
+        var dateTo = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+
+        return await context.Transactions
+            .IgnoreQueryFilters()
+            .Where(t =>
+                t.UserId == userId &&
+                t.DeletedAt == null &&
+                t.Date >= dateFrom &&
+                t.Date <= dateTo &&
+                (t.CreatedAt > since || (t.UpdatedAt != null && t.UpdatedAt > since)))
+            .AnyAsync(cancellationToken);
+    }
 }

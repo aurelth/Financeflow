@@ -20,6 +20,7 @@ builder.Services.AddHttpClient("FinanceFlowApi", client =>
 // Serviços do Worker
 builder.Services.AddSingleton<ApiAuthService>();
 builder.Services.AddSingleton<BudgetAlertService>();
+builder.Services.AddSingleton<ReportGeneratorService>();
 
 // Quartz
 builder.Services.AddQuartz(q =>
@@ -34,6 +35,27 @@ builder.Services.AddQuartz(q =>
         .WithSimpleSchedule(s => s
             .WithIntervalInSeconds(30)
             .RepeatForever()));
+
+
+    var reportJobKey = new JobKey("ReportConsumerJob");
+
+    q.AddJob<ReportConsumerJob>(opts => opts.WithIdentity(reportJobKey));
+
+    q.AddTrigger(opts => opts
+    .ForJob(reportJobKey)
+    .WithIdentity("ReportConsumerJob-trigger")
+    .WithSimpleSchedule(s => s
+        .WithIntervalInSeconds(5)
+        .RepeatForever()));
+
+    var monthlyReportJobKey = new JobKey("MonthlyReportJob");
+
+    q.AddJob<MonthlyReportJob>(opts => opts.WithIdentity(monthlyReportJobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(monthlyReportJobKey)
+        .WithIdentity("MonthlyReportJob-trigger")
+        .WithCronSchedule("0 0 1 * * ?", x => x.InTimeZone(TimeZoneInfo.Utc))); // 1º dia de cada mês às 00:00
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);

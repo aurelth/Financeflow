@@ -1,6 +1,7 @@
-using System.Text;
+using FinanceFlow.API.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace FinanceFlow.API.Extensions;
 
@@ -81,6 +82,7 @@ public static class ApiExtensions
     public static WebApplication MapHubs(this WebApplication app)
     {
         // Hubs SignalR
+        app.MapHub<ReportHub>("/hubs/reports");
         return app;
     }
 }

@@ -31,8 +31,4 @@
     <ProjectReference Include="..\FinanceFlow.Workers\FinanceFlow.Workers.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Hubs\" />
-  </ItemGroup>
-
 </Project>

@@ -7,6 +7,7 @@ import TransactionTable from '../components/TransactionTable'
 import TransactionFilters from '../components/TransactionFilters'
 import TransactionForm from '../components/TransactionForm'
 import DeleteTransactionDialog from '../components/DeleteTransactionDialog'
+import ExportButton from '@/features/reports/components/ExportButton'
 import type { Transaction, GetTransactionsQuery } from '../types/transaction.types'
 
 function getDefaultFilters(): GetTransactionsQuery {
@@ -15,9 +16,7 @@ function getDefaultFilters(): GetTransactionsQuery {
   const month    = now.getMonth()
   const firstDay = new Date(year, month, 1)
   const lastDay  = new Date(year, month + 1, 0)
-
   const toDateString = (d: Date) => d.toISOString().split('T')[0]
-
   return {
     page:     1,
     pageSize: 20,
@@ -29,8 +28,8 @@ function getDefaultFilters(): GetTransactionsQuery {
 const DEFAULT_FILTERS: GetTransactionsQuery = getDefaultFilters()
 
 export default function TransactionsPage() {
-  const [filters, setFilters]   = useState<GetTransactionsQuery>(DEFAULT_FILTERS)
-  const [showForm, setShowForm] = useState(false)
+  const [filters, setFilters]       = useState<GetTransactionsQuery>(DEFAULT_FILTERS)
+  const [showForm, setShowForm]     = useState(false)
   const [editingTx, setEditingTx]   = useState<Transaction | null>(null)
   const [deletingTx, setDeletingTx] = useState<Transaction | null>(null)
 
@@ -40,6 +39,9 @@ export default function TransactionsPage() {
   const transactions = data?.items      ?? []
   const totalPages   = data?.totalPages ?? 1
   const currentPage  = filters.page     ?? 1
+
+  const filterMonth = filters.dateFrom ? new Date(filters.dateFrom).getMonth() + 1 : undefined
+  const filterYear  = filters.dateFrom ? new Date(filters.dateFrom).getFullYear()  : undefined
 
   function handleEdit(tx: Transaction) {
     setEditingTx(tx)
@@ -73,16 +75,19 @@ export default function TransactionsPage() {
         <div>
           <h1 className="text-xl font-semibold text-white">Transações</h1>
           <p className="text-slate-400 text-sm mt-0.5">
-            Registe e acompanhe as suas receitas e despesas
+            Registre e acompanhe as suas receitas e despesas
           </p>
         </div>
-        <Button
-          onClick={() => setShowForm(true)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white h-9 px-4 gap-2"
-        >
-          <Plus size={16} />
-          Nova transação
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportButton defaultMonth={filterMonth} defaultYear={filterYear} />
+          <Button
+            onClick={() => setShowForm(true)}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white h-9 px-4 gap-2"
+          >
+            <Plus size={16} />
+            Nova transação
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -115,9 +120,7 @@ export default function TransactionsPage() {
           <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center">
             <Receipt size={24} className="text-slate-500" />
           </div>
-          <p className="text-slate-400 text-sm">
-            Nenhuma transação encontrada
-          </p>
+          <p className="text-slate-400 text-sm">Nenhuma transação encontrada</p>
           <Button
             onClick={() => setShowForm(true)}
             className="bg-indigo-600 hover:bg-indigo-500 text-white h-9 px-4 gap-2"
@@ -138,7 +141,6 @@ export default function TransactionsPage() {
           >
             Anterior
           </button>
-
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
             <button
               key={page}
@@ -152,7 +154,6 @@ export default function TransactionsPage() {
               {page}
             </button>
           ))}
-
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}

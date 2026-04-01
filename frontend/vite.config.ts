@@ -13,9 +13,15 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target:      'https://localhost:7195',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+        secure:       false,
+      },
+      '/hubs': {
+        target:      'https://localhost:7195',
+        changeOrigin: true,
+        secure:       false,
+        ws:           true,
       },
     },
   },

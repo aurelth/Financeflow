@@ -1,8 +1,11 @@
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
+import { useReportHub } from '@/features/reports/hooks/useReportHub'
 
 export default function AppLayout() {
+  useReportHub()
+
   return (
     <div className="flex h-screen bg-slate-950 overflow-hidden">
       <Sidebar />
