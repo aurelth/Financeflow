@@ -21,19 +21,48 @@ public class BudgetAlertService(
         TransactionCreatedEvent transaction,
         CancellationToken cancellationToken)
     {
+        logger.LogInformation(
+            "Processando transação {TransactionId} — Type: {Type}, UserId: {UserId}, CategoryId: {CategoryId}",
+            transaction.TransactionId, transaction.Type, transaction.UserId, transaction.CategoryId);
+
         // Só processa despesas (Type == 2)
         if (transaction.Type != 2)
+        {
+            logger.LogInformation("Transação ignorada — não é despesa (Type={Type})", transaction.Type);
             return;
+        }
 
         var now = transaction.Date;
         var summaries = await GetBudgetSummaryAsync(
             transaction.UserId, now.Month, now.Year, cancellationToken);
 
-        var budgetForCategory = summaries
+        var summaryList = summaries.ToList();
+
+        logger.LogInformation(
+            "Summary retornou {Count} orçamento(s) para UserId={UserId}, Mês={Month}, Ano={Year}",
+            summaryList.Count, transaction.UserId, now.Month, now.Year);
+
+        foreach (var s in summaryList)
+        {
+            logger.LogInformation(
+                "  → CategoryId={CategoryId}, CategoryName={Name}, Percentage={Pct}%",
+                s.CategoryId, s.CategoryName, s.Percentage);
+        }
+
+        var budgetForCategory = summaryList
             .FirstOrDefault(s => s.CategoryId == transaction.CategoryId);
 
         if (budgetForCategory is null)
+        {
+            logger.LogInformation(
+                "Nenhum orçamento encontrado para CategoryId={CategoryId}",
+                transaction.CategoryId);
             return;
+        }
+
+        logger.LogInformation(
+            "Orçamento encontrado — CategoryName={Name}, Percentage={Pct}%",
+            budgetForCategory.CategoryName, budgetForCategory.Percentage);
 
         await CheckAndPublishAlertAsync(budgetForCategory, transaction.UserId, cancellationToken);
     }
@@ -50,7 +79,7 @@ public class BudgetAlertService(
             new AuthenticationHeaderValue("Bearer", token);
 
         var response = await client.GetAsync(
-            $"api/budgets/summary?month={month}&year={year}",
+            $"api/budgets/internal/summary?userId={userId}&month={month}&year={year}",
             cancellationToken);
 
         if (!response.IsSuccessStatusCode)
@@ -77,13 +106,13 @@ public class BudgetAlertService(
         {
             alertLevel = "critical";
             message = $"⚠️ Orçamento de '{summary.CategoryName}' atingiu 100% do limite " +
-                      $"({summary.SpentAmount:C} de {summary.LimitAmount:C}) em {summary.Month}/{summary.Year}.";
+                         $"({summary.SpentAmount:C} de {summary.LimitAmount:C}) em {summary.Month}/{summary.Year}.";
         }
         else if (summary.Percentage >= 80)
         {
             alertLevel = "warning";
             message = $"🔔 Orçamento de '{summary.CategoryName}' atingiu {summary.Percentage:F1}% do limite " +
-                      $"({summary.SpentAmount:C} de {summary.LimitAmount:C}) em {summary.Month}/{summary.Year}.";
+                         $"({summary.SpentAmount:C} de {summary.LimitAmount:C}) em {summary.Month}/{summary.Year}.";
         }
 
         if (alertLevel is null)
@@ -121,7 +150,7 @@ public class BudgetAlertService(
             },
             cancellationToken);
 
-        // Publica notificação para o futuro Worker de notificações
+        // Publica notificação para o Worker de notificações
         var notificationEvent = new NotificationEvent(
             UserId: userId,
             Message: message,

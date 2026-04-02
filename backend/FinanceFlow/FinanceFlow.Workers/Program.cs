@@ -1,6 +1,8 @@
 using FinanceFlow.Workers;
 using FinanceFlow.Workers.Jobs;
 using FinanceFlow.Workers.Services;
+using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using Quartz;
 using Serilog;
 
@@ -40,20 +42,20 @@ builder.Services.AddQuartz(q =>
     var reportJobKey = new JobKey("ReportConsumerJob");
     q.AddJob<ReportConsumerJob>(opts => opts.WithIdentity(reportJobKey));
     q.AddTrigger(opts => opts
-    .ForJob(reportJobKey)
-    .WithIdentity("ReportConsumerJob-trigger")
-    .WithSimpleSchedule(s => s
-        .WithIntervalInSeconds(5)
-        .RepeatForever()));
+        .ForJob(reportJobKey)
+        .WithIdentity("ReportConsumerJob-trigger")
+        .WithSimpleSchedule(s => s
+            .WithIntervalInSeconds(5)
+            .RepeatForever()));
 
     // MonthlyReportJob
     var monthlyReportJobKey = new JobKey("MonthlyReportJob");
     q.AddJob<MonthlyReportJob>(opts => opts.WithIdentity(monthlyReportJobKey));
-
     q.AddTrigger(opts => opts
         .ForJob(monthlyReportJobKey)
         .WithIdentity("MonthlyReportJob-trigger")
-        .WithCronSchedule("0 0 1 * * ?", x => x.InTimeZone(TimeZoneInfo.Utc))); // 1º dia de cada mês às 00:00
+        .WithCronSchedule("0 0 1 * * ?",
+            x => x.InTimeZone(TimeZoneInfo.Utc)));
 
     // NotificationConsumerJob
     var notificationJobKey = new JobKey("NotificationConsumerJob");
@@ -70,4 +72,39 @@ builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();
+
+// Garante que os tópicos Kafka existem antes de iniciar
+var bootstrapServers = builder.Configuration["Kafka:BootstrapServers"]!;
+var topics = new[]
+{
+    builder.Configuration["Kafka:Topics:TransactionCreated"]  ?? "finance.transactions.created",
+    builder.Configuration["Kafka:Topics:BudgetAlerts"]        ?? "finance.budget.alerts",
+    builder.Configuration["Kafka:Topics:NotificationsCreated"] ?? "finance.notifications.created",
+    builder.Configuration["Kafka:Topics:ReportsRequested"]    ?? "finance.reports.requested",
+};
+
+using var adminClient = new AdminClientBuilder(
+    new AdminClientConfig { BootstrapServers = bootstrapServers }).Build();
+
+foreach (var topic in topics)
+{
+    try
+    {
+        await adminClient.CreateTopicsAsync(new[]
+        {
+            new TopicSpecification
+            {
+                Name              = topic,
+                NumPartitions     = 1,
+                ReplicationFactor = 1,
+            }
+        });
+    }
+    catch (CreateTopicsException ex)
+        when (ex.Results[0].Error.Code == ErrorCode.TopicAlreadyExists)
+    {
+        // Tópico já existe — ignorar 
+    } 
+}
+
 host.Run();

@@ -39,6 +39,20 @@ public class BudgetsController(IMediator mediator) : BaseController(mediator)
         return Ok(result);
     }
 
+    /// <summary>Retorna o resumo de orçamentos de um utilizador específico (uso interno do Worker).</summary>
+    [HttpGet("internal/summary")]
+    [ProducesResponseType(typeof(IEnumerable<BudgetSummaryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSummaryInternal(
+        [FromQuery] Guid userId,
+        [FromQuery] int month,
+        [FromQuery] int year,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetBudgetSummaryQuery(userId, month, year);
+        var result = await Mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
     /// <summary>Cria um novo orçamento.</summary>
     [HttpPost]
     [ProducesResponseType(typeof(BudgetDto), StatusCodes.Status201Created)]
@@ -53,7 +67,6 @@ public class BudgetsController(IMediator mediator) : BaseController(mediator)
             Month: request.Month,
             Year: request.Year,
             LimitAmount: request.LimitAmount);
-
         var result = await Mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetAll), new { month = result.Month, year = result.Year }, result);
     }
@@ -72,7 +85,6 @@ public class BudgetsController(IMediator mediator) : BaseController(mediator)
             Id: id,
             UserId: CurrentUserId,
             LimitAmount: request.LimitAmount);
-
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
     }
