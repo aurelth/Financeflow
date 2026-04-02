@@ -9,7 +9,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 import NotificationDropdown from '@/features/notifications/components/NotificationDropdown' // adicionado
 
