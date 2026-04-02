@@ -1,4 +1,6 @@
 using FinanceFlow.API.Hubs;
+using FinanceFlow.API.Services;
+using FinanceFlow.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -15,6 +17,9 @@ public static class ApiExtensions
         services.AddEndpointsApiExplorer();
         services.AddHttpContextAccessor();
         services.AddSignalR();
+
+        // Registro do serviço de hub de notificações
+        services.AddScoped<INotificationHubService, NotificationHubService>();
 
         // CORS
         services.AddCors(options =>
@@ -83,6 +88,7 @@ public static class ApiExtensions
     {
         // Hubs SignalR
         app.MapHub<ReportHub>("/hubs/reports");
+        app.MapHub<NotificationHub>("/hubs/notifications");
         return app;
     }
 }

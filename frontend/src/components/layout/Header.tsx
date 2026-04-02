@@ -1,4 +1,4 @@
-import { Bell, ChevronDown, LogOut, User } from 'lucide-react'
+import { ChevronDown, LogOut, User } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useLogout } from '@/features/auth/api/useAuth'
 import {
@@ -9,13 +9,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
+import NotificationDropdown from '@/features/notifications/components/NotificationDropdown' // adicionado
 
 export default function Header() {
-  const { user }   = useAuthStore()
+  const { user }           = useAuthStore()
   const { mutate: logout } = useLogout()
-  const navigate   = useNavigate()
+  const navigate           = useNavigate()
 
   const initials = user?.name
     .split(' ')
@@ -27,21 +27,13 @@ export default function Header() {
   return (
     <header className="h-16 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between">
 
-      {/* Título da página será injetado dinamicamente futuramente */}
       <div />
 
       {/* Ações */}
       <div className="flex items-center gap-3">
 
         {/* Notificações */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-        >
-          <Bell size={18} />
-          {/* Badge — será ativado futuramente*/}
-        </Button>
+        <NotificationDropdown /> {/* adicionado */}
 
         {/* Avatar + Dropdown */}
         <DropdownMenu>
