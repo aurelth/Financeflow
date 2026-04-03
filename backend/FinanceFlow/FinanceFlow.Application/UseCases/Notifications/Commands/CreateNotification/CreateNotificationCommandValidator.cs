@@ -2,7 +2,8 @@ using FluentValidation;
 
 namespace FinanceFlow.Application.UseCases.Notifications.Commands.CreateNotification;
 
-public class CreateNotificationCommandValidator : AbstractValidator<CreateNotificationCommand>
+public class CreateNotificationCommandValidator
+    : AbstractValidator<CreateNotificationCommand>
 {
     public CreateNotificationCommandValidator()
     {

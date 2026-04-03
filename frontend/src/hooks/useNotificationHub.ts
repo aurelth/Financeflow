@@ -25,6 +25,7 @@ export function useNotificationHub() {
         type:      data.type,
         message:   data.message,
         isRead:    false,
+        referenceId: null,
         createdAt: new Date().toISOString(),
       }
 

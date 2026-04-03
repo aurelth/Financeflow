@@ -31,7 +31,6 @@ public class NotificationEndpointsTests(FinanceFlowWebApplicationFactory factory
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
 
-        // Extrai o UserId diretamente do JWT
         var handler = new JwtSecurityTokenHandler();
         var jwt = handler.ReadJwtToken(auth.AccessToken);
         var sub = jwt.Claims.First(c =>
@@ -44,13 +43,15 @@ public class NotificationEndpointsTests(FinanceFlowWebApplicationFactory factory
         HttpClient client,
         Guid userId,
         string type = "BudgetWarning",
-        string message = "Orçamento atingiu 80%.")
+        string message = "Orçamento atingiu 80%.",
+        Guid? referenceId = null)
     {
         await client.PostAsJsonAsync("/api/notifications", new
         {
             userId,
             type,
-            message
+            message,
+            referenceId
         });
     }
 
@@ -141,6 +142,26 @@ public class NotificationEndpointsTests(FinanceFlowWebApplicationFactory factory
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task Create_DeveIgnorarDuplicata_QuandoMesmaReferenciaNoDia()
+    {
+        // Arrange
+        var client = CreateAuthenticatedClient();
+        var userId = await AuthenticateAsync(client, "create.dedup.notification@teste.com");
+        var referenceId = Guid.NewGuid();
+
+        // Act — envia a mesma notificação duas vezes
+        await CreateNotificationAsync(client, userId, "TransactionDueTomorrow", "Vence amanhã.", referenceId);
+        await CreateNotificationAsync(client, userId, "TransactionDueTomorrow", "Vence amanhã.", referenceId);
+
+        // Assert — apenas uma deve ter sido persistida
+        var response = await client.GetAsync("/api/notifications");
+        var result = await response.Content
+            .ReadFromJsonAsync<IEnumerable<NotificationDto>>();
+
+        result!.Count(n => n.Type == "TransactionDueTomorrow").Should().Be(1);
     }
 
     // PATCH /api/notifications/{id}/read

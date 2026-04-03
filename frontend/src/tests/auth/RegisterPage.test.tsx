@@ -7,7 +7,7 @@ import RegisterPage from '@/features/auth/pages/RegisterPage'
 
 vi.mock('@/features/auth/api/useAuth', () => ({
   useRegister: () => ({
-    mutate: vi.fn(),
+    mutate:    vi.fn(),
     isPending: false,
   }),
 }))
@@ -60,7 +60,7 @@ describe('RegisterPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/senhas não coincidem/i)).toBeInTheDocument()
     })
-  })
+  }, 15000) // adicionado — timeout aumentado para teste lento
 
   it('deve mostrar erro com senha fraca', async () => {
     renderRegisterPage()

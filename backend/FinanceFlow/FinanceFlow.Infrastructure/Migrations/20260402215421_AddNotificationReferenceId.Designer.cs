@@ -4,6 +4,7 @@ using FinanceFlow.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinanceFlow.Infrastructure.Migrations
 {
     [DbContext(typeof(FinanceFlowDbContext))]
-    partial class FinanceFlowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260402215421_AddNotificationReferenceId")]
+    partial class AddNotificationReferenceId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

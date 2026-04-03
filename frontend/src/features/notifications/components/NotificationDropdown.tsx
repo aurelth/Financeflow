@@ -13,13 +13,17 @@ import { useNotifications, useMarkAsRead, useMarkAllAsRead } from '../api/useNot
 import type { Notification } from '../types/notification.types'
 
 export default function NotificationDropdown() {
-  const { data, isLoading }             = useNotifications()
-  const { mutate: markAsRead }          = useMarkAsRead()
-  const { mutate: markAllAsRead }       = useMarkAllAsRead()
-  const { notifications, unreadCount, setNotifications, markAsRead: storeMarkAsRead, markAllAsRead: storeMarkAllAsRead } =
-    useNotificationStore()
+  const { data, isLoading }       = useNotifications()
+  const { mutate: markAsRead }    = useMarkAsRead()
+  const { mutate: markAllAsRead } = useMarkAllAsRead()
+  const {
+    notifications,
+    unreadCount,
+    setNotifications,
+    markAsRead: storeMarkAsRead,
+    markAllAsRead: storeMarkAllAsRead,
+  } = useNotificationStore()
 
-  // Sincroniza o store com os dados da API ao carregar
   useEffect(() => {
     if (data) setNotifications(data)
   }, [data, setNotifications])
@@ -34,13 +38,25 @@ export default function NotificationDropdown() {
     storeMarkAllAsRead()
   }
 
-  const getTypeStyles = (type: string) =>
-    type === 'BudgetCritical'
-      ? 'bg-red-500/10 border-red-500/20 text-red-400'
-      : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
+  const getTypeStyles = (type: string) => {
+    switch (type) {
+      case 'BudgetCritical':        return 'bg-red-500/10 border-red-500/20 text-red-400'
+      case 'BudgetWarning':         return 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
+      case 'TransactionDueTomorrow': return 'bg-orange-500/10 border-orange-500/20 text-orange-400'
+      case 'TransactionDueIn3Days':  return 'bg-blue-500/10 border-blue-500/20 text-blue-400'
+      default:                      return 'bg-slate-500/10 border-slate-500/20 text-slate-400'
+    }
+  }
 
-  const getTypeLabel = (type: string) =>
-    type === 'BudgetCritical' ? '🚨 Crítico' : '🔔 Aviso'
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'BudgetCritical':         return '🚨 Crítico'
+      case 'BudgetWarning':          return '🔔 Aviso'
+      case 'TransactionDueTomorrow': return '⏰ Vence amanhã'
+      case 'TransactionDueIn3Days':  return '📅 Vence em 3 dias'
+      default:                       return '🔔 Notificação'
+    }
+  }
 
   return (
     <DropdownMenu>
@@ -114,10 +130,10 @@ export default function NotificationDropdown() {
 }
 
 interface NotificationItemProps {
-  notification:   Notification
-  onMarkAsRead:   (id: string) => void
-  getTypeStyles:  (type: string) => string
-  getTypeLabel:   (type: string) => string
+  notification:  Notification
+  onMarkAsRead:  (id: string) => void
+  getTypeStyles: (type: string) => string
+  getTypeLabel:  (type: string) => string
 }
 
 function NotificationItem({
@@ -126,7 +142,7 @@ function NotificationItem({
   getTypeStyles,
   getTypeLabel,
 }: NotificationItemProps) {
-  const dateStr    = notification.createdAt.endsWith('Z')
+  const dateStr = notification.createdAt.endsWith('Z')
     ? notification.createdAt
     : `${notification.createdAt}Z`
 

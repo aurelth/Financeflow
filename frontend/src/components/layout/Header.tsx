@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useNavigate } from 'react-router-dom'
-import NotificationDropdown from '@/features/notifications/components/NotificationDropdown' // adicionado
+import NotificationDropdown from '@/features/notifications/components/NotificationDropdown'
 
 export default function Header() {
   const { user }           = useAuthStore()

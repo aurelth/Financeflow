@@ -30,6 +30,23 @@ public class NotificationRepository(FinanceFlowDbContext context) : INotificatio
         await context.Notifications
             .CountAsync(n => n.UserId == userId && n.IsRead == false, cancellationToken);
 
+    public async Task<bool> ExistsForTodayAsync(
+        Guid userId,
+        string type,
+        Guid referenceId,
+        CancellationToken cancellationToken = default)
+    {
+        var today = DateTime.UtcNow.Date;
+        return await context.Notifications
+            .AnyAsync(n =>
+                n.UserId == userId &&
+                n.Type == type &&
+                n.ReferenceId == referenceId &&
+                n.CreatedAt >= today &&
+                n.CreatedAt < today.AddDays(1),
+                cancellationToken);
+    }
+
     public async Task AddAsync(
         Notification notification,
         CancellationToken cancellationToken = default)

@@ -25,7 +25,8 @@ public class NotificationDispatchService(
             {
                 userId = notification.UserId,
                 type = notification.Type,
-                message = notification.Message
+                message = notification.Message,
+                referenceId = notification.ReferenceId
             },
             cancellationToken);
 

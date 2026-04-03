@@ -34,6 +34,14 @@ public interface ITransactionRepository
         DateTime since,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Retorna transações Scheduled ou IsRecurring de todos os usuários
+    /// com Date igual à data alvo — uso interno do Worker.
+    /// </summary>
+    Task<IEnumerable<Transaction>> GetDueTransactionsAsync( // adicionado
+        DateTime targetDate, // adicionado
+        CancellationToken cancellationToken = default); // adicionado
+
     Task AddAsync(Transaction transaction, CancellationToken cancellationToken = default);
     Task UpdateAsync(Transaction transaction, CancellationToken cancellationToken = default);
     Task DeleteAsync(Transaction transaction, CancellationToken cancellationToken = default);

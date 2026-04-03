@@ -5,5 +5,6 @@ namespace FinanceFlow.Application.UseCases.Notifications.Commands.CreateNotifica
 public record CreateNotificationCommand(
     Guid UserId,
     string Type,
-    string Message
+    string Message,
+    Guid? ReferenceId = null
 ) : IRequest<Guid>;

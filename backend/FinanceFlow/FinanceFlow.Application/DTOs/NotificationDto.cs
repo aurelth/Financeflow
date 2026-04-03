@@ -5,5 +5,6 @@ public record NotificationDto(
     string Type,
     string Message,
     bool IsRead,
+    Guid? ReferenceId,
     DateTime CreatedAt
 );

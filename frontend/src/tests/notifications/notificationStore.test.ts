@@ -7,6 +7,7 @@ const mockNotification: Notification = {
   type:      'BudgetWarning',
   message:   'Orçamento atingiu 80%.',
   isRead:    false,
+  referenceId: null,
   createdAt: '2026-03-15T10:00:00Z',
 }
 
@@ -15,6 +16,7 @@ const mockNotification2: Notification = {
   type:      'BudgetCritical',
   message:   'Orçamento atingiu 100%.',
   isRead:    false,
+  referenceId: null,
   createdAt: '2026-03-15T11:00:00Z',
 }
 

@@ -66,6 +66,16 @@ builder.Services.AddQuartz(q =>
         .WithSimpleSchedule(s => s
             .WithIntervalInSeconds(10)
             .RepeatForever()));
+
+    // TransactionDueAlertJob — roda a cada hora
+    var dueAlertJobKey = new JobKey("TransactionDueAlertJob");
+    q.AddJob<TransactionDueAlertJob>(opts => opts.WithIdentity(dueAlertJobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(dueAlertJobKey)
+        .WithIdentity("TransactionDueAlertJob-trigger")
+        .WithSimpleSchedule(s => s
+            .WithIntervalInHours(1)
+            .RepeatForever()));
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
