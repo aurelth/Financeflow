@@ -21,38 +21,37 @@ public class ResetPasswordCommandHandlerTests
             _userRepository.Object,
             _passwordService.Object);
 
-    private PasswordResetToken BuildValidToken(string tokenValue = "valid-token") =>
-        new()
+    private PasswordResetToken BuildValidToken(string tokenValue = "valid-token")
+    {
+        var user = UserBuilder.Build(id: UserId);
+        return new PasswordResetToken
         {
             Id = Guid.NewGuid(),
             UserId = UserId,
             Token = tokenValue,
             ExpiresAt = DateTime.UtcNow.AddHours(1),
-            IsUsed = false
+            IsUsed = false,
+            User = user // adicionado — simula o Include do repositório
         };
+    }
 
     [Fact]
     public async Task Handle_DeveRedefinirSenha_QuandoTokenValido()
     {
         // Arrange
         var token = BuildValidToken();
-        var user = UserBuilder.Build(id: UserId);
         var command = new ResetPasswordCommand("valid-token", "NovaSenha@123", "NovaSenha@123");
 
         _passwordResetTokenRepository
             .Setup(r => r.GetValidTokenAsync("valid-token", default))
             .ReturnsAsync(token);
 
-        _userRepository
-            .Setup(r => r.GetByIdAsync(UserId, default))
-            .ReturnsAsync(user);
-
         _passwordService
             .Setup(p => p.Hash("NovaSenha@123"))
             .Returns("new_hashed_password");
 
         _userRepository
-            .Setup(r => r.UpdateAsync(user, default))
+            .Setup(r => r.UpdateAsync(token.User, default))
             .Returns(Task.CompletedTask);
 
         _passwordResetTokenRepository
@@ -63,10 +62,10 @@ public class ResetPasswordCommandHandlerTests
         await CreateHandler().Handle(command, default);
 
         // Assert
-        user.PasswordHash.Should().Be("new_hashed_password");
+        token.User.PasswordHash.Should().Be("new_hashed_password");
 
         _userRepository.Verify(r =>
-            r.UpdateAsync(user, default), Times.Once);
+            r.UpdateAsync(token.User, default), Times.Once);
 
         _passwordResetTokenRepository.Verify(r =>
             r.UpdateAsync(It.Is<PasswordResetToken>(t => t.IsUsed == true), default),
@@ -99,23 +98,18 @@ public class ResetPasswordCommandHandlerTests
     {
         // Arrange
         var token = BuildValidToken();
-        var user = UserBuilder.Build(id: UserId);
         var command = new ResetPasswordCommand("valid-token", "NovaSenha@123", "NovaSenha@123");
 
         _passwordResetTokenRepository
             .Setup(r => r.GetValidTokenAsync("valid-token", default))
             .ReturnsAsync(token);
 
-        _userRepository
-            .Setup(r => r.GetByIdAsync(UserId, default))
-            .ReturnsAsync(user);
-
         _passwordService
             .Setup(p => p.Hash(It.IsAny<string>()))
             .Returns("hashed");
 
         _userRepository
-            .Setup(r => r.UpdateAsync(user, default))
+            .Setup(r => r.UpdateAsync(It.IsAny<Domain.Entities.User>(), default))
             .Returns(Task.CompletedTask);
 
         _passwordResetTokenRepository
