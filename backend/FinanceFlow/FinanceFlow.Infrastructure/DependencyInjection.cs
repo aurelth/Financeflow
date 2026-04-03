@@ -2,6 +2,7 @@ using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.Infrastructure.Auth;
 using FinanceFlow.Infrastructure.Caching;
+using FinanceFlow.Infrastructure.Email;
 using FinanceFlow.Infrastructure.Messaging;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using FinanceFlow.Infrastructure.Persistence.Repositories;
@@ -39,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IBudgetRepository, BudgetRepository>();
         services.AddScoped<IReportRepository, ReportRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
 
         // Caching
@@ -51,6 +53,9 @@ public static class DependencyInjection
 
         // Serviços de Storage
         services.AddScoped<IAttachmentService, LocalAttachmentService>();
+
+        // Email (SendGrid)
+        services.AddScoped<IEmailService, SendGridEmailService>();
 
         // Messaging
         services.AddSingleton<IEventPublisher, KafkaEventPublisher>();

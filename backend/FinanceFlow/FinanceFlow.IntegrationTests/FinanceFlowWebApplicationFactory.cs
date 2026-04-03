@@ -19,12 +19,10 @@ public class FinanceFlowWebApplicationFactory
 {
     private const string TestJwtSecret = "integration-test-secret-key-min32chars!!";
 
-    // Container do Redis para testes
     private readonly RedisContainer _redisContainer = new RedisBuilder()
         .WithImage("redis:7.2-alpine")
         .Build();
 
-    // Container do SQL Server para testes
     private readonly MsSqlContainer _sqlContainer = new MsSqlBuilder()
         .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("Test@12345!")
@@ -32,7 +30,6 @@ public class FinanceFlowWebApplicationFactory
 
     public async Task InitializeAsync()
     {
-        // Inicia ambos os containers em paralelo
         await Task.WhenAll(
             _sqlContainer.StartAsync(),
             _redisContainer.StartAsync());
@@ -47,7 +44,6 @@ public class FinanceFlowWebApplicationFactory
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Injeta configurações antes do Program.cs rodar
         builder.ConfigureAppConfiguration((_, config) =>
         {
             config.AddInMemoryCollection(new Dictionary<string, string?>
@@ -61,8 +57,10 @@ public class FinanceFlowWebApplicationFactory
                 ["Kafka:GroupId"] = "financeflow-test-group",
                 ["Storage:BasePath"] = "storage",
                 ["ConnectionStrings:DefaultConnection"] = _sqlContainer.GetConnectionString(),
-
-                // Rate limiting completamente desativado nos testes
+                ["Frontend:BaseUrl"] = "http://localhost:3000",
+                ["SendGrid:ApiKey"] = "test-key-noop",
+                ["SendGrid:FromEmail"] = "test@financeflow.com",
+                ["SendGrid:FromName"] = "FinanceFlow Test",
                 ["IpRateLimiting:EnableEndpointRateLimiting"] = "false",
                 ["IpRateLimiting:StackBlockedRequests"] = "false",
                 ["IpRateLimiting:GeneralRules:0:Period"] = "1h",
@@ -78,7 +76,7 @@ public class FinanceFlowWebApplicationFactory
 
         builder.ConfigureServices(services =>
         {
-            // Remove APENAS o DbContext e reregistra com TestContainers
+            // Remove e reregistra o DbContext com TestContainers
             var dbDescriptor = services.SingleOrDefault(d =>
                 d.ServiceType == typeof(DbContextOptions<FinanceFlowDbContext>));
             if (dbDescriptor != null)
@@ -96,7 +94,7 @@ public class FinanceFlowWebApplicationFactory
             services.AddSingleton<IConnectionMultiplexer>(_ =>
                 ConnectionMultiplexer.Connect(_redisContainer.GetConnectionString()));
 
-            // Substitui o Kafka publisher por um NoOp nos testes
+            // Substitui o Kafka publisher por NoOp
             var kafkaDescriptor = services.SingleOrDefault(d =>
                 d.ServiceType == typeof(IEventPublisher));
             if (kafkaDescriptor != null)
@@ -104,7 +102,15 @@ public class FinanceFlowWebApplicationFactory
 
             services.AddSingleton<IEventPublisher, NoOpEventPublisher>();
 
-            // Sobrescreve APENAS os parâmetros de validação do JWT
+            // Substitui o EmailService por NoOp
+            var emailDescriptor = services.SingleOrDefault(d =>
+                d.ServiceType == typeof(IEmailService));
+            if (emailDescriptor != null)
+                services.Remove(emailDescriptor);
+
+            services.AddScoped<IEmailService, NoOpEmailService>();
+
+            // Sobrescreve parâmetros de validação do JWT
             services.PostConfigure<JwtBearerOptions>(
                 JwtBearerDefaults.AuthenticationScheme, options =>
                 {
@@ -122,7 +128,7 @@ public class FinanceFlowWebApplicationFactory
                     };
                 });
 
-            // Aplica migrations
+            // Aplica migrations — SEMPRE por último
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider

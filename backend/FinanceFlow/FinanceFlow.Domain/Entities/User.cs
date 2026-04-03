@@ -14,4 +14,5 @@ public class User : BaseEntity
     public ICollection<Budget> Budgets { get; set; } = [];
     public ICollection<Notification> Notifications { get; set; } = [];
     public ICollection<Report> Reports { get; set; } = [];
+    public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = [];
 }

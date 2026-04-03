@@ -1,8 +1,10 @@
 using FinanceFlow.Application.DTOs;
+using FinanceFlow.Application.UseCases.Auth.Commands.ForgotPassword;
 using FinanceFlow.Application.UseCases.Auth.Commands.LoginUser;
 using FinanceFlow.Application.UseCases.Auth.Commands.Logout;
 using FinanceFlow.Application.UseCases.Auth.Commands.RefreshToken;
 using FinanceFlow.Application.UseCases.Auth.Commands.RegisterUser;
+using FinanceFlow.Application.UseCases.Auth.Commands.ResetPassword;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -90,6 +92,37 @@ public class AuthController(IMediator mediator) : BaseController(mediator)
         // Remove o cookie do Refresh Token
         Response.Cookies.Delete("refreshToken");
 
+        return NoContent();
+    }
+
+    /// <summary>Envia email de redefinição de senha.</summary>
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ForgotPasswordRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        var command = new ForgotPasswordCommand(request.Email);
+        await Mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>Redefine a senha usando o token recebido por email.</summary>
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        var command = new ResetPasswordCommand(
+            request.Token,
+            request.NewPassword,
+            request.ConfirmPassword);
+        await Mediator.Send(command, cancellationToken);
         return NoContent();
     }
 

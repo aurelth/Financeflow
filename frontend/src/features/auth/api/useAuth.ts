@@ -5,8 +5,10 @@ import api from '@/lib/axios'
 import { useAuthStore } from '@/store/authStore'
 import type {
   AuthResponse,
+  ForgotPasswordRequest,
   LoginRequest,
   RegisterRequest,
+  ResetPasswordRequest,
   UpdateProfileRequest,
   UserProfile,
 } from '../types/auth.types'
@@ -96,6 +98,50 @@ export const useUpdateProfile = () => {
     },
     onError: () => {
       toast.error('Erro ao atualizar perfil. Tente novamente.')
+    },
+  })
+}
+
+// Forgot Password
+export const useForgotPassword = () =>
+  useMutation({
+    mutationFn: (data: ForgotPasswordRequest) =>
+      api.post('/api/auth/forgot-password', data),
+    onSuccess: () => {
+      toast.success('Se o email existir, receberá um link em breve.')
+    },
+    onError: (err: any) => {
+      const errors = err.response?.data?.errors
+      if (errors) {
+        const msgs = Object.values(errors).flat().join(' ')
+        toast.error(msgs)
+      } else {
+        toast.error('Erro ao processar solicitação. Tente novamente.')
+      }
+    },
+  })
+
+// Reset Password
+export const useResetPassword = () => {
+  const navigate = useNavigate()
+
+  return useMutation({
+    mutationFn: (data: ResetPasswordRequest) =>
+      api.post('/api/auth/reset-password', data),
+    onSuccess: () => {
+      toast.success('Senha redefinida com sucesso! Faça login para continuar.')
+      navigate('/login')
+    },
+    onError: (err: any) => {
+      const errors = err.response?.data?.errors
+      if (errors) {
+        const msgs = Object.values(errors).flat().join(' ')
+        toast.error(msgs)
+      } else {
+        toast.error(
+          err.response?.data?.message ?? 'Token inválido ou expirado.'
+        )
+      }
     },
   })
 }
