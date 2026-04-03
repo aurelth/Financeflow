@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -102,17 +103,22 @@ public class BudgetAlertService(
         string? alertLevel = null;
         string? message = null;
 
+        // Formatação explícita em pt-BR
+        var culture = new CultureInfo("pt-BR");
+        var spentFormatted = summary.SpentAmount.ToString("C", culture);
+        var limitFormatted = summary.LimitAmount.ToString("C", culture);
+
         if (summary.Percentage >= 100)
         {
             alertLevel = "critical";
             message = $"⚠️ Orçamento de '{summary.CategoryName}' atingiu 100% do limite " +
-                         $"({summary.SpentAmount:C} de {summary.LimitAmount:C}) em {summary.Month}/{summary.Year}.";
+                         $"({spentFormatted} de {limitFormatted}) em {summary.Month}/{summary.Year}.";
         }
         else if (summary.Percentage >= 80)
         {
             alertLevel = "warning";
             message = $"🔔 Orçamento de '{summary.CategoryName}' atingiu {summary.Percentage:F1}% do limite " +
-                         $"({summary.SpentAmount:C} de {summary.LimitAmount:C}) em {summary.Month}/{summary.Year}.";
+                         $"({spentFormatted} de {limitFormatted}) em {summary.Month}/{summary.Year}.";
         }
 
         if (alertLevel is null)

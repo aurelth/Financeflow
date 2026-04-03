@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -20,7 +21,6 @@ public class TransactionDueAlertJob(
         PropertyNameCaseInsensitive = true
     };
 
-    // Dias de antecedência para notificação
     private static readonly int[] AlertDaysAhead = [1, 3];
 
     public async Task Execute(IJobExecutionContext context)
@@ -74,10 +74,14 @@ public class TransactionDueAlertJob(
 
         foreach (var transaction in list)
         {
+            // Formatação explícita em pt-BR
+            var culture = new CultureInfo("pt-BR");
+            var amountFormatted = transaction.Amount.ToString("C", culture);
+
             var type = daysAhead == 1 ? "TransactionDueTomorrow" : "TransactionDueIn3Days";
             var message = daysAhead == 1
-                ? $"⏰ A transação '{transaction.Description}' vence amanhã ({targetDate:dd/MM/yyyy}) — {transaction.Amount:C}."
-                : $"📅 A transação '{transaction.Description}' vence em 3 dias ({targetDate:dd/MM/yyyy}) — {transaction.Amount:C}.";
+                ? $"⏰ A transação '{transaction.Description}' vence amanhã ({targetDate:dd/MM/yyyy}) — {amountFormatted}."
+                : $"📅 A transação '{transaction.Description}' vence em 3 dias ({targetDate:dd/MM/yyyy}) — {amountFormatted}.";
 
             var notification = new NotificationEvent(
                 UserId: transaction.UserId,
