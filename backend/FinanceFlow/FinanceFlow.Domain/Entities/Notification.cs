@@ -7,5 +7,6 @@ public class Notification : BaseEntity
     public bool IsRead { get; set; } = false;
 
     public Guid UserId { get; set; }
+    public Guid? ReferenceId { get; set; }
     public User User { get; set; } = null!;
 }

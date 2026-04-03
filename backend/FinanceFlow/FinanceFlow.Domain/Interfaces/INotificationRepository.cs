@@ -26,6 +26,16 @@ public interface INotificationRepository
         Guid userId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Verifica se já existe uma notificação do mesmo tipo para a mesma
+    /// referência criada hoje — usado para deduplicação.
+    /// </summary>
+    Task<bool> ExistsForTodayAsync(
+        Guid userId,
+        string type,
+        Guid referenceId,
+        CancellationToken cancellationToken = default);
+
     Task AddAsync(
         Notification notification,
         CancellationToken cancellationToken = default);

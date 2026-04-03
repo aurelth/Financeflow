@@ -4,6 +4,7 @@ using FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Commands.RemoveAttachment;
 using FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
+using FinanceFlow.Application.UseCases.Transactions.Queries.GetDueTransactions;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetTransactionById;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetTransactions;
 using FinanceFlow.Domain.Entities;
@@ -274,6 +275,18 @@ public class TransactionsController(
             AmountMax: filters.AmountMax,
             Search: filters.Search);
 
+        var result = await Mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Retorna transações com vencimento na data alvo (uso interno do Worker).</summary>
+    [HttpGet("internal/due")]
+    [ProducesResponseType(typeof(IEnumerable<DueTransactionDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDueInternal(
+        [FromQuery] DateTime targetDate,
+        CancellationToken cancellationToken)
+    {
+        var query = new GetDueTransactionsQuery(targetDate);
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);
     }

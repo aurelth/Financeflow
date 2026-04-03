@@ -12,12 +12,26 @@ public class CreateNotificationCommandHandler(
         CreateNotificationCommand request,
         CancellationToken cancellationToken)
     {
+        // Deduplicação — ignora se já existe notificação do mesmo tipo para a mesma referência no dia de hoje       
+        if (request.ReferenceId.HasValue)
+        {
+            var alreadyExists = await notificationRepository.ExistsForTodayAsync(
+                request.UserId,
+                request.Type,
+                request.ReferenceId.Value,
+                cancellationToken);
+
+            if (alreadyExists)
+                return Guid.Empty;
+        }
+
         var notification = new Notification
         {
             UserId = request.UserId,
             Type = request.Type,
             Message = request.Message,
-            IsRead = false
+            IsRead = false,
+            ReferenceId = request.ReferenceId,
         };
 
         await notificationRepository.AddAsync(notification, cancellationToken);

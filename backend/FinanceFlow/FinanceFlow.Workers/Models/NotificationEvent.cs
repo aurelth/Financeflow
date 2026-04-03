@@ -4,5 +4,6 @@ public record NotificationEvent(
     Guid UserId,
     string Message,
     string Type, // "BudgetWarning" | "BudgetCritical"
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    Guid? ReferenceId = null
 );
