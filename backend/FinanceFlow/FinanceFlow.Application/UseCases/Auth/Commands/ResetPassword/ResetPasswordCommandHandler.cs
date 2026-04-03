@@ -20,9 +20,8 @@ public class ResetPasswordCommandHandler(
             request.Token, cancellationToken)
             ?? throw new ValidationException("Token inválido ou expirado.");
 
-        // Busca o usuário
-        var user = await userRepository.GetByIdAsync(
-            resetToken.UserId, cancellationToken)
+        // Usa o User já carregado pelo Include — sem segunda query // corrigido
+        var user = resetToken.User
             ?? throw new NotFoundException("Usuário não encontrado.");
 
         // Atualiza a senha
