@@ -5,6 +5,8 @@ import PrivateRoute from './PrivateRoute'
 import PublicRoute  from './PublicRoute'
 import LoginPage    from '@/features/auth/pages/LoginPage'
 import RegisterPage from '@/features/auth/pages/RegisterPage'
+import ForgotPasswordPage from '@/features/auth/pages/ForgotPasswordPage'
+import ResetPasswordPage  from '@/features/auth/pages/ResetPasswordPage' 
 import CategoriesPage   from '@/features/categories/pages/CategoriesPage'
 import TransactionsPage from '@/features/transactions/pages/TransactionsPage'
 import BudgetsPage      from '@/features/budgets/pages/BudgetsPage'
@@ -32,6 +34,8 @@ export default function AppRouter() {
           <Route element={<AuthLayout />}>
             <Route path="/login"    element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password"  element={<ForgotPasswordPage />} />
+            <Route path="/reset-password"   element={<ResetPasswordPage />} />
           </Route>
         </Route>
 

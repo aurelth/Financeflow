@@ -13,6 +13,7 @@ public class FinanceFlowDbContext(DbContextOptions<FinanceFlowDbContext> options
     public DbSet<Budget> Budgets => Set<Budget>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<Report> Reports => Set<Report>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +30,7 @@ public class FinanceFlowDbContext(DbContextOptions<FinanceFlowDbContext> options
         modelBuilder.Entity<Transaction>().HasQueryFilter(t => t.DeletedAt == null);
         modelBuilder.Entity<Budget>().HasQueryFilter(b => b.DeletedAt == null);
         modelBuilder.Entity<Notification>().HasQueryFilter(n => n.DeletedAt == null);
+        modelBuilder.Entity<PasswordResetToken>().HasQueryFilter(p => p.DeletedAt == null);
     }
 
     public override Task<int> SaveChangesAsync(

@@ -18,7 +18,7 @@ type FormData = z.infer<typeof schema>
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const { mutate: login, isPending } = useLogin()
+  const { mutate: login, isPending }    = useLogin()
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -55,7 +55,15 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-slate-300 text-sm">Senha</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="text-slate-300 text-sm">Senha</Label>
+            <Link
+              to="/forgot-password"
+              className="text-indigo-400 hover:text-indigo-300 text-xs transition-colors"
+            >
+              Esqueceu a senha?
+            </Link>
+          </div>
           <div className="relative">
             <Input
               id="password"
