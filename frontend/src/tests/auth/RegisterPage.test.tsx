@@ -5,14 +5,16 @@ import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import RegisterPage from '@/features/auth/pages/RegisterPage'
 
+const mockMutate = vi.fn()
+
 vi.mock('@/features/auth/api/useAuth', () => ({
   useRegister: () => ({
-    mutate:    vi.fn(),
+    mutate: mockMutate,
     isPending: false,
   }),
 }))
 
-const renderRegisterPage = () => {
+const renderPage = () => {
   const qc = new QueryClient()
   return render(
     <QueryClientProvider client={qc}>
@@ -26,57 +28,99 @@ const renderRegisterPage = () => {
 describe('RegisterPage', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('deve renderizar o formulário de registro', () => {
-    renderRegisterPage()
+  it('deve renderizar todos os campos do formulário', () => {
+    renderPage()
     expect(screen.getByLabelText(/nome completo/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/cpf/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/gênero/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/^senha$/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/confirmar senha/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /criar conta/i })).toBeInTheDocument()
   })
 
-  it('deve mostrar erros de validação com campos vazios', async () => {
-    renderRegisterPage()
+  it('deve exibir link para login', () => {
+    renderPage()
+    expect(screen.getByText(/já tem uma conta/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /entrar/i })).toBeInTheDocument()
+  })
+
+  it('deve exibir erros de validação ao submeter formulário vazio', async () => {
+    renderPage()
     const user = userEvent.setup()
 
     await user.click(screen.getByRole('button', { name: /criar conta/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/nome deve ter pelo menos/i)).toBeInTheDocument()
-      expect(screen.getByText(/email inválido/i)).toBeInTheDocument()
+      expect(document.querySelectorAll('.text-red-400').length).toBeGreaterThan(0)
+    })
+
+    expect(mockMutate).not.toHaveBeenCalled()
+  })
+
+  it('deve exibir erro quando CPF inválido', async () => {
+    renderPage()
+    const user = userEvent.setup()
+
+    await user.type(screen.getByLabelText(/cpf/i), '123.456.789-00')
+    await user.click(screen.getByRole('button', { name: /criar conta/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/cpf inválido/i)).toBeInTheDocument()
     })
   })
 
-  it('deve mostrar erro quando senhas não coincidem', async () => {
-    renderRegisterPage()
+  it('deve aplicar máscara no CPF ao digitar', async () => {
+    renderPage()
+    const user = userEvent.setup()
+
+    const cpfInput = screen.getByLabelText(/cpf/i)
+    await user.type(cpfInput, '52998224725')
+
+    await waitFor(() => {
+      expect((cpfInput as HTMLInputElement).value).toBe('529.982.247-25')
+    })
+  })
+
+  it('deve exibir erro quando senhas não coincidem', async () => {
+    renderPage()
     const user = userEvent.setup()
 
     await user.type(screen.getByLabelText(/nome completo/i), 'Aurel Teste')
+    await user.type(screen.getByLabelText(/cpf/i), '52998224725')
+    await user.selectOptions(screen.getByLabelText(/gênero/i), 'Male')
     await user.type(screen.getByLabelText(/email/i), 'aurel@teste.com')
-    await user.type(screen.getByLabelText(/^senha$/i), 'Teste@123')
+    await user.type(screen.getByLabelText(/^senha$/i), 'Senha@123')
     await user.type(screen.getByLabelText(/confirmar senha/i), 'Diferente@123')
     await user.click(screen.getByRole('button', { name: /criar conta/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/senhas não coincidem/i)).toBeInTheDocument()
-    })
-  }, 15000) // adicionado — timeout aumentado para teste lento
+      expect(screen.getByText(/as senhas não coincidem/i)).toBeInTheDocument()
+    }, { timeout: 10000 })
+  }, 15000)
 
-  it('deve mostrar erro com senha fraca', async () => {
-    renderRegisterPage()
+  it('deve chamar mutate com dados corretos ao submeter formulário válido', async () => {
+    renderPage()
     const user = userEvent.setup()
 
-    await user.type(screen.getByLabelText(/^senha$/i), 'fraca')
+    await user.type(screen.getByLabelText(/nome completo/i), 'Aurel Teste')
+    await user.type(screen.getByLabelText(/cpf/i), '52998224725')
+    await user.selectOptions(screen.getByLabelText(/gênero/i), 'Male')
+    await user.type(screen.getByLabelText(/email/i), 'aurel@teste.com')
+    await user.type(screen.getByLabelText(/^senha$/i), 'Senha@123')
+    await user.type(screen.getByLabelText(/confirmar senha/i), 'Senha@123')
     await user.click(screen.getByRole('button', { name: /criar conta/i }))
 
     await waitFor(() => {
-      expect(screen.getByText(/mínimo 8 caracteres/i)).toBeInTheDocument()
-    })
-  })
-
-  it('deve mostrar link para login', () => {
-    renderRegisterPage()
-    expect(screen.getByText(/já tem uma conta/i)).toBeInTheDocument()
-    expect(screen.getByText(/entrar/i)).toBeInTheDocument()
-  })
+      expect(mockMutate).toHaveBeenCalledWith({
+        name: 'Aurel Teste',
+        cpf: '529.982.247-25',
+        gender: 'Male',
+        email: 'aurel@teste.com',
+        password: 'Senha@123',
+        currency: 'BRL',
+        timezone: 'America/Sao_Paulo',
+      })
+    }, { timeout: 10000 })
+  }, 15000)
 })

@@ -2,11 +2,11 @@ import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import Header from './Header'
 import { useReportHub } from '@/features/reports/hooks/useReportHub'
-import { useNotificationHub } from '@/hooks/useNotificationHub' // adicionado
+import { useNotificationHub } from '@/hooks/useNotificationHub'
 
 export default function AppLayout() {
   useReportHub()
-  useNotificationHub() // adicionado
+  useNotificationHub()
 
   return (
     <div className="flex h-screen bg-slate-950 overflow-hidden">
