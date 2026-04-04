@@ -4,8 +4,7 @@ using MediatR;
 namespace FinanceFlow.Application.UseCases.Users.Commands.UpdateUserProfile;
 
 public record UpdateUserProfileCommand(
-    Guid UserId,
-    string Name,
+    Guid UserId,    
     string Currency,
     string Timezone
 ) : IRequest<UserProfileDto>;

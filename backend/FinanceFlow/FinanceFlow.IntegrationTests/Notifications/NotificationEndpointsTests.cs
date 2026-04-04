@@ -18,6 +18,8 @@ public class NotificationEndpointsTests(FinanceFlowWebApplicationFactory factory
             Name: "Aurel Notification",
             Email: email,
             Password: "Teste@123",
+            Cpf: TestCpfGenerator.Next(),
+            Gender: "Male",
             Currency: "BRL",
             Timezone: "America/Sao_Paulo"));
 

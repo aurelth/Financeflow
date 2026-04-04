@@ -1,4 +1,5 @@
 using FinanceFlow.Application.DTOs;
+using FinanceFlow.Application.UseCases.Auth.Commands.ResetPassword;
 using FinanceFlow.Application.UseCases.Users.Commands.UpdateUserProfile;
 using FinanceFlow.Application.UseCases.Users.Queries.GetUserProfile;
 using FinanceFlow.Domain.Interfaces;
@@ -16,7 +17,6 @@ public class UsersController(
     /// <summary>Retorna o perfil do usuário autenticado.</summary>
     [HttpGet("profile")]
     [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetProfile(CancellationToken cancellationToken)
     {
@@ -25,10 +25,9 @@ public class UsersController(
         return Ok(result);
     }
 
-    /// <summary>Atualiza o perfil do usuário autenticado.</summary>
+    /// <summary>Atualiza moeda e timezone do usuário autenticado.</summary>
     [HttpPut("profile")]
     [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UpdateProfile(
@@ -37,12 +36,27 @@ public class UsersController(
     {
         var command = new UpdateUserProfileCommand(
             CurrentUserId,
-            request.Name,
             request.Currency,
             request.Timezone);
-
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>Altera a senha do usuário autenticado.</summary>
+    [HttpPatch("change-password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> ChangePassword(
+        [FromBody] ChangePasswordRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        var command = new ChangePasswordCommand(
+            CurrentUserId,
+            request.CurrentPassword,
+            request.NewPassword,
+            request.ConfirmPassword);
+        await Mediator.Send(command, cancellationToken);
+        return NoContent();
     }
 
     /// <summary>Retorna IDs de todos os usuários (uso interno do Worker).</summary>

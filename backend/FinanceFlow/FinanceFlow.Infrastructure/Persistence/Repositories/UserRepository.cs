@@ -30,6 +30,13 @@ public class UserRepository(FinanceFlowDbContext context) : IUserRepository
             .IgnoreQueryFilters()
             .AnyAsync(u => u.Email == email, cancellationToken);
 
+    public async Task<bool> ExistsByCpfAsync(
+        string cpf,
+        CancellationToken cancellationToken = default) =>
+        await context.Users
+            .IgnoreQueryFilters()
+            .AnyAsync(u => u.Cpf == cpf, cancellationToken);
+
     public async Task AddAsync(
         User user,
         CancellationToken cancellationToken = default)

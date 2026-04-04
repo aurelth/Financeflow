@@ -13,12 +13,13 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
     private readonly HttpClient _client = factory.CreateClient();
 
     private static readonly RegisterRequestDto ValidRegisterRequest = new(
-        Name: "Aurel Integration",
-        Email: "categorias@teste.com",
-        Password: "Teste@123",
-        Currency: "BRL",
-        Timezone: "America/Sao_Paulo"
-    );
+    Name: "Aurel Integration",
+    Email: "categorias@teste.com",
+    Password: "Teste@123",
+    Cpf: TestCpfGenerator.Next(),
+    Gender: "Male",
+    Currency: "BRL",
+    Timezone: "America/Sao_Paulo");
 
     private static readonly CreateCategoryRequestDto ValidCategoryRequest = new(
         Name: "Jogos Online",
@@ -30,14 +31,16 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
     // Registra e autentica, retornando o client com o token configurado
     private async Task AuthenticateAsync(string email = "categorias@teste.com")
     {
-        // Tenta registrar — ignora se já existir (409 ou 422)
         await _client.PostAsJsonAsync("/api/auth/register",
-            ValidRegisterRequest with { Email = email });
+            ValidRegisterRequest with
+            {
+                Email = email,
+                Cpf = TestCpfGenerator.Next() // CPF único por teste
+            });
 
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login",
             new LoginRequestDto(email, "Teste@123"));
 
-        // Garante que o login foi bem-sucedido antes de desserializar
         loginResponse.EnsureSuccessStatusCode();
 
         var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
