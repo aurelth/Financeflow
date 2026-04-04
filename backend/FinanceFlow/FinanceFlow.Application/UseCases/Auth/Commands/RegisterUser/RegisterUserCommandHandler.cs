@@ -20,13 +20,23 @@ public class RegisterUserCommandHandler(
         // Verifica se email já está em uso
         var emailExists = await userRepository.ExistsByEmailAsync(
             request.Email, cancellationToken);
-
         if (emailExists)
             throw new ValidationException(
                 "O email informado já está em uso.",
                 new Dictionary<string, string[]>
                 {
                     { "Email", ["O email informado já está em uso."] }
+                });
+
+        // Verifica se CPF já está em uso
+        var cpfExists = await userRepository.ExistsByCpfAsync(
+            request.Cpf, cancellationToken);
+        if (cpfExists)
+            throw new ValidationException(
+                "O CPF informado já está em uso.",
+                new Dictionary<string, string[]>
+                {
+                    { "Cpf", ["O CPF informado já está em uso."] }
                 });
 
         // Cria o utilizador
@@ -36,13 +46,14 @@ public class RegisterUserCommandHandler(
             Name = request.Name.Trim(),
             Email = request.Email.Trim().ToLowerInvariant(),
             PasswordHash = passwordService.Hash(request.Password),
+            Cpf = request.Cpf, // adicionado
+            Gender = request.Gender, // adicionado
             Currency = request.Currency ?? "BRL",
             Timezone = request.Timezone ?? "America/Sao_Paulo",
             CreatedAt = DateTime.UtcNow
         };
 
         await userRepository.AddAsync(user, cancellationToken);
-
         return mapper.Map<UserProfileDto>(user);
     }
 }

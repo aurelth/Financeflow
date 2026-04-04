@@ -6,6 +6,8 @@ const mockUser: UserProfile = {
   id:        '123e4567-e89b-12d3-a456-426614174000',
   name:      'Aurel Teste',
   email:     'aurel@teste.com',
+  cpf:       '529.982.247-25',
+  gender:    'Male',
   currency:  'BRL',
   timezone:  'America/Sao_Paulo',
   createdAt: '2026-01-01T00:00:00Z',
@@ -13,7 +15,6 @@ const mockUser: UserProfile = {
 
 describe('authStore', () => {
   beforeEach(() => {
-    // Limpa o sessionStorage e reseta a store antes de cada teste
     sessionStorage.clear()
     useAuthStore.setState({ user: null, isAuthenticated: false })
   })

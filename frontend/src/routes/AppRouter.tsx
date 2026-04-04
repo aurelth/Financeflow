@@ -13,6 +13,7 @@ import BudgetsPage      from '@/features/budgets/pages/BudgetsPage'
 import DashboardPage    from '@/features/dashboard/pages/DashboardPage'
 import ComparisonPage from '@/features/dashboard/pages/ComparisonPage'
 import ExportsPage from '@/features/reports/pages/ExportsPage'
+import ProfilePage from '@/features/auth/pages/ProfilePage'
 
 // Placeholder para fases futuras
 const Placeholder = ({ title }: { title: string }) => (
@@ -49,7 +50,7 @@ export default function AppRouter() {
             <Route path="/comparison"   element={<ComparisonPage />} />
             <Route path="/reports"      element={<Placeholder title="Relatórios" />} />
             <Route path="/exports"      element={<ExportsPage />} />
-            <Route path="/profile"      element={<Placeholder title="Perfil" />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings"     element={<Placeholder title="Configurações" />} />
           </Route>
         </Route>

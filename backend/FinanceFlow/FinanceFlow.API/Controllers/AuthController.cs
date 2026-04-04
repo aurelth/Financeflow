@@ -5,6 +5,7 @@ using FinanceFlow.Application.UseCases.Auth.Commands.Logout;
 using FinanceFlow.Application.UseCases.Auth.Commands.RefreshToken;
 using FinanceFlow.Application.UseCases.Auth.Commands.RegisterUser;
 using FinanceFlow.Application.UseCases.Auth.Commands.ResetPassword;
+using FinanceFlow.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,10 +23,16 @@ public class AuthController(IMediator mediator) : BaseController(mediator)
         [FromBody] RegisterRequestDto request,
         CancellationToken cancellationToken)
     {
+        // Converte string para enum Gender
+        if (!Enum.TryParse<Gender>(request.Gender, ignoreCase: true, out var gender))
+            return UnprocessableEntity(new { message = "O gênero informado não é válido." });
+
         var command = new RegisterUserCommand(
             request.Name,
             request.Email,
             request.Password,
+            request.Cpf,     
+            gender,
             request.Currency,
             request.Timezone);
 
@@ -50,10 +57,7 @@ public class AuthController(IMediator mediator) : BaseController(mediator)
     {
         var command = new LoginUserCommand(request.Email, request.Password);
         var result = await Mediator.Send(command, cancellationToken);
-
-        // Armazena o Refresh Token em httpOnly cookie
         SetRefreshTokenCookie(result.RefreshToken);
-
         return Ok(result);
     }
 
@@ -73,10 +77,7 @@ public class AuthController(IMediator mediator) : BaseController(mediator)
 
         var command = new RefreshTokenCommand(accessToken, refreshToken);
         var result = await Mediator.Send(command, cancellationToken);
-
-        // Renova o cookie com o novo Refresh Token
         SetRefreshTokenCookie(result.RefreshToken);
-
         return Ok(result);
     }
 
@@ -88,10 +89,7 @@ public class AuthController(IMediator mediator) : BaseController(mediator)
     {
         var command = new LogoutCommand(CurrentUserId);
         await Mediator.Send(command, cancellationToken);
-
-        // Remove o cookie do Refresh Token
         Response.Cookies.Delete("refreshToken");
-
         return NoContent();
     }
 
@@ -131,9 +129,9 @@ public class AuthController(IMediator mediator) : BaseController(mediator)
     {
         Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
         {
-            HttpOnly = true,                            // não acessível via JavaScript
-            Secure = true,                             // apenas via HTTPS
-            SameSite = SameSiteMode.Strict,           // protecção CSRF
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
             Expires = DateTimeOffset.UtcNow.AddDays(7)
         });
     }

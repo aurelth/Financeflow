@@ -5,6 +5,8 @@ public class User : BaseEntity
     public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
+    public string Cpf { get; set; } = string.Empty;
+    public Gender Gender { get; set; }
     public string Currency { get; set; } = "BRL";
     public string Timezone { get; set; } = "America/Sao_Paulo";
 

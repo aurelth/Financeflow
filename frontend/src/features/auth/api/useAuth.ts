@@ -5,6 +5,7 @@ import api from '@/lib/axios'
 import { useAuthStore } from '@/store/authStore'
 import type {
   AuthResponse,
+  ChangePasswordRequest,
   ForgotPasswordRequest,
   LoginRequest,
   RegisterRequest,
@@ -76,9 +77,9 @@ export const useUserProfile = () => {
   const { isAuthenticated } = useAuthStore()
 
   return useQuery({
-    queryKey: ['user', 'profile'],
-    queryFn: () => api.get<UserProfile>('/api/users/profile').then(r => r.data),
-    enabled: isAuthenticated,
+    queryKey:  ['user', 'profile'],
+    queryFn:   () => api.get<UserProfile>('/api/users/profile').then(r => r.data),
+    enabled:   isAuthenticated,
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -101,6 +102,27 @@ export const useUpdateProfile = () => {
     },
   })
 }
+
+// Change Password // adicionado
+export const useChangePassword = () => // adicionado
+  useMutation({ // adicionado
+    mutationFn: (data: ChangePasswordRequest) => // adicionado
+      api.patch('/api/users/change-password', data), // adicionado
+    onSuccess: () => { // adicionado
+      toast.success('Senha alterada com sucesso!') // adicionado
+    }, // adicionado
+    onError: (err: any) => { // adicionado
+      const errors = err.response?.data?.errors // adicionado
+      if (errors) { // adicionado
+        const msgs = Object.values(errors).flat().join(' ') // adicionado
+        toast.error(msgs) // adicionado
+      } else { // adicionado
+        toast.error( // adicionado
+          err.response?.data?.message ?? 'Erro ao alterar senha. Tente novamente.' // adicionado
+        ) // adicionado
+      } // adicionado
+    }, // adicionado
+  }) // adicionado
 
 // Forgot Password
 export const useForgotPassword = () =>

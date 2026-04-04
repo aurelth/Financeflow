@@ -20,8 +20,7 @@ public class UpdateUserProfileCommandHandler(
 
         if (user is null)
             throw new NotFoundException("Utilizador", request.UserId);
-
-        user.Name = request.Name.Trim();
+        
         user.Currency = request.Currency.Trim();
         user.Timezone = request.Timezone.Trim();
         user.UpdatedAt = DateTime.UtcNow;

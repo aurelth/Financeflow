@@ -14,12 +14,21 @@ public class ReportEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
     private static async Task AuthenticateAsync(HttpClient client, string email)
     {
-        await client.PostAsJsonAsync("/api/auth/register", new RegisterRequestDto(
+        var registerResponse = await client.PostAsJsonAsync("/api/auth/register", new RegisterRequestDto(
             Name: "Aurel Reports",
             Email: email,
             Password: "Teste@123",
+            Cpf: TestCpfGenerator.Next(),
+            Gender: "Male",
             Currency: "BRL",
             Timezone: "America/Sao_Paulo"));
+
+        // Debug temporário
+        if (!registerResponse.IsSuccessStatusCode)
+        {
+            var body = await registerResponse.Content.ReadAsStringAsync();
+            throw new Exception($"Register falhou: {registerResponse.StatusCode} - {body}");
+        }
 
         var loginResponse = await client.PostAsJsonAsync("/api/auth/login",
             new LoginRequestDto(email, "Teste@123"));

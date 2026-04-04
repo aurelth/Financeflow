@@ -13,12 +13,13 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
     private readonly HttpClient _client = factory.CreateClient();
 
     private static readonly RegisterRequestDto ValidRegisterRequest = new(
-        Name: "Aurel Integration",
-        Email: "transacoes@teste.com",
-        Password: "Teste@123",
-        Currency: "BRL",
-        Timezone: "America/Sao_Paulo"
-    );
+    Name: "Aurel Integration",
+    Email: "transacoes@teste.com",
+    Password: "Teste@123",
+    Cpf: TestCpfGenerator.Next(),
+    Gender: "Male",
+    Currency: "BRL",
+    Timezone: "America/Sao_Paulo");
 
     private static readonly CreateCategoryRequestDto ValidCategoryRequest = new(
         Name: "Entretenimento",
@@ -30,7 +31,11 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
     private async Task AuthenticateAsync(string email = "transacoes@teste.com")
     {
         await _client.PostAsJsonAsync("/api/auth/register",
-            ValidRegisterRequest with { Email = email });
+            ValidRegisterRequest with
+            {
+                Email = email,
+                Cpf = TestCpfGenerator.Next()
+            });
 
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login",
             new LoginRequestDto(email, "Teste@123"));

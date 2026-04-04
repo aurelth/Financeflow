@@ -21,9 +21,11 @@ public class BudgetEndpointsTests(FinanceFlowWebApplicationFactory factory)
     private static async Task AuthenticateAsync(HttpClient client, string email)
     {
         await client.PostAsJsonAsync("/api/auth/register", new RegisterRequestDto(
-            Name: "Aurel Budget",
+            Name: "Aurel Dashboard",
             Email: email,
             Password: "Teste@123",
+            Cpf: TestCpfGenerator.Next(),
+            Gender: "Male",
             Currency: "BRL",
             Timezone: "America/Sao_Paulo"));
 

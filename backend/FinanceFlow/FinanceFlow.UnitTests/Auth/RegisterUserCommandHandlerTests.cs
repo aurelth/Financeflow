@@ -2,6 +2,7 @@ using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Auth.Commands.RegisterUser;
+using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using FluentAssertions;
 using Moq;
@@ -14,6 +15,8 @@ public class RegisterUserCommandHandlerTests
     private readonly Mock<IPasswordService> _passwordService = new();
     private readonly IMapper _mapper;
 
+    private static readonly string ValidCpf = "529.982.247-25"; // CPF válido para testes
+
     public RegisterUserCommandHandlerTests()
     {
         var config = new MapperConfiguration(cfg =>
@@ -24,15 +27,24 @@ public class RegisterUserCommandHandlerTests
     private RegisterUserCommandHandler CreateHandler() =>
         new(_userRepository.Object, _passwordService.Object, _mapper);
 
+    private RegisterUserCommand BuildCommand(
+        string email = "aurel@teste.com",
+        string? currency = "BRL",
+        string? timezone = "America/Sao_Paulo") =>
+        new("Aurel Teste", email, "Teste@123", ValidCpf, Gender.Male, currency, timezone);
+
     [Fact]
     public async Task Handle_DeveRegistarUtilizador_QuandoDadosSaoValidos()
     {
         // Arrange
-        var command = new RegisterUserCommand(
-            "Aurel Teste", "aurel@teste.com", "Teste@123", "BRL", "America/Sao_Paulo");
+        var command = BuildCommand();
 
         _userRepository
             .Setup(r => r.ExistsByEmailAsync(command.Email, default))
+            .ReturnsAsync(false);
+
+        _userRepository
+            .Setup(r => r.ExistsByCpfAsync(command.Cpf, default))
             .ReturnsAsync(false);
 
         _passwordService
@@ -56,8 +68,7 @@ public class RegisterUserCommandHandlerTests
     public async Task Handle_DeveLancarValidationException_QuandoEmailJaExiste()
     {
         // Arrange
-        var command = new RegisterUserCommand(
-            "Aurel Teste", "aurel@teste.com", "Teste@123", null, null);
+        var command = BuildCommand();
 
         _userRepository
             .Setup(r => r.ExistsByEmailAsync(command.Email, default))
@@ -72,14 +83,39 @@ public class RegisterUserCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_DeveLancarValidationException_QuandoCpfJaExiste()
+    {
+        // Arrange
+        var command = BuildCommand();
+
+        _userRepository
+            .Setup(r => r.ExistsByEmailAsync(command.Email, default))
+            .ReturnsAsync(false);
+
+        _userRepository
+            .Setup(r => r.ExistsByCpfAsync(command.Cpf, default))
+            .ReturnsAsync(true);
+
+        // Act
+        var act = async () => await CreateHandler().Handle(command, default);
+
+        // Assert
+        await act.Should().ThrowAsync<ValidationException>()
+            .WithMessage("*CPF*");
+    }
+
+    [Fact]
     public async Task Handle_DeveNormalizarEmail_QuandoEmailTemMaiusculas()
     {
         // Arrange
-        var command = new RegisterUserCommand(
-            "Aurel Teste", "AUREL@TESTE.COM", "Teste@123", null, null);
+        var command = BuildCommand(email: "AUREL@TESTE.COM");
 
         _userRepository
             .Setup(r => r.ExistsByEmailAsync(It.IsAny<string>(), default))
+            .ReturnsAsync(false);
+
+        _userRepository
+            .Setup(r => r.ExistsByCpfAsync(It.IsAny<string>(), default))
             .ReturnsAsync(false);
 
         _passwordService
@@ -97,11 +133,14 @@ public class RegisterUserCommandHandlerTests
     public async Task Handle_DeveUsarValoresPadrao_QuandoCurrencyETimezoneNaoInformados()
     {
         // Arrange
-        var command = new RegisterUserCommand(
-            "Aurel Teste", "aurel@teste.com", "Teste@123", null, null);
+        var command = BuildCommand(currency: null, timezone: null);
 
         _userRepository
             .Setup(r => r.ExistsByEmailAsync(It.IsAny<string>(), default))
+            .ReturnsAsync(false);
+
+        _userRepository
+            .Setup(r => r.ExistsByCpfAsync(It.IsAny<string>(), default))
             .ReturnsAsync(false);
 
         _passwordService

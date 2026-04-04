@@ -2,6 +2,8 @@ export interface UserProfile {
   id: string
   name: string
   email: string
+  cpf:       string
+  gender:    string
   currency: string
   timezone: string
   createdAt: string
@@ -16,9 +18,11 @@ export interface AuthResponse {
 }
 
 export interface RegisterRequest {
-  name: string
-  email: string
-  password: string
+  name:      string
+  email:     string
+  password:  string
+  cpf:       string
+  gender:    string
   currency?: string
   timezone?: string
 }
@@ -29,10 +33,15 @@ export interface LoginRequest {
 }
 
 export interface UpdateProfileRequest {
-  name: string
   currency: string
   timezone: string
 }
+
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword:     string
+  confirmPassword: string
+} 
 
 export interface ValidationErrorResponse {
   status: number
