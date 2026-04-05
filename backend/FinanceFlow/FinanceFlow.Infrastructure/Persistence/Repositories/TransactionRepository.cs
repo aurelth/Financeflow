@@ -125,6 +125,20 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
             .AnyAsync(cancellationToken);
     }
 
+    // Retorna transações futuras de um grupo recorrente a partir de uma data
+    public async Task<IEnumerable<Transaction>> GetFutureRecurringAsync(
+        Guid recurrenceGroupId,
+        DateTime fromDate,
+        CancellationToken cancellationToken = default) =>
+        await context.Transactions
+            .IgnoreQueryFilters()
+            .Where(t =>
+                t.DeletedAt == null &&
+                t.RecurrenceGroupId == recurrenceGroupId &&
+                t.Date > fromDate)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
     public async Task AddAsync(
         Transaction transaction,
         CancellationToken cancellationToken = default)

@@ -30,11 +30,19 @@ public class UpdateTransactionCommandHandler(
             throw new ValidationException(
                 "O tipo da transação não coincide com o tipo da categoria.");
 
+        // Verifica se Amount ou Description foram alterados
+        var amountAlterado = transaction.Amount != request.Amount;
+        var descricaoAlterada = transaction.Description != request.Description;
+        var devePropagarParaFuturas = request.PropagateToFuture
+            && transaction.RecurrenceGroupId.HasValue
+            && (amountAlterado || descricaoAlterada);
+
+        // Atualiza a transação atual
         transaction.Amount = request.Amount;
         transaction.Type = request.Type;
         transaction.Date = request.Date;
         transaction.Description = request.Description;
-        transaction.Status = request.Status;
+        transaction.Status = request.Status; // Status afeta apenas a atual
         transaction.IsRecurring = request.IsRecurring;
         transaction.RecurrenceType = request.RecurrenceType;
         transaction.CategoryId = request.CategoryId;
@@ -43,11 +51,26 @@ public class UpdateTransactionCommandHandler(
 
         if (request.AttachmentPath != null)
             transaction.AttachmentPath = request.AttachmentPath;
-
         if (request.AttachmentName != null)
             transaction.AttachmentName = request.AttachmentName;
 
         await transactionRepository.UpdateAsync(transaction, cancellationToken);
+
+        // Propaga Amount e Description para as futuras do grupo
+        if (devePropagarParaFuturas)
+        {
+            var futuras = await transactionRepository.GetFutureRecurringAsync(
+                transaction.RecurrenceGroupId!.Value,
+                transaction.Date,
+                cancellationToken);
+
+            foreach (var futura in futuras)
+            {
+                futura.Amount = request.Amount;
+                futura.Description = request.Description;
+                await transactionRepository.UpdateAsync(futura, cancellationToken);
+            }
+        }
 
         var updated = await transactionRepository.GetByIdAsync(
             transaction.Id, request.UserId, cancellationToken);

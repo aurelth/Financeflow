@@ -17,6 +17,7 @@ public record UpdateTransactionCommand(
     Guid CategoryId,
     Guid? SubcategoryId,
     string[] Tags,
+    bool PropagateToFuture = false,
     string? AttachmentPath = null,
     string? AttachmentName = null
 ) : IRequest<TransactionDto>;
