@@ -4,5 +4,6 @@ namespace FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransacti
 
 public record DeleteTransactionCommand(
     Guid Id,
-    Guid UserId
+    Guid UserId,
+    bool DeleteFuture = false
 ) : IRequest;

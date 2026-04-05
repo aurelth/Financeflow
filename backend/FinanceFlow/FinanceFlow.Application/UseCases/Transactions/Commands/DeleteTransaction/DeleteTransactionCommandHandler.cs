@@ -17,9 +17,23 @@ public class DeleteTransactionCommandHandler(
             request.Id, request.UserId, cancellationToken)
             ?? throw new NotFoundException(nameof(Transaction), request.Id);
 
-        // Soft delete
+        // Soft delete da transação atual
         transaction.DeletedAt = DateTime.UtcNow;
-
         await transactionRepository.UpdateAsync(transaction, cancellationToken);
+
+        // Soft delete das futuras do mesmo grupo recorrente
+        if (request.DeleteFuture && transaction.RecurrenceGroupId.HasValue)
+        {
+            var futuras = await transactionRepository.GetFutureRecurringAsync(
+                transaction.RecurrenceGroupId.Value,
+                transaction.Date,
+                cancellationToken);
+
+            foreach (var futura in futuras)
+            {
+                futura.DeletedAt = DateTime.UtcNow;
+                await transactionRepository.UpdateAsync(futura, cancellationToken);
+            }
+        }
     }
 }
