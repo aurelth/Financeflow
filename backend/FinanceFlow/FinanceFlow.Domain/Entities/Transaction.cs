@@ -9,6 +9,7 @@ public class Transaction : BaseEntity
     public TransactionStatus Status { get; set; } = TransactionStatus.Paid;
     public bool IsRecurring { get; set; } = false;
     public RecurrenceType RecurrenceType { get; set; } = RecurrenceType.None;
+    public Guid? RecurrenceGroupId { get; set; }
     public string? AttachmentPath { get; set; }
     public string? AttachmentName { get; set; }
     public string Tags { get; set; } = string.Empty; // JSON serializado
