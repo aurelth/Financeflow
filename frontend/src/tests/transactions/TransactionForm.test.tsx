@@ -36,31 +36,39 @@ vi.mock('@/features/categories/api/useCategories', () => ({
 }))
 
 const mockTransaction: Transaction = {
-  id:              'tx-1',
-  amount:          1500,
-  type:            TransactionType.Expense,
-  date:            '2026-03-01T00:00:00Z',
-  description:     'Aluguel',
-  status:          TransactionStatus.Paid,
-  isRecurring:     false,
-  recurrenceType:  RecurrenceType.None,
+  id:                'tx-1',
+  amount:            1500,
+  type:              TransactionType.Expense,
+  date:              '2026-03-01T00:00:00Z',
+  description:       'Aluguel',
+  status:            TransactionStatus.Paid,
+  isRecurring:       false,
+  recurrenceType:    RecurrenceType.None,
   recurrenceGroupId: null,
-  attachmentPath:  null,
-  attachmentName:  null,
-  tags:            [],
-  categoryId:      'cat-1',
-  categoryName:    'Moradia',
-  categoryIcon:    'house',
-  categoryColor:   '#6366f1',
-  subcategoryId:   null,
-  subcategoryName: null,
-  createdAt:       '2026-03-01T00:00:00Z',
-  updatedAt:       null,
+  attachmentPath:    null,
+  attachmentName:    null,
+  tags:              [],
+  categoryId:        'cat-1',
+  categoryName:      'Moradia',
+  categoryIcon:      'house',
+  categoryColor:     '#6366f1',
+  subcategoryId:     null,
+  subcategoryName:   null,
+  createdAt:         '2026-03-01T00:00:00Z',
+  updatedAt:         null,
 }
 
 const mockTransactionWithAttachment: Transaction = {
   ...mockTransaction,
   attachmentPath: 'attachments/user/comprovante.pdf',
+}
+
+// Mock de transação recorrente com grupo
+const mockRecurringTransaction: Transaction = {
+  ...mockTransaction,
+  isRecurring:       true,
+  recurrenceType:    RecurrenceType.Monthly,
+  recurrenceGroupId: 'group-1',
 }
 
 const renderForm = (transaction?: Transaction, onClose = vi.fn()) => {
@@ -153,7 +161,6 @@ describe('TransactionForm', () => {
 
     expect(screen.getByText('alimentação')).toBeInTheDocument()
 
-    // Botão X da tag
     const removeTagButtons = screen.getAllByRole('button').filter(btn =>
       btn.closest('span')?.textContent?.includes('alimentação')
     )
@@ -165,38 +172,154 @@ describe('TransactionForm', () => {
   })
 
   it('deve esconder o comprovante após clicar em remover', async () => {
-  const mockRemoveMutate = vi.fn((_, options) => options?.onSuccess?.())
-  vi.mocked(mockMutate).mockImplementation(mockRemoveMutate)
+    const mockRemoveMutate = vi.fn((_, options) => options?.onSuccess?.())
+    vi.mocked(mockMutate).mockImplementation(mockRemoveMutate)
 
-  renderForm(mockTransactionWithAttachment)
-  const user = userEvent.setup()
+    renderForm(mockTransactionWithAttachment)
+    const user = userEvent.setup()
 
-  // Comprovante visível inicialmente
-  expect(screen.getByText('comprovante.pdf')).toBeInTheDocument()
-  expect(screen.getByText('Remover')).toBeInTheDocument()
+    expect(screen.getByText('comprovante.pdf')).toBeInTheDocument()
+    expect(screen.getByText('Remover')).toBeInTheDocument()
 
-  await user.click(screen.getByText('Remover'))
+    await user.click(screen.getByText('Remover'))
 
-  // Comprovante deve desaparecer
-  await waitFor(() => {
-    expect(screen.queryByText('comprovante.pdf')).not.toBeInTheDocument()
-    expect(screen.queryByText('Remover')).not.toBeInTheDocument()
-    expect(screen.getByText('Adicionar comprovante')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByText('comprovante.pdf')).not.toBeInTheDocument()
+      expect(screen.queryByText('Remover')).not.toBeInTheDocument()
+      expect(screen.getByText('Adicionar comprovante')).toBeInTheDocument()
+    })
   })
- })
 
-it('deve mostrar botão de adicionar comprovante após remover', async () => {
-  const mockRemoveMutate = vi.fn((_, options) => options?.onSuccess?.())
-  vi.mocked(mockMutate).mockImplementation(mockRemoveMutate)
+  it('deve mostrar botão de adicionar comprovante após remover', async () => {
+    const mockRemoveMutate = vi.fn((_, options) => options?.onSuccess?.())
+    vi.mocked(mockMutate).mockImplementation(mockRemoveMutate)
 
-  renderForm(mockTransactionWithAttachment)
-  const user = userEvent.setup()
+    renderForm(mockTransactionWithAttachment)
+    const user = userEvent.setup()
 
-  await user.click(screen.getByText('Remover'))
+    await user.click(screen.getByText('Remover'))
 
-  await waitFor(() => {
-    expect(screen.getByText('Adicionar comprovante')).toBeInTheDocument()
-    expect(screen.queryByText('Substituir')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Adicionar comprovante')).toBeInTheDocument()
+      expect(screen.queryByText('Substituir')).not.toBeInTheDocument()
+    })
   })
- })
+
+  // Testes de propagação para recorrentes
+
+  it('não deve exibir modal de propagação ao editar transação não recorrente', async () => {
+    renderForm(mockTransaction)
+    const user = userEvent.setup()
+
+    // Altera o valor
+    const amountInput = screen.getByDisplayValue('1500')
+    await user.clear(amountInput)
+    await user.type(amountInput, '2000')
+
+    await user.click(screen.getByRole('button', { name: /atualizar/i }))
+
+    await waitFor(() => {
+      expect(screen.queryByText('Editar transação recorrente')).not.toBeInTheDocument()
+      expect(mockMutate).toHaveBeenCalledOnce()
+    })
+  })
+
+  it('deve exibir modal de propagação ao editar Amount de transação recorrente', async () => {
+    renderForm(mockRecurringTransaction)
+    const user = userEvent.setup()
+
+    const amountInput = screen.getByDisplayValue('1500')
+    await user.clear(amountInput)
+    await user.type(amountInput, '2000')
+
+    await user.click(screen.getByRole('button', { name: /atualizar/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Editar transação recorrente')).toBeInTheDocument()
+      expect(screen.getByText('Apenas esta')).toBeInTheDocument()
+      expect(screen.getByText('Esta e todas as futuras')).toBeInTheDocument()
+    })
+  })
+
+  it('deve exibir modal de propagação ao editar Description de transação recorrente', async () => {
+    renderForm(mockRecurringTransaction)
+    const user = userEvent.setup()
+
+    const descInput = screen.getByDisplayValue('Aluguel')
+    await user.clear(descInput)
+    await user.type(descInput, 'Aluguel Novo')
+
+    await user.click(screen.getByRole('button', { name: /atualizar/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Editar transação recorrente')).toBeInTheDocument()
+    })
+  })
+
+  it('deve chamar update com propagateToFuture=false ao clicar em "Apenas esta"', async () => {
+    renderForm(mockRecurringTransaction)
+    const user = userEvent.setup()
+
+    const amountInput = screen.getByDisplayValue('1500')
+    await user.clear(amountInput)
+    await user.type(amountInput, '2000')
+
+    await user.click(screen.getByRole('button', { name: /atualizar/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Apenas esta')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByRole('button', { name: /apenas esta/i }))
+
+    expect(mockMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ propagateToFuture: false }),
+      expect.any(Object)
+    )
+  })
+
+  it('deve chamar update com propagateToFuture=true ao clicar em "Esta e todas as futuras"', async () => {
+    renderForm(mockRecurringTransaction)
+    const user = userEvent.setup()
+
+    const amountInput = screen.getByDisplayValue('1500')
+    await user.clear(amountInput)
+    await user.type(amountInput, '2000')
+
+    await user.click(screen.getByRole('button', { name: /atualizar/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Esta e todas as futuras')).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByRole('button', { name: /esta e todas as futuras/i }))
+
+    expect(mockMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ propagateToFuture: true }),
+      expect.any(Object)
+    )
+  })
+
+  it('deve fechar modal de propagação ao clicar em cancelar', async () => {
+    renderForm(mockRecurringTransaction)
+    const user = userEvent.setup()
+
+    const amountInput = screen.getByDisplayValue('1500')
+    await user.clear(amountInput)
+    await user.type(amountInput, '2000')
+
+    await user.click(screen.getByRole('button', { name: /atualizar/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Editar transação recorrente')).toBeInTheDocument()
+    })
+
+    // Clica no cancelar do modal de propagação (último botão cancelar)
+    const cancelButtons = screen.getAllByRole('button', { name: /cancelar/i })
+    await user.click(cancelButtons[cancelButtons.length - 1])
+
+    await waitFor(() => {
+      expect(screen.queryByText('Editar transação recorrente')).not.toBeInTheDocument()
+    })
+  })
 })
