@@ -21,20 +21,20 @@ import {
 
 interface TransactionFormProps {
   transaction?: Transaction
-  onClose:      () => void
+  onClose: () => void
 }
 
 const defaultForm: CreateTransactionRequest = {
-  amount:         0,
-  type:           TransactionType.Expense,
-  date:           new Date().toISOString().split('T')[0],
-  description:    '',
-  status:         TransactionStatus.Paid,
-  isRecurring:    false,
+  amount: 0,
+  type: TransactionType.Expense,
+  date: new Date().toISOString().split('T')[0],
+  description: '',
+  status: TransactionStatus.Paid,
+  isRecurring: false,
   recurrenceType: RecurrenceType.None,
-  categoryId:     '',
-  subcategoryId:  null,
-  tags:           [],
+  categoryId: '',
+  subcategoryId: null,
+  tags: [],
 }
 
 export default function TransactionForm({ transaction, onClose }: TransactionFormProps) {
@@ -43,20 +43,20 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
   const [form, setForm] = useState<CreateTransactionRequest>(
     transaction
       ? {
-          amount:         transaction.amount,
-          type:           transaction.type,
-          date:           transaction.date.split('T')[0],
-          description:    transaction.description,
-          status:         transaction.status,
-          isRecurring:    transaction.isRecurring,
-          recurrenceType: transaction.recurrenceType,
-          categoryId:     transaction.categoryId,
-          subcategoryId:  transaction.subcategoryId,
-          tags:           transaction.tags,
-        }
+        amount: transaction.amount,
+        type: transaction.type,
+        date: transaction.date.split('T')[0],
+        description: transaction.description,
+        status: transaction.status,
+        isRecurring: transaction.isRecurring,
+        recurrenceType: transaction.recurrenceType,
+        categoryId: transaction.categoryId,
+        subcategoryId: transaction.subcategoryId,
+        tags: transaction.tags,
+      }
       : defaultForm
   )
-  const [tagInput, setTagInput]     = useState('')
+  const [tagInput, setTagInput] = useState('')
   const [attachment, setAttachment] = useState<File | null>(null)
   const [currentAttachmentPath, setCurrentAttachmentPath] = useState<string | null>(
     transaction?.attachmentPath ?? null
@@ -66,19 +66,19 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
   )
 
   // Controla exibição do modal de propagação
-  const [showPropagateModal, setShowPropagateModal] = useState(false)  
+  const [showPropagateModal, setShowPropagateModal] = useState(false)
 
   const attachmentInputRef = useRef<HTMLInputElement>(null)
 
   const { data: categories = [] } = useCategories()
-  const createTransaction         = useCreateTransaction()
-  const updateTransaction         = useUpdateTransaction(transaction?.id ?? '')
-  const uploadAttachment          = useUploadAttachment(transaction?.id ?? '')
-  const removeAttachment          = useRemoveAttachment(transaction?.id ?? '')
+  const createTransaction = useCreateTransaction()
+  const updateTransaction = useUpdateTransaction(transaction?.id ?? '')
+  const uploadAttachment = useUploadAttachment(transaction?.id ?? '')
+  const removeAttachment = useRemoveAttachment(transaction?.id ?? '')
 
   const filteredCategories = categories.filter(c => c.type === form.type)
-  const selectedCategory   = categories.find(c => c.id === form.categoryId)
-  const subcategories      = selectedCategory?.subcategories ?? []
+  const selectedCategory = categories.find(c => c.id === form.categoryId)
+  const subcategories = selectedCategory?.subcategories ?? []
 
   const initialType = useRef(form.type)
 
@@ -87,12 +87,15 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
     setForm(f => ({ ...f, categoryId: '', subcategoryId: null }))
   }, [form.type])
 
-  // Verifica se Amount ou Description foram alterados
-  const amountAlterado    = transaction && form.amount      !== transaction.amount
+  // Verifica se Amount, Description, CategoryId ou SubcategoryId foram alterados
+  const amountAlterado = transaction && form.amount !== transaction.amount
   const descricaoAlterada = transaction && form.description !== transaction.description
-  const devePerguntar     = isEditing
+  const categoriaAlterada = transaction && form.categoryId !== transaction.categoryId
+  const subcategoriaAlterada = transaction && form.subcategoryId !== transaction.subcategoryId
+
+  const devePerguntar = isEditing
     && transaction?.recurrenceGroupId
-    && (amountAlterado || descricaoAlterada)
+    && (amountAlterado || descricaoAlterada || categoriaAlterada || subcategoriaAlterada)
 
   function handleSubmit() {
     if (!form.categoryId || form.amount <= 0) return
@@ -155,7 +158,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
   const isPending =
     createTransaction.isPending ||
     updateTransaction.isPending ||
-    uploadAttachment.isPending  ||
+    uploadAttachment.isPending ||
     removeAttachment.isPending
 
   return (
@@ -297,7 +300,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   checked={form.isRecurring}
                   onChange={e => setForm(f => ({
                     ...f,
-                    isRecurring:    e.target.checked,
+                    isRecurring: e.target.checked,
                     recurrenceType: e.target.checked ? RecurrenceType.Monthly : RecurrenceType.None,
                   }))}
                   className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-indigo-500 focus:ring-indigo-500"
