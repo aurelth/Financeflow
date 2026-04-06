@@ -11,6 +11,7 @@ namespace FinanceFlow.Workers.Jobs;
 [DisallowConcurrentExecution]
 public class TransactionDueAlertJob(
     NotificationDispatchService notificationDispatchService,
+    NotificationDeduplicationService deduplicationService,
     ApiAuthService authService,
     IHttpClientFactory httpClientFactory,
     IConfiguration configuration,
@@ -68,17 +69,34 @@ public class TransactionDueAlertJob(
 
         var list = transactions.ToList();
 
-        logger.LogInformation(
-            "{Count} transação(ões) com vencimento em {Date} ({Days} dia(s))",
-            list.Count, targetDate.ToString("dd/MM/yyyy"), daysAhead);
+        // Filtra apenas despesas (Type == Expense)
+        var despesas = list
+            .Where(t => t.Type == "Expense")
+            .ToList();
 
-        foreach (var transaction in list)
+        logger.LogInformation(
+            "{Count} despesa(s) com vencimento em {Date} ({Days} dia(s))",
+            despesas.Count, targetDate.ToString("dd/MM/yyyy"), daysAhead);
+
+        foreach (var transaction in despesas)
         {
-            // Formatação explícita em pt-BR
+            var type = daysAhead == 1 ? "TransactionDueTomorrow" : "TransactionDueIn3Days";
+
+            // Verifica deduplicação antes de enviar
+            var jaEnviada = await deduplicationService.AlreadySentTodayAsync(
+                transaction.Id, type, cancellationToken);
+
+            if (jaEnviada)
+            {
+                logger.LogDebug(
+                    "Notificação [{Type}] já enviada hoje para TransactionId {Id} — ignorando.",
+                    type, transaction.Id);
+                continue;
+            }
+
             var culture = new CultureInfo("pt-BR");
             var amountFormatted = transaction.Amount.ToString("C", culture);
 
-            var type = daysAhead == 1 ? "TransactionDueTomorrow" : "TransactionDueIn3Days";
             var message = daysAhead == 1
                 ? $"⏰ A transação '{transaction.Description}' vence amanhã ({targetDate:dd/MM/yyyy}) — {amountFormatted}."
                 : $"📅 A transação '{transaction.Description}' vence em 3 dias ({targetDate:dd/MM/yyyy}) — {amountFormatted}.";
@@ -91,6 +109,10 @@ public class TransactionDueAlertJob(
                 ReferenceId: transaction.Id);
 
             await notificationDispatchService.ProcessAsync(notification, cancellationToken);
+
+            // Marca como enviada no Redis após despacho bem-sucedido
+            await deduplicationService.MarkAsSentAsync(
+                transaction.Id, type, cancellationToken);
         }
     }
 }

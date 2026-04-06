@@ -1,10 +1,11 @@
+using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using FinanceFlow.Workers;
 using FinanceFlow.Workers.Jobs;
 using FinanceFlow.Workers.Services;
-using Confluent.Kafka;
-using Confluent.Kafka.Admin;
 using Quartz;
 using Serilog;
+using StackExchange.Redis;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -19,11 +20,16 @@ builder.Services.AddHttpClient("FinanceFlowApi", client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+// Redis
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+    ConnectionMultiplexer.Connect(builder.Configuration["Redis:ConnectionString"]!));
+
 // Serviços do Worker
 builder.Services.AddSingleton<ApiAuthService>();
 builder.Services.AddSingleton<BudgetAlertService>();
 builder.Services.AddSingleton<ReportGeneratorService>();
 builder.Services.AddSingleton<NotificationDispatchService>();
+builder.Services.AddSingleton<NotificationDeduplicationService>();
 
 // Quartz
 builder.Services.AddQuartz(q =>

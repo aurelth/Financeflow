@@ -133,7 +133,8 @@ public class TransactionsController(
             RecurrenceType: request.RecurrenceType,
             CategoryId: request.CategoryId,
             SubcategoryId: request.SubcategoryId,
-            Tags: request.Tags);
+            Tags: request.Tags,
+            PropagateToFuture: request.PropagateToFuture);
 
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
@@ -145,9 +146,10 @@ public class TransactionsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(
         Guid id,
-        CancellationToken cancellationToken)
+        [FromQuery] bool deleteFuture = false,
+        CancellationToken cancellationToken = default)
     {
-        var command = new DeleteTransactionCommand(id, CurrentUserId);
+        var command = new DeleteTransactionCommand(id, CurrentUserId, deleteFuture);
         await Mediator.Send(command, cancellationToken);
         return NoContent();
     }
@@ -165,15 +167,12 @@ public class TransactionsController(
         if (file == null || file.Length == 0)
             return UnprocessableEntity("Nenhum ficheiro enviado.");
 
-        // Busca a transação para validar que pertence ao utilizador
         var query = new GetTransactionByIdQuery(id, CurrentUserId);
         var transaction = await Mediator.Send(query, cancellationToken);
 
-        // Remove anexo anterior se existir
         if (!string.IsNullOrEmpty(transaction.AttachmentPath))
             await attachmentService.DeleteAsync(transaction.AttachmentPath);
 
-        // Salva o novo anexo
         await using var stream = file.OpenReadStream();
         var (attachmentPath, attachmentName) = await attachmentService.SaveAsync(
             stream,
@@ -182,7 +181,6 @@ public class TransactionsController(
             CurrentUserId,
             cancellationToken);
 
-        // Atualiza a transação com o novo caminho e nome
         var command = new UpdateTransactionCommand(
             Id: id,
             UserId: CurrentUserId,
@@ -245,7 +243,6 @@ public class TransactionsController(
             _ => "application/octet-stream"
         };
 
-        // Usa o nome original se disponível
         var fileName = transaction.AttachmentName
                          ?? Path.GetFileName(absolutePath);
         var fileStream = System.IO.File.OpenRead(absolutePath);
