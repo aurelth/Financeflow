@@ -44,6 +44,7 @@ const mockTransaction: Transaction = {
   status:          TransactionStatus.Paid,
   isRecurring:     false,
   recurrenceType:  RecurrenceType.None,
+  recurrenceGroupId: null,
   attachmentPath:  null,
   attachmentName:  null,
   tags:            [],

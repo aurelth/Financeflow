@@ -27,6 +27,7 @@ export interface Transaction {
   status:         TransactionStatus
   isRecurring:    boolean
   recurrenceType: RecurrenceType
+  recurrenceGroupId: string | null
   attachmentPath: string | null
   attachmentName:  string | null
   tags:           string[]
@@ -76,6 +77,7 @@ export interface UpdateTransactionRequest {
   categoryId:     string
   subcategoryId:  string | null
   tags:           string[]
+  propagateToFuture: boolean
 }
 
 export interface GetTransactionsQuery {
