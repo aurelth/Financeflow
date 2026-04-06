@@ -30,24 +30,29 @@ public class UpdateTransactionCommandHandler(
             throw new ValidationException(
                 "O tipo da transação não coincide com o tipo da categoria.");
 
-        // Verifica se Amount ou Description foram alterados
+        // Verifica se Amount, Description, CategoryId ou SubcategoryId foram alterados
         var amountAlterado = transaction.Amount != request.Amount;
         var descricaoAlterada = transaction.Description != request.Description;
+        var categoriaAlterada = transaction.CategoryId != request.CategoryId;
+        var subcategoriaAlterada = transaction.SubcategoryId != request.SubcategoryId;
+
         var devePropagarParaFuturas = request.PropagateToFuture
             && transaction.RecurrenceGroupId.HasValue
-            && (amountAlterado || descricaoAlterada);
+            && (amountAlterado || descricaoAlterada || categoriaAlterada || subcategoriaAlterada);
 
         // Atualiza a transação atual
         transaction.Amount = request.Amount;
         transaction.Type = request.Type;
         transaction.Date = request.Date;
         transaction.Description = request.Description;
-        transaction.Status = request.Status; // Status afeta apenas a atual
+        transaction.Status = request.Status;
         transaction.IsRecurring = request.IsRecurring;
         transaction.RecurrenceType = request.RecurrenceType;
         transaction.CategoryId = request.CategoryId;
         transaction.SubcategoryId = request.SubcategoryId;
         transaction.Tags = JsonSerializer.Serialize(request.Tags);
+        transaction.Category = null!; // Força o EF Core a recarregar via CategoryId
+        transaction.Subcategory = null;  // Idem para subcategoria
 
         if (request.AttachmentPath != null)
             transaction.AttachmentPath = request.AttachmentPath;
@@ -56,7 +61,7 @@ public class UpdateTransactionCommandHandler(
 
         await transactionRepository.UpdateAsync(transaction, cancellationToken);
 
-        // Propaga Amount e Description para as futuras do grupo
+        // Propaga Amount, Description, CategoryId e SubcategoryId para as futuras do grupo
         if (devePropagarParaFuturas)
         {
             var futuras = await transactionRepository.GetFutureRecurringAsync(
@@ -68,6 +73,10 @@ public class UpdateTransactionCommandHandler(
             {
                 futura.Amount = request.Amount;
                 futura.Description = request.Description;
+                futura.CategoryId = request.CategoryId;
+                futura.SubcategoryId = request.SubcategoryId;
+                futura.Category = null!;
+                futura.Subcategory = null;
                 await transactionRepository.UpdateAsync(futura, cancellationToken);
             }
         }

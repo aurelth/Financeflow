@@ -46,6 +46,15 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
             Type: TransactionType.Expense)))
             .Content.ReadFromJsonAsync<CategoryDto>();
 
+    // Cria segunda categoria para testar propagação de categoria
+    private static async Task<CategoryDto?> CreateSecondCategoryAsync(HttpClient client) =>
+        await (await client.PostAsJsonAsync("/api/categories", new CreateCategoryRequestDto(
+            Name: "TesteRecorrente_Unico2",
+            Icon: "💡",
+            Color: "#f59e0b",
+            Type: TransactionType.Expense)))
+            .Content.ReadFromJsonAsync<CategoryDto>();
+
     private static MultipartFormDataContent BuildRecurringTransactionForm(
         Guid categoryId,
         DateTime date,
@@ -57,9 +66,9 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
             { new StringContent("2"),                                   "type"           },
             { new StringContent(date.ToString("o")),                    "date"           },
             { new StringContent("Assinatura mensal"),                   "description"    },
-            { new StringContent("1"),                                   "status"         }, // Paid
+            { new StringContent("1"),                                   "status"         },
             { new StringContent(isRecurring.ToString().ToLower()),      "isRecurring"    },
-            { new StringContent("1"),                                   "recurrenceType" }, // Monthly
+            { new StringContent("3"),                                   "recurrenceType" },
             { new StringContent(categoryId.ToString()),                 "categoryId"     },
         };
     }
@@ -82,7 +91,6 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        // Busca todas as transações e verifica que 3 foram criadas (Out + Nov + Dez)
         var listResponse = await client.GetAsync("/api/transactions?PageSize=50");
         var list = await listResponse.Content.ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
 
@@ -124,6 +132,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         // Arrange — cria recorrente em Outubro, edita com propagação
         var client = await CreateAuthenticatedClientAsync(factory, "recorrente.update@teste.com");
         var category = await CreateCategoryAsync(client);
+        var category2 = await CreateSecondCategoryAsync(client);
 
         var date = new DateTime(2026, 10, 15, 0, 0, 0, DateTimeKind.Utc);
         var createResponse = await client.PostAsync("/api/transactions",
@@ -139,7 +148,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
             Status: TransactionStatus.Paid,
             IsRecurring: true,
             RecurrenceType: RecurrenceType.Monthly,
-            CategoryId: category.Id,
+            CategoryId: category2!.Id,
             SubcategoryId: null,
             Tags: [],
             PropagateToFuture: true);
@@ -154,10 +163,11 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         var listResponse = await client.GetAsync("/api/transactions?PageSize=50");
         var list = await listResponse.Content.ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
 
-        // Todas as transações do grupo devem ter Amount e Description atualizados
+        // Valida Amount, Description e CategoryId na propagação
         list!.Items.Should().OnlyContain(t =>
             t.Amount == 999.00m &&
-            t.Description == "Assinatura atualizada");
+            t.Description == "Assinatura atualizada" &&
+            t.CategoryId == category2.Id);
     }
 
     [Fact]
@@ -215,7 +225,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
             Type: TransactionType.Expense,
             Date: date,
             Description: "Assinatura mensal",
-            Status: TransactionStatus.Pending, // Muda status
+            Status: TransactionStatus.Pending,
             IsRecurring: true,
             RecurrenceType: RecurrenceType.Monthly,
             CategoryId: category.Id,
@@ -259,7 +269,6 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         var listResponse = await client.GetAsync("/api/transactions?PageSize=50");
         var list = await listResponse.Content.ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
 
-        // 2 cópias futuras devem permanecer
         list!.Items.Should().HaveCount(2);
     }
 
@@ -286,7 +295,6 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         var listResponse = await client.GetAsync("/api/transactions?PageSize=50");
         var list = await listResponse.Content.ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
 
-        // Todas as 3 devem ter sido removidas
         list!.Items.Should().BeEmpty();
     }
 }
