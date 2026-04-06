@@ -11,6 +11,7 @@ public record TransactionDto(
     TransactionStatus Status,
     bool IsRecurring,
     RecurrenceType RecurrenceType,
+    Guid? RecurrenceGroupId,
     string? AttachmentPath,
     string? AttachmentName,
     string[] Tags,
