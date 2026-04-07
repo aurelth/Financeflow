@@ -42,7 +42,6 @@ export const useCreateTransaction = () => {
     }) => {
       const formData = new FormData()
 
-      // Campos escalares
       formData.append('amount',         String(data.amount))
       formData.append('type',           String(data.type))
       formData.append('date',           data.date)
@@ -55,10 +54,8 @@ export const useCreateTransaction = () => {
       if (data.subcategoryId)
         formData.append('subcategoryId', data.subcategoryId)
 
-      // Tags como array
       data.tags.forEach(tag => formData.append('tags', tag))
 
-      // Anexo opcional
       if (attachment)
         formData.append('attachment', attachment)
 
@@ -68,6 +65,7 @@ export const useCreateTransaction = () => {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Transação criada com sucesso!')
     },
     onError: (err: any) => {
@@ -92,6 +90,7 @@ export const useUpdateTransaction = (id: string) => {
       api.put<Transaction>(`/api/transactions/${id}`, data).then(r => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Transação atualizada com sucesso!')
     },
     onError: (err: any) => {
@@ -108,14 +107,18 @@ export const useUpdateTransaction = (id: string) => {
   })
 }
 
+// Aceita objeto com id e deleteFuture
 export const useDeleteTransaction = () => {
   const qc = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) =>
-      api.delete(`/api/transactions/${id}`),
+    mutationFn: ({ id, deleteFuture }: { id: string; deleteFuture: boolean }) =>
+      api.delete(`/api/transactions/${id}`, {
+        params: { deleteFuture },
+      }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Transação removida com sucesso!')
     },
     onError: (err: any) => {

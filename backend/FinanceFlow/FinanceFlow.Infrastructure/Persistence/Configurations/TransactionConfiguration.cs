@@ -18,14 +18,18 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.Property(t => t.Tags).HasMaxLength(500).HasDefaultValue("[]");
         builder.Property(t => t.AttachmentPath).HasMaxLength(1000);
         builder.Property(t => t.AttachmentName).HasMaxLength(255);
+        builder.Property(t => t.RecurrenceGroupId).IsRequired(false);
+
         builder.HasOne(t => t.User)
                .WithMany(u => u.Transactions)
                .HasForeignKey(t => t.UserId)
                .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne(t => t.Category)
                .WithMany(c => c.Transactions)
                .HasForeignKey(t => t.CategoryId)
                .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne(t => t.Subcategory)
                .WithMany(s => s.Transactions)
                .HasForeignKey(t => t.SubcategoryId)

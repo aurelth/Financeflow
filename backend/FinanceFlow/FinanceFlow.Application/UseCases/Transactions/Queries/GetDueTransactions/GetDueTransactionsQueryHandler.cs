@@ -1,5 +1,4 @@
 using FinanceFlow.Application.DTOs;
-using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
 
@@ -23,7 +22,8 @@ public class GetDueTransactionsQueryHandler(
             Amount: t.Amount,
             Date: t.Date,
             IsRecurring: t.IsRecurring,
-            RecurrenceType: t.RecurrenceType.ToString()
+            RecurrenceType: t.RecurrenceType.ToString(),
+            Type: t.Type.ToString()
         ));
     }
 }

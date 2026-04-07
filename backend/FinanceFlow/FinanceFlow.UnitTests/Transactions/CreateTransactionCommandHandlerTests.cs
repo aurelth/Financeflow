@@ -18,6 +18,7 @@ public class CreateTransactionCommandHandlerTests
     private readonly Mock<IEventPublisher> _eventPublisher = new();
     private readonly Mock<IAttachmentService> _attachmentService = new();
     private readonly Mock<IConfiguration> _configuration = new();
+    private readonly Mock<ICacheService> _cache = new(); // Adicionado
     private readonly IMapper _mapper;
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -39,17 +40,20 @@ public class CreateTransactionCommandHandlerTests
             cfg.AddProfile<TransactionMappingProfile>());
         _mapper = config.CreateMapper();
 
-        // Configuração do tópico Kafka
         _configuration
             .Setup(c => c["Kafka:Topics:TransactionCreated"])
             .Returns("finance.transactions.created");
 
-        // Publisher não lança exceção por padrão
         _eventPublisher
             .Setup(e => e.PublishAsync(
                 It.IsAny<string>(),
                 It.IsAny<object>(),
                 It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Adicionado: cache não lança exceção por padrão
+        _cache
+            .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
     }
 
@@ -59,6 +63,7 @@ public class CreateTransactionCommandHandlerTests
             _eventPublisher.Object,
             _attachmentService.Object,
             _configuration.Object,
+            _cache.Object, // Adicionado
             _mapper);
 
     [Fact]
@@ -157,7 +162,7 @@ public class CreateTransactionCommandHandlerTests
     [Fact]
     public async Task Handle_DeveLancarValidationException_QuandoTipoNaoCoincideComCategoria()
     {
-        // Arrange — categoria é Expense mas a transação é Income
+        // Arrange
         var command = new CreateTransactionCommand(
             UserId: UserId,
             Amount: 200.00m,
@@ -173,7 +178,7 @@ public class CreateTransactionCommandHandlerTests
 
         _categoryRepository
             .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
-            .ReturnsAsync(ValidCategory); // ValidCategory.Type = Expense
+            .ReturnsAsync(ValidCategory);
 
         // Act
         var act = async () => await CreateHandler().Handle(command, default);
@@ -266,5 +271,263 @@ public class CreateTransactionCommandHandlerTests
                     t.AttachmentName == "comprovante.jpg"),
                 default),
             Times.Once);
+    }
+
+    // Testes de recorrência
+
+    [Fact]
+    public async Task Handle_DeveGerarRecurrenceGroupId_QuandoIsRecurringTrue()
+    {
+        // Arrange
+        var command = new CreateTransactionCommand(
+            UserId: UserId,
+            Amount: 100.00m,
+            Type: TransactionType.Expense,
+            Date: new DateTime(2026, 12, 1),
+            Description: "Assinatura",
+            Status: TransactionStatus.Paid,
+            IsRecurring: true,
+            RecurrenceType: RecurrenceType.Monthly,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: []);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+
+        Transaction? transactionSalva = null;
+
+        _transactionRepository
+            .Setup(r => r.AddAsync(It.IsAny<Transaction>(), default))
+            .Callback<Transaction, CancellationToken>((t, _) => transactionSalva ??= t)
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
+            .ReturnsAsync(() => transactionSalva!);
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert
+        transactionSalva.Should().NotBeNull();
+        transactionSalva!.RecurrenceGroupId.Should().NotBeNull();
+        transactionSalva.RecurrenceGroupId.Should().NotBe(Guid.Empty);
+    }
+
+    [Fact]
+    public async Task Handle_NaoDeveGerarRecurrenceGroupId_QuandoIsRecurringFalse()
+    {
+        // Arrange
+        var command = new CreateTransactionCommand(
+            UserId: UserId,
+            Amount: 100.00m,
+            Type: TransactionType.Expense,
+            Date: DateTime.UtcNow,
+            Description: "Não recorrente",
+            Status: TransactionStatus.Paid,
+            IsRecurring: false,
+            RecurrenceType: RecurrenceType.None,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: []);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+
+        Transaction? transactionSalva = null;
+
+        _transactionRepository
+            .Setup(r => r.AddAsync(It.IsAny<Transaction>(), default))
+            .Callback<Transaction, CancellationToken>((t, _) => transactionSalva ??= t)
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
+            .ReturnsAsync(() => transactionSalva!);
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert
+        transactionSalva!.RecurrenceGroupId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_DeveGerarCopiasParaMesesRestantes_QuandoIsRecurringTrue()
+    {
+        // Arrange
+        var command = new CreateTransactionCommand(
+            UserId: UserId,
+            Amount: 50.00m,
+            Type: TransactionType.Expense,
+            Date: new DateTime(2026, 10, 15),
+            Description: "Streaming",
+            Status: TransactionStatus.Paid,
+            IsRecurring: true,
+            RecurrenceType: RecurrenceType.Monthly,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: []);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+
+        var todasTransactions = new List<Transaction>();
+
+        _transactionRepository
+            .Setup(r => r.AddAsync(It.IsAny<Transaction>(), default))
+            .Callback<Transaction, CancellationToken>((t, _) => todasTransactions.Add(t))
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
+            .ReturnsAsync(() => todasTransactions.First());
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert — 1 original + 2 cópias (Nov e Dez)
+        todasTransactions.Should().HaveCount(3);
+
+        var copias = todasTransactions.Skip(1).ToList();
+        copias.Should().OnlyContain(t => t.Status == TransactionStatus.Scheduled);
+        copias.Should().OnlyContain(t => t.IsRecurring == true);
+        copias.Should().OnlyContain(t => t.RecurrenceGroupId == todasTransactions.First().RecurrenceGroupId);
+        copias.Select(t => t.Date.Month).Should().BeEquivalentTo([11, 12]);
+    }
+
+    [Fact]
+    public async Task Handle_NaoDeveGerarCopias_QuandoCriadaEmDezembro()
+    {
+        // Arrange
+        var command = new CreateTransactionCommand(
+            UserId: UserId,
+            Amount: 50.00m,
+            Type: TransactionType.Expense,
+            Date: new DateTime(2026, 12, 1),
+            Description: "Streaming Dez",
+            Status: TransactionStatus.Paid,
+            IsRecurring: true,
+            RecurrenceType: RecurrenceType.Monthly,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: []);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+
+        var todasTransactions = new List<Transaction>();
+
+        _transactionRepository
+            .Setup(r => r.AddAsync(It.IsAny<Transaction>(), default))
+            .Callback<Transaction, CancellationToken>((t, _) => todasTransactions.Add(t))
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
+            .ReturnsAsync(() => todasTransactions.First());
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert
+        todasTransactions.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task Handle_DeveAjustarDia_QuandoMesDestinoTemMenosDias()
+    {
+        // Arrange
+        var command = new CreateTransactionCommand(
+            UserId: UserId,
+            Amount: 200.00m,
+            Type: TransactionType.Expense,
+            Date: new DateTime(2026, 1, 31),
+            Description: "Conta dia 31",
+            Status: TransactionStatus.Paid,
+            IsRecurring: true,
+            RecurrenceType: RecurrenceType.Monthly,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: []);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+
+        var todasTransactions = new List<Transaction>();
+
+        _transactionRepository
+            .Setup(r => r.AddAsync(It.IsAny<Transaction>(), default))
+            .Callback<Transaction, CancellationToken>((t, _) => todasTransactions.Add(t))
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
+            .ReturnsAsync(() => todasTransactions.First());
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert
+        var copiaFevereiro = todasTransactions.FirstOrDefault(t => t.Date.Month == 2);
+        copiaFevereiro.Should().NotBeNull();
+        copiaFevereiro!.Date.Day.Should().Be(28);
+    }
+
+    // Adicionado: testa invalidação do cache ao criar transação
+    [Fact]
+    public async Task Handle_DeveInvalidarCacheDashboard_QuandoTransacaoCriada()
+    {
+        // Arrange
+        var command = new CreateTransactionCommand(
+            UserId: UserId,
+            Amount: 100.00m,
+            Type: TransactionType.Expense,
+            Date: new DateTime(2026, 4, 1),
+            Description: "Teste cache",
+            Status: TransactionStatus.Paid,
+            IsRecurring: false,
+            RecurrenceType: RecurrenceType.None,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: []);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+
+        _transactionRepository
+            .Setup(r => r.AddAsync(It.IsAny<Transaction>(), default))
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
+            .ReturnsAsync(new Transaction
+            {
+                Id = Guid.NewGuid(),
+                UserId = UserId,
+                Amount = 100.00m,
+                Type = TransactionType.Expense,
+                Date = new DateTime(2026, 4, 1),
+                CategoryId = CategoryId,
+                Category = ValidCategory,
+                Tags = "[]"
+            });
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert — cache deve ter sido invalidado para o mês da transação
+        _cache.Verify(c =>
+            c.RemoveAsync(
+                It.Is<string>(k => k.Contains($"{UserId}:2026:4")),
+                default),
+            Times.AtLeastOnce);
     }
 }

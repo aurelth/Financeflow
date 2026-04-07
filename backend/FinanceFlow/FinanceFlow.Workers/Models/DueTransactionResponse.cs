@@ -7,5 +7,6 @@ public record DueTransactionResponse(
     decimal Amount,
     DateTime Date,
     bool IsRecurring,
-    string RecurrenceType
+    string RecurrenceType,
+    string Type
 );

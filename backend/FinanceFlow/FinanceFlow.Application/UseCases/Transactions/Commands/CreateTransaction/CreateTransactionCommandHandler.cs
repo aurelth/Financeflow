@@ -17,6 +17,7 @@ public class CreateTransactionCommandHandler(
     IEventPublisher eventPublisher,
     IAttachmentService attachmentService,
     IConfiguration configuration,
+    ICacheService cache, // Adicionado
     IMapper mapper)
     : IRequestHandler<CreateTransactionCommand, TransactionDto>
 {
@@ -35,7 +36,6 @@ public class CreateTransactionCommandHandler(
         // Processa o anexo se fornecido
         string? attachmentPath = null;
         string? attachmentName = null;
-
         if (request.AttachmentStream != null &&
             request.AttachmentFileName != null &&
             request.AttachmentContentType != null)
@@ -46,10 +46,12 @@ public class CreateTransactionCommandHandler(
                 request.AttachmentContentType,
                 request.UserId,
                 cancellationToken);
-
             attachmentPath = result.Path;
             attachmentName = result.Name;
         }
+
+        // Gera o RecurrenceGroupId se a transação for recorrente
+        Guid? recurrenceGroupId = request.IsRecurring ? Guid.NewGuid() : null;
 
         var transaction = new Transaction
         {
@@ -66,9 +68,21 @@ public class CreateTransactionCommandHandler(
             Tags = JsonSerializer.Serialize(request.Tags),
             AttachmentPath = attachmentPath,
             AttachmentName = attachmentName,
+            RecurrenceGroupId = recurrenceGroupId,
         };
 
         await transactionRepository.AddAsync(transaction, cancellationToken);
+
+        // Gera cópias para os meses restantes do ano se recorrente
+        if (request.IsRecurring)
+        {
+            var copies = GerarCopiasRecorrentes(transaction, request.Tags);
+            foreach (var copy in copies)
+                await transactionRepository.AddAsync(copy, cancellationToken);
+        }
+
+        // Adicionado: invalida o cache do dashboard para o mês da transação
+        await InvalidarCacheDashboardAsync(request.UserId, request.Date, cancellationToken);
 
         var topic = configuration["Kafka:Topics:TransactionCreated"]
                     ?? "finance.transactions.created";
@@ -90,5 +104,60 @@ public class CreateTransactionCommandHandler(
             transaction.Id, request.UserId, cancellationToken);
 
         return mapper.Map<TransactionDto>(created);
+    }
+
+    // Gera cópias mensais para os meses restantes do ano corrente
+    private static List<Transaction> GerarCopiasRecorrentes(
+        Transaction origem,
+        string[] tags)
+    {
+        var copies = new List<Transaction>();
+        var mesAtual = origem.Date.Month;
+        var ano = origem.Date.Year;
+
+        for (var mes = mesAtual + 1; mes <= 12; mes++)
+        {
+            // Garante que o dia é válido para o mês de destino
+            var diasNoMes = DateTime.DaysInMonth(ano, mes);
+            var dia = Math.Min(origem.Date.Day, diasNoMes);
+
+            copies.Add(new Transaction
+            {
+                UserId = origem.UserId,
+                Amount = origem.Amount,
+                Type = origem.Type,
+                Date = new DateTime(ano, mes, dia, origem.Date.Hour, origem.Date.Minute, origem.Date.Second),
+                Description = origem.Description,
+                Status = TransactionStatus.Scheduled,
+                IsRecurring = true,
+                RecurrenceType = origem.RecurrenceType,
+                RecurrenceGroupId = origem.RecurrenceGroupId,
+                CategoryId = origem.CategoryId,
+                SubcategoryId = origem.SubcategoryId,
+                Tags = JsonSerializer.Serialize(tags),
+                AttachmentPath = null,
+                AttachmentName = null,
+            });
+        }
+
+        return copies;
+    }
+
+    // Adicionado: invalida todas as chaves de cache do dashboard para o mês/ano da transação
+    private async Task InvalidarCacheDashboardAsync(
+        Guid userId,
+        DateTime date,
+        CancellationToken cancellationToken)
+    {
+        var prefixes = new[]
+        {
+            $"dashboard:summary:{userId}:{date.Year}:{date.Month}",
+            $"dashboard:balance-evolution:{userId}:{date.Year}:{date.Month}",
+            $"dashboard:expenses-by-category:{userId}:{date.Year}:{date.Month}",
+            $"dashboard:weekly-comparison:{userId}:{date.Year}:{date.Month}",
+        };
+
+        foreach (var prefix in prefixes)
+            await cache.RemoveAsync(prefix, cancellationToken);
     }
 }

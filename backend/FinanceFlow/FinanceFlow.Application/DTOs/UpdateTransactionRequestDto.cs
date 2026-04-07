@@ -12,5 +12,6 @@ public record UpdateTransactionRequestDto(
     RecurrenceType RecurrenceType,
     Guid CategoryId,
     Guid? SubcategoryId,
-    string[] Tags
+    string[] Tags,
+    bool PropagateToFuture = false
 );
