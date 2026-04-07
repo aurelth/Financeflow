@@ -1,7 +1,6 @@
 import { Download, Loader2, AlertCircle, Clock, CheckCircle2, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 import api from '@/lib/axios'
 import { ReportStatus } from '../types/report.types'
 import { useDeleteReport } from '../api/useReports'
@@ -16,39 +15,52 @@ const MONTHS = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
+// usa tokens da paleta
 const statusConfig = {
-  [ReportStatus.Pending]:    { label: 'Aguardando',  icon: Clock,        color: 'text-amber-400',   bg: 'bg-amber-500/10 border-amber-500/20'    },
-  [ReportStatus.Processing]: { label: 'Processando', icon: Loader2,      color: 'text-indigo-400',  bg: 'bg-indigo-500/10 border-indigo-500/20'  },
-  [ReportStatus.Completed]:  { label: 'Concluído',   icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-  [ReportStatus.Failed]:     { label: 'Falhou',      icon: AlertCircle,  color: 'text-red-400',     bg: 'bg-red-500/10 border-red-500/20'         },
+  [ReportStatus.Pending]: {
+    label: 'Aguardando',  icon: Clock,
+    color: 'var(--ff-pending)',
+    bg:    'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)',
+  },
+  [ReportStatus.Processing]: {
+    label: 'Processando', icon: Loader2,
+    color: 'var(--ff-scheduled)',
+    bg:    'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)',
+  },
+  [ReportStatus.Completed]: {
+    label: 'Concluído',   icon: CheckCircle2,
+    color: 'var(--ff-income)',
+    bg:    'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.2)',
+  },
+  [ReportStatus.Failed]: {
+    label: 'Falhou',      icon: AlertCircle,
+    color: 'var(--ff-expense)',
+    bg:    'rgba(244,63,94,0.08)', border: 'rgba(244,63,94,0.2)',
+  },
 }
 
 function formatDate(dateStr: string): string {
   const utcStr = dateStr.endsWith('Z') ? dateStr : `${dateStr}Z`
   return new Intl.DateTimeFormat('pt-BR', {
-    day:      '2-digit',
-    month:    '2-digit',
-    year:     'numeric',
+    day: '2-digit', month: '2-digit', year: 'numeric',
     timeZone: 'America/Sao_Paulo',
   }).format(new Date(utcStr))
 }
 
 export default function ReportCard({ report }: ReportCardProps) {
-  const config      = statusConfig[report.status]
-  const StatusIcon  = config.icon
-  const isReady     = report.status === ReportStatus.Completed
+  const config     = statusConfig[report.status]
+  const StatusIcon = config.icon
+  const isReady    = report.status === ReportStatus.Completed
   const [confirmDelete, setConfirmDelete] = useState(false)
   const deleteReport = useDeleteReport()
 
   async function handleDownload() {
     try {
-      const response = await api.get(`/api/reports/${report.id}/download`, {
-        responseType: 'blob',
-      })
+      const response = await api.get(`/api/reports/${report.id}/download`, { responseType: 'blob' })
       const url  = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement('a')
-      link.href      = url
-      link.download  = report.fileName ?? 'relatorio.csv'
+      link.href     = url
+      link.download = report.fileName ?? 'relatorio.csv'
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -58,29 +70,26 @@ export default function ReportCard({ report }: ReportCardProps) {
     }
   }
 
-  function handleDeleteClick() {
-    setConfirmDelete(true)
-  }
-
-  function handleConfirmDelete() {
-    deleteReport.mutate(report.id, {
-      onSettled: () => setConfirmDelete(false),
-    })
-  }
-
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-slate-700 transition-colors">
-
+    <div
+      className="rounded-2xl p-5 flex items-center justify-between gap-4 transition-colors"
+      style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+      onMouseEnter={e => (e.currentTarget.style.borderColor = '#333333')}
+      onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
+    >
       {/* Info */}
       <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center flex-shrink-0">
-          <span className="text-indigo-400 text-xs font-bold">CSV</span>
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: 'var(--ff-emerald-subtle)', border: '1px solid rgba(16,185,129,0.2)' }}
+        >
+          <span className="text-xs font-bold" style={{ color: 'var(--ff-emerald)' }}>CSV</span>
         </div>
         <div>
-          <p className="text-slate-200 font-medium text-sm">
+          <p className="font-medium text-sm" style={{ color: 'var(--ff-text-primary)' }}>
             Relatório — {MONTHS[report.month - 1]} {report.year}
           </p>
-          <p className="text-slate-500 text-xs mt-0.5">
+          <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
             Solicitado em {formatDate(report.createdAt)}
             {report.completedAt && (
               <span> · Concluído em {formatDate(report.completedAt)}</span>
@@ -91,10 +100,10 @@ export default function ReportCard({ report }: ReportCardProps) {
 
       {/* Status e ações */}
       <div className="flex items-center gap-3 flex-shrink-0">
-        <span className={cn(
-          'flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border',
-          config.bg, config.color
-        )}>
+        <span
+          className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
+          style={{ background: config.bg, border: `1px solid ${config.border}`, color: config.color }}
+        >
           <StatusIcon
             size={12}
             className={report.status === ReportStatus.Processing ? 'animate-spin' : ''}
@@ -105,35 +114,52 @@ export default function ReportCard({ report }: ReportCardProps) {
         {isReady && report.fileName && (
           <button
             onClick={handleDownload}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors"
+            style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-emerald-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-emerald)')}
           >
             <Download size={12} />
             Baixar CSV
           </button>
         )}
 
-        {/* Botão de excluir */}
         {!confirmDelete ? (
           <button
-            onClick={handleDeleteClick}
-            className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-all"
+            onClick={() => setConfirmDelete(true)}
+            className="p-1.5 rounded-lg transition-all"
+            style={{ color: 'var(--ff-text-muted)' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.color = 'var(--ff-expense)'
+              e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = 'var(--ff-text-muted)'
+              e.currentTarget.style.background = 'transparent'
+            }}
             title="Remover relatório"
           >
             <Trash2 size={14} />
           </button>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">Confirmar?</span>
+            <span className="text-xs" style={{ color: 'var(--ff-text-muted)' }}>Confirmar?</span>
             <button
-              onClick={handleConfirmDelete}
+              onClick={() => deleteReport.mutate(report.id, { onSettled: () => setConfirmDelete(false) })}
               disabled={deleteReport.isPending}
-              className="text-xs px-2 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors"
+              className="text-xs px-2 py-1 rounded-lg transition-colors"
+              style={{ background: 'rgba(244,63,94,0.1)', color: 'var(--ff-expense)', border: '1px solid rgba(244,63,94,0.2)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(244,63,94,0.2)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(244,63,94,0.1)')}
             >
               {deleteReport.isPending ? 'Removendo...' : 'Sim'}
             </button>
             <button
               onClick={() => setConfirmDelete(false)}
-              className="text-xs px-2 py-1 rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 transition-colors"
+              className="text-xs px-2 py-1 rounded-lg transition-colors"
+              style={{ background: 'var(--ff-bg-elevated)', color: 'var(--ff-text-muted)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#222222')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-bg-elevated)')}
             >
               Não
             </button>

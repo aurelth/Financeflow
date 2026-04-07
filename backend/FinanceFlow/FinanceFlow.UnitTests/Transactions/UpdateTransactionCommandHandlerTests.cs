@@ -1,6 +1,6 @@
 using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
-using FinanceFlow.Application.Common.Interfaces; // Adicionado
+using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
 using FinanceFlow.Domain.Entities;
@@ -14,7 +14,7 @@ public class UpdateTransactionCommandHandlerTests
 {
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
-    private readonly Mock<ICacheService> _cache = new(); // Adicionado
+    private readonly Mock<ICacheService> _cache = new();
     private readonly IMapper _mapper;
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -80,7 +80,7 @@ public class UpdateTransactionCommandHandlerTests
             cfg.AddProfile<TransactionMappingProfile>());
         _mapper = config.CreateMapper();
 
-        // Adicionado: cache não lança exceção por padrão
+        // Cache não lança exceção por padrão
         _cache
             .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -89,7 +89,7 @@ public class UpdateTransactionCommandHandlerTests
     private UpdateTransactionCommandHandler CreateHandler() =>
         new(_transactionRepository.Object,
             _categoryRepository.Object,
-            _cache.Object, // Adicionado
+            _cache.Object,
             _mapper);
 
     [Fact]
@@ -536,7 +536,7 @@ public class UpdateTransactionCommandHandlerTests
             r.UpdateAsync(It.IsAny<Transaction>(), default), Times.Once);
     }
 
-    // Adicionado: testa invalidação do cache ao atualizar transação
+    // Testa invalidação do cache ao atualizar transação
     [Fact]
     public async Task Handle_DeveInvalidarCacheDashboard_QuandoTransacaoAtualizada()
     {

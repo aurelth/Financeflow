@@ -9,32 +9,24 @@ import SubcategoryForm from './SubcategoryForm'
 import DeleteCategoryDialog from './DeleteCategoryDialog'
 import DeleteSubcategoryDialog from './DeleteSubcategoryDialog'
 import {
-  useCreateCategory,
-  useUpdateCategory,
-  useDeleteCategory,
-  useCreateSubcategory,
-  useUpdateSubcategory,
-  useDeleteSubcategory,
+  useCreateCategory, useUpdateCategory, useDeleteCategory,
+  useCreateSubcategory, useUpdateSubcategory, useDeleteSubcategory,
 } from '../api/useCategories'
 import type { Category, Subcategory } from '../types/category.types'
 
-// Tipos de modal
-
 export type ModalState =
   | { type: 'create-category' }
-  | { type: 'edit-category';         category: Category }
-  | { type: 'delete-category';       category: Category }
-  | { type: 'create-subcategory';    category: Category }
-  | { type: 'edit-subcategory';      category: Category; subcategory: Subcategory }
-  | { type: 'delete-subcategory';    category: Category; subcategory: Subcategory }
+  | { type: 'edit-category';      category: Category }
+  | { type: 'delete-category';    category: Category }
+  | { type: 'create-subcategory'; category: Category }
+  | { type: 'edit-subcategory';   category: Category; subcategory: Subcategory }
+  | { type: 'delete-subcategory'; category: Category; subcategory: Subcategory }
   | null
 
 interface CategoryModalProps {
-  state:    ModalState
-  onClose:  () => void
+  state:   ModalState
+  onClose: () => void
 }
-
-// Títulos por tipo
 
 const TITLES: Record<NonNullable<ModalState>['type'], string> = {
   'create-category':    'Nova categoria',
@@ -46,113 +38,43 @@ const TITLES: Record<NonNullable<ModalState>['type'], string> = {
 }
 
 export default function CategoryModal({ state, onClose }: CategoryModalProps) {
-  // Mutations
-
-  const createCategory = useCreateCategory()
-  const updateCategory = useUpdateCategory(
-    state?.type === 'edit-category' ? state.category.id : ''
-  )
-  const deleteCategory = useDeleteCategory()
-
-  const createSubcategory = useCreateSubcategory(
-    state?.type === 'create-subcategory' ? state.category.id : ''
-  )
+  const createCategory    = useCreateCategory()
+  const updateCategory    = useUpdateCategory(state?.type === 'edit-category' ? state.category.id : '')
+  const deleteCategory    = useDeleteCategory()
+  const createSubcategory = useCreateSubcategory(state?.type === 'create-subcategory' ? state.category.id : '')
   const updateSubcategory = useUpdateSubcategory(
     state?.type === 'edit-subcategory' ? state.category.id : '',
     state?.type === 'edit-subcategory' ? state.subcategory.id : ''
   )
-  const deleteSubcategory = useDeleteSubcategory(
-    state?.type === 'delete-subcategory' ? state.category.id : ''
-  )
-
-  // Handlers
-
-  const handleSuccess = () => onClose()
-
-  // Conteúdo por tipo
+  const deleteSubcategory = useDeleteSubcategory(state?.type === 'delete-subcategory' ? state.category.id : '')
 
   const renderContent = () => {
     if (!state) return null
-
     switch (state.type) {
-
       case 'create-category':
-        return (
-          <CategoryForm
-            isPending={createCategory.isPending}
-            onCancel={onClose}
-            onSubmit={data =>
-              createCategory.mutate(data, { onSuccess: handleSuccess })
-            }
-          />
-        )
-
+        return <CategoryForm isPending={createCategory.isPending} onCancel={onClose} onSubmit={data => createCategory.mutate(data, { onSuccess: onClose })} />
       case 'edit-category':
-        return (
-          <CategoryForm
-            category={state.category}
-            isPending={updateCategory.isPending}
-            onCancel={onClose}
-            onSubmit={data =>
-              updateCategory.mutate(data, { onSuccess: handleSuccess })
-            }
-          />
-        )
-
+        return <CategoryForm category={state.category} isPending={updateCategory.isPending} onCancel={onClose} onSubmit={data => updateCategory.mutate(data, { onSuccess: onClose })} />
       case 'delete-category':
-        return (
-          <DeleteCategoryDialog
-            category={state.category}
-            isPending={deleteCategory.isPending}
-            onCancel={onClose}
-            onConfirm={() =>
-              deleteCategory.mutate(state.category.id, { onSuccess: handleSuccess })
-            }
-          />
-        )
-
+        return <DeleteCategoryDialog category={state.category} isPending={deleteCategory.isPending} onCancel={onClose} onConfirm={() => deleteCategory.mutate(state.category.id, { onSuccess: onClose })} />
       case 'create-subcategory':
-        return (
-          <SubcategoryForm
-            isPending={createSubcategory.isPending}
-            onCancel={onClose}
-            onSubmit={data =>
-              createSubcategory.mutate(data, { onSuccess: handleSuccess })
-            }
-          />
-        )
-
+        return <SubcategoryForm isPending={createSubcategory.isPending} onCancel={onClose} onSubmit={data => createSubcategory.mutate(data, { onSuccess: onClose })} />
       case 'edit-subcategory':
-        return (
-          <SubcategoryForm
-            subcategory={state.subcategory}
-            isPending={updateSubcategory.isPending}
-            onCancel={onClose}
-            onSubmit={data =>
-              updateSubcategory.mutate(data, { onSuccess: handleSuccess })
-            }
-          />
-        )
-
+        return <SubcategoryForm subcategory={state.subcategory} isPending={updateSubcategory.isPending} onCancel={onClose} onSubmit={data => updateSubcategory.mutate(data, { onSuccess: onClose })} />
       case 'delete-subcategory':
-        return (
-          <DeleteSubcategoryDialog
-            subcategory={state.subcategory}
-            isPending={deleteSubcategory.isPending}
-            onCancel={onClose}
-            onConfirm={() =>
-              deleteSubcategory.mutate(state.subcategory.id, { onSuccess: handleSuccess })
-            }
-          />
-        )
+        return <DeleteSubcategoryDialog subcategory={state.subcategory} isPending={deleteSubcategory.isPending} onCancel={onClose} onConfirm={() => deleteSubcategory.mutate(state.subcategory.id, { onSuccess: onClose })} />
     }
   }
 
   return (
     <Dialog open={!!state} onOpenChange={open => !open && onClose()}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-md">
+      {/* Estilos com tokens da nova paleta */}
+      <DialogContent
+        className="sm:max-w-md"
+        style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)', color: 'var(--ff-text-primary)' }}
+      >
         <DialogHeader>
-          <DialogTitle className="text-slate-100">
+          <DialogTitle style={{ color: 'var(--ff-text-primary)' }}>
             {state ? TITLES[state.type] : ''}
           </DialogTitle>
         </DialogHeader>

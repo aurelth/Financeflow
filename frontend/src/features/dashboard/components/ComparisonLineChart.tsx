@@ -1,12 +1,6 @@
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
+  LineChart, Line, XAxis, YAxis,
+  CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
 import type { PeriodData } from '../types/dashboard.types'
 
@@ -25,63 +19,64 @@ const formatCurrency = (value: number) =>
   value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
 export default function ComparisonLineChart({ periods }: ComparisonLineChartProps) {
-  // Monta dados para comparação de receitas, despesas e saldo entre períodos
   const chartData = [
-  {
-    metric: 'Receitas',
-    ...Object.fromEntries(periods.map(p => [
-      `${MONTHS[p.month - 1]}/${p.year}`, p.totalIncome
-    ])),
-  },
-  {
-    metric: 'Despesas',
-    ...Object.fromEntries(periods.map(p => [
-      `${MONTHS[p.month - 1]}/${p.year}`, p.totalExpenses
-    ])),
-  },
-  {
-    metric: 'Saldo',
-    ...Object.fromEntries(periods.map(p => [
-      `${MONTHS[p.month - 1]}/${p.year}`, p.balance
-    ])),
-  },
-]
+    {
+      metric: 'Receitas',
+      ...Object.fromEntries(periods.map(p => [`${MONTHS[p.month - 1]}/${p.year}`, p.totalIncome])),
+    },
+    {
+      metric: 'Despesas',
+      ...Object.fromEntries(periods.map(p => [`${MONTHS[p.month - 1]}/${p.year}`, p.totalExpenses])),
+    },
+    {
+      metric: 'Saldo',
+      ...Object.fromEntries(periods.map(p => [`${MONTHS[p.month - 1]}/${p.year}`, p.balance])),
+    },
+  ]
 
   const periodLabels = periods.map(p => `${MONTHS[p.month - 1]}/${p.year}`)
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+    <div
+      className="rounded-2xl p-5"
+      style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+    >
       <div className="mb-4">
-        <h3 className="text-slate-200 font-semibold text-sm">Evolução entre Períodos</h3>
-        <p className="text-slate-500 text-xs mt-0.5">Receitas, despesas e saldo por período</p>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--ff-text-primary)' }}>
+          Evolução entre Períodos
+        </h3>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
+          Receitas, despesas e saldo por período
+        </p>
       </div>
 
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
           <XAxis
             dataKey="metric"
-            tick={{ fill: '#64748b', fontSize: 11 }}
-            axisLine={{ stroke: '#1e293b' }}
+            tick={{ fill: '#52525b', fontSize: 11 }}
+            axisLine={{ stroke: '#222222' }}
             tickLine={false}
           />
           <YAxis
             tickFormatter={v => `R$ ${(v / 1000).toFixed(0)}k`}
-            tick={{ fill: '#64748b', fontSize: 11 }}
+            tick={{ fill: '#52525b', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={60}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: '#0f172a',
-              border: '1px solid #1e293b',
+              backgroundColor: '#111111',
+              border: '1px solid #222222',
               borderRadius: '12px',
               fontSize: '12px',
+              color: '#a1a1aa',
             }}
             formatter={(value: any) => [formatCurrency(Number(value))]}
           />
-          <Legend wrapperStyle={{ fontSize: 12, color: '#94a3b8' }} />
+          <Legend wrapperStyle={{ fontSize: 12, color: '#52525b' }} />
           {periodLabels.map((label, i) => (
             <Line
               key={label}

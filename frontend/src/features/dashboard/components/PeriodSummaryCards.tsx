@@ -1,15 +1,30 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import type { PeriodData } from '../types/dashboard.types'
 
 interface PeriodSummaryCardsProps {
   periods: PeriodData[]
 }
 
-const PERIOD_COLORS = [
-  { bg: 'bg-indigo-500/10', border: 'border-indigo-500/20', text: 'text-indigo-400', label: 'bg-indigo-500' },
-  { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', label: 'bg-emerald-500' },
-  { bg: 'bg-amber-500/10', border: 'border-amber-500/20', text: 'text-amber-400', label: 'bg-amber-500' },
+// Usa tokens CSS da nova paleta
+const PERIOD_STYLES = [
+  {
+    bg:     'rgba(99, 102, 241, 0.08)',
+    border: 'rgba(99, 102, 241, 0.2)',
+    dot:    '#6366f1',
+    text:   '#6366f1',
+  },
+  {
+    bg:     'rgba(16, 185, 129, 0.08)',
+    border: 'rgba(16, 185, 129, 0.2)',
+    dot:    '#10b981',
+    text:   '#10b981',
+  },
+  {
+    bg:     'rgba(245, 158, 11, 0.08)',
+    border: 'rgba(245, 158, 11, 0.2)',
+    dot:    '#f59e0b',
+    text:   '#f59e0b',
+  },
 ]
 
 const MONTHS = [
@@ -19,17 +34,17 @@ const MONTHS = [
 
 function VariationBadge({ value }: { value: number | null }) {
   if (value === null) return null
-
   const isPositive = value > 0
   const isZero     = value === 0
 
   return (
-    <span className={cn(
-      'flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-lg',
-      isZero     ? 'bg-slate-700 text-slate-400' :
-      isPositive ? 'bg-red-500/10 text-red-400' :
-                   'bg-emerald-500/10 text-emerald-400'
-    )}>
+    <span
+      className="flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-lg"
+      style={{
+        background: isZero ? 'var(--ff-bg-elevated)' : isPositive ? 'rgba(244,63,94,0.1)' : 'rgba(16,185,129,0.1)',
+        color:      isZero ? 'var(--ff-text-muted)'  : isPositive ? 'var(--ff-expense)'    : 'var(--ff-income)',
+      }}
+    >
       {isZero ? <Minus size={10} /> : isPositive ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
       {isZero ? '0%' : `${Math.abs(value).toFixed(1)}%`}
     </span>
@@ -45,57 +60,56 @@ export default function PeriodSummaryCards({ periods }: PeriodSummaryCardsProps)
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
       {periods.map((period, index) => {
-        const prev          = periods[index - 1]
-        const incomeVar     = prev ? calcVariation(period.totalIncome, prev.totalIncome) : null
-        const expensesVar   = prev ? calcVariation(period.totalExpenses, prev.totalExpenses) : null
-        const balanceVar    = prev ? calcVariation(period.balance, prev.balance) : null
-        const colors        = PERIOD_COLORS[index]
+        const prev        = periods[index - 1]
+        const incomeVar   = prev ? calcVariation(period.totalIncome, prev.totalIncome) : null
+        const expensesVar = prev ? calcVariation(period.totalExpenses, prev.totalExpenses) : null
+        const balanceVar  = prev ? calcVariation(period.balance, prev.balance) : null
+        const s           = PERIOD_STYLES[index]
 
         return (
           <div
             key={index}
-            className={cn('rounded-2xl border p-5 space-y-4', colors.bg, colors.border)}
+            className="rounded-2xl p-5 space-y-4"
+            style={{ background: s.bg, border: `1px solid ${s.border}` }}
           >
-            {/* Header */}
             <div className="flex items-center gap-2">
-              <span className={cn('w-2.5 h-2.5 rounded-full', colors.label)} />
-              <span className={cn('text-sm font-semibold', colors.text)}>
+              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: s.dot }} />
+              <span className="text-sm font-semibold" style={{ color: s.text }}>
                 {MONTHS[period.month - 1]} {period.year}
               </span>
             </div>
 
-            {/* Valores */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">Receitas</span>
+                <span className="text-xs" style={{ color: 'var(--ff-text-muted)' }}>Receitas</span>
                 <div className="flex items-center gap-2">
                   <VariationBadge value={incomeVar} />
-                  <span className="text-sm font-semibold text-emerald-400">
+                  <span className="text-sm font-semibold" style={{ color: 'var(--ff-income)' }}>
                     {period.totalIncome.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </span>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">Despesas</span>
+                <span className="text-xs" style={{ color: 'var(--ff-text-muted)' }}>Despesas</span>
                 <div className="flex items-center gap-2">
                   <VariationBadge value={expensesVar} />
-                  <span className="text-sm font-semibold text-red-400">
+                  <span className="text-sm font-semibold" style={{ color: 'var(--ff-expense)' }}>
                     {period.totalExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </span>
                 </div>
               </div>
 
-              <div className="h-px bg-slate-700" />
+              <div className="h-px" style={{ background: 'var(--ff-border)' }} />
 
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">Saldo</span>
+                <span className="text-xs" style={{ color: 'var(--ff-text-muted)' }}>Saldo</span>
                 <div className="flex items-center gap-2">
                   <VariationBadge value={balanceVar} />
-                  <span className={cn(
-                    'text-sm font-bold',
-                    period.balance >= 0 ? 'text-slate-200' : 'text-red-400'
-                  )}>
+                  <span
+                    className="text-sm font-bold"
+                    style={{ color: period.balance >= 0 ? 'var(--ff-text-primary)' : 'var(--ff-expense)' }}
+                  >
                     {period.balance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </span>
                 </div>

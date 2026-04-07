@@ -2,24 +2,33 @@ import { Outlet } from 'react-router-dom'
 
 export default function AuthLayout() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-
-      {/* Decoração de fundo */}
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative"
+      style={{ background: 'var(--ff-bg-base)' }} // Modificado
+    >
+      {/* Adicionado: decoração sutil com verde esmeralda */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-3xl" />
+        <div
+          className="absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl"
+          style={{ background: 'rgba(16, 185, 129, 0.06)' }}
+        />
+        <div
+          className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full blur-3xl"
+          style={{ background: 'rgba(16, 185, 129, 0.04)' }}
+        />
       </div>
 
       {/* Logo */}
       <div className="absolute top-8 left-8 flex items-center gap-2">
-        <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">FF</span>
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          style={{ background: 'var(--ff-emerald)' }} // Modificado
+        >
+          <span style={{ color: 'var(--ff-emerald-subtle)', fontWeight: 700, fontSize: 13 }}>FF</span>
         </div>
-        <span className="text-white font-semibold text-lg">FinanceFlow</span>
+        <span style={{ color: 'var(--ff-text-primary)', fontWeight: 600, fontSize: 17 }}>FinanceFlow</span>
       </div>
 
-      {/* Conteúdo */}
       <div className="relative w-full max-w-md">
         <Outlet />
       </div>

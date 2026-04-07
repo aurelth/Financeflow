@@ -1,5 +1,4 @@
 import { Pencil, Trash2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import CategoryIcon from '../../categories/components/CategoryIcon'
 import type { BudgetSummary } from '../types/budget.types'
 
@@ -10,26 +9,28 @@ interface BudgetCardProps {
 }
 
 function getProgressColor(percentage: number): string {
-  if (percentage >= 100) return 'bg-red-500'
-  if (percentage >= 80)  return 'bg-amber-400'
-  return 'bg-emerald-500'
+  if (percentage >= 100) return 'var(--ff-expense)'
+  if (percentage >= 80)  return 'var(--ff-pending)'
+  return 'var(--ff-income)'
 }
 
 function getPercentageColor(percentage: number): string {
-  if (percentage >= 100) return 'text-red-400'
-  if (percentage >= 80)  return 'text-amber-400'
-  return 'text-emerald-400'
+  if (percentage >= 100) return 'var(--ff-expense)'
+  if (percentage >= 80)  return 'var(--ff-pending)'
+  return 'var(--ff-income)'
 }
 
 export default function BudgetCard({ summary, onEdit, onDelete }: BudgetCardProps) {
-  const clampedPct     = Math.min(summary.percentage, 100)
-  const progressColor  = getProgressColor(summary.percentage)
-  const percentageColor = getPercentageColor(summary.percentage)
-  const remaining      = Math.max(summary.limitAmount - summary.spentAmount, 0)
+  const clampedPct  = Math.min(summary.percentage, 100)
+  const remaining   = Math.max(summary.limitAmount - summary.spentAmount, 0)
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4 hover:border-slate-700 transition-colors">
-
+    <div
+      className="rounded-2xl p-5 flex flex-col gap-4 transition-colors"
+      style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+      onMouseEnter={e => (e.currentTarget.style.borderColor = '#333333')}
+      onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -40,24 +41,43 @@ export default function BudgetCard({ summary, onEdit, onDelete }: BudgetCardProp
             <CategoryIcon icon={summary.categoryIcon} color={summary.categoryColor} size={20} />
           </div>
           <div>
-            <p className="text-slate-200 font-medium text-sm">{summary.categoryName}</p>
-            <p className={cn('text-xs font-semibold', percentageColor)}>
+            <p className="font-medium text-sm" style={{ color: 'var(--ff-text-primary)' }}>
+              {summary.categoryName}
+            </p>
+            <p className="text-xs font-semibold" style={{ color: getPercentageColor(summary.percentage) }}>
               {summary.percentage.toFixed(1)}% utilizado
             </p>
           </div>
         </div>
 
-        {/* Ações */}
         <div className="flex items-center gap-1">
           <button
             onClick={onEdit}
-            className="p-1.5 text-slate-500 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-all"
+            className="p-1.5 rounded-lg transition-all"
+            style={{ color: 'var(--ff-text-muted)' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.color = 'var(--ff-text-primary)'
+              e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = 'var(--ff-text-muted)'
+              e.currentTarget.style.background = 'transparent'
+            }}
           >
             <Pencil size={14} />
           </button>
           <button
             onClick={onDelete}
-            className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-all"
+            className="p-1.5 rounded-lg transition-all"
+            style={{ color: 'var(--ff-text-muted)' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.color = 'var(--ff-expense)'
+              e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = 'var(--ff-text-muted)'
+              e.currentTarget.style.background = 'transparent'
+            }}
           >
             <Trash2 size={14} />
           </button>
@@ -65,46 +85,63 @@ export default function BudgetCard({ summary, onEdit, onDelete }: BudgetCardProp
       </div>
 
       {/* Barra de progresso */}
-      <div>
-        <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-          <div
-            className={cn('h-full rounded-full transition-all duration-500', progressColor)}
-            style={{ width: `${clampedPct}%` }}
-          />
-        </div>
+      <div
+        className="h-2 rounded-full overflow-hidden"
+        style={{ background: 'var(--ff-bg-elevated)' }}
+      >
+        <div
+          className="h-full rounded-full transition-all duration-500"
+          style={{
+            width:      `${clampedPct}%`,
+            background: getProgressColor(summary.percentage),
+          }}
+        />
       </div>
 
       {/* Valores */}
       <div className="grid grid-cols-3 gap-2">
         <div className="flex flex-col">
-          <span className="text-xs text-slate-500 mb-0.5">Gasto</span>
-          <span className="text-sm font-semibold text-slate-200">
+          <span className="text-xs mb-0.5" style={{ color: 'var(--ff-text-muted)' }}>Gasto</span>
+          <span className="text-sm font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
             {summary.spentAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
           </span>
         </div>
         <div className="flex flex-col items-center">
-          <span className="text-xs text-slate-500 mb-0.5">Limite</span>
-          <span className="text-sm font-semibold text-slate-200">
+          <span className="text-xs mb-0.5" style={{ color: 'var(--ff-text-muted)' }}>Limite</span>
+          <span className="text-sm font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
             {summary.limitAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
           </span>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-xs text-slate-500 mb-0.5">Restante</span>
-          <span className={cn('text-sm font-semibold', remaining === 0 ? 'text-red-400' : 'text-emerald-400')}>
+          <span className="text-xs mb-0.5" style={{ color: 'var(--ff-text-muted)' }}>Restante</span>
+          <span
+            className="text-sm font-semibold"
+            style={{ color: remaining === 0 ? 'var(--ff-expense)' : 'var(--ff-income)' }}
+          >
             {remaining.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
           </span>
         </div>
       </div>
 
-      {/* Alerta */}
+      {/* Alertas */}
       {summary.percentage >= 100 && (
-        <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">
-          <span className="text-xs text-red-400 font-medium">⚠️ Limite atingido!</span>
+        <div
+          className="flex items-center gap-2 rounded-xl px-3 py-2"
+          style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)' }}
+        >
+          <span className="text-xs font-medium" style={{ color: 'var(--ff-expense)' }}>
+            ⚠️ Limite atingido!
+          </span>
         </div>
       )}
       {summary.percentage >= 80 && summary.percentage < 100 && (
-        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2">
-          <span className="text-xs text-amber-400 font-medium">🔔 Atenção: 80% do limite atingido</span>
+        <div
+          className="flex items-center gap-2 rounded-xl px-3 py-2"
+          style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}
+        >
+          <span className="text-xs font-medium" style={{ color: 'var(--ff-pending)' }}>
+            🔔 Atenção: 80% do limite atingido
+          </span>
         </div>
       )}
     </div>

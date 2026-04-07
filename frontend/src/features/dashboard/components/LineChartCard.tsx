@@ -1,12 +1,6 @@
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
+  LineChart, Line, XAxis, YAxis,
+  CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
 import type { BalanceEvolution } from '../types/dashboard.types'
 
@@ -22,40 +16,49 @@ const formatDate = (date: string) => {
   return `Dia ${parseInt(day)}`
 }
 
+// Modificado: estilos do tooltip e grid com tokens da nova paleta
 export default function LineChartCard({ data }: LineChartCardProps) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+    <div
+      className="rounded-2xl p-5"
+      style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+    >
       <div className="mb-4">
-        <h3 className="text-slate-200 font-semibold text-sm">Evolução do Saldo</h3>
-        <p className="text-slate-500 text-xs mt-0.5">Saldo acumulado dia a dia no mês</p>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--ff-text-primary)' }}>
+          Evolução do Saldo
+        </h3>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
+          Saldo acumulado dia a dia no mês
+        </p>
       </div>
 
       <ResponsiveContainer width="100%" height={220}>
         <LineChart data={data} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
           <XAxis
             dataKey="date"
             tickFormatter={formatDate}
-            tick={{ fill: '#64748b', fontSize: 11 }}
-            axisLine={{ stroke: '#1e293b' }}
+            tick={{ fill: '#52525b', fontSize: 11 }}
+            axisLine={{ stroke: '#222222' }}
             tickLine={false}
             interval="preserveStartEnd"
           />
           <YAxis
             tickFormatter={v => `R$ ${(v / 1000).toFixed(0)}k`}
-            tick={{ fill: '#64748b', fontSize: 11 }}
+            tick={{ fill: '#52525b', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             width={60}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: '#0f172a',
-              border: '1px solid #1e293b',
+              backgroundColor: '#111111',
+              border: '1px solid #222222',
               borderRadius: '12px',
               fontSize: '12px',
+              color: '#a1a1aa',
             }}
-            labelStyle={{ color: '#94a3b8', marginBottom: 4 }}
+            labelStyle={{ color: '#a1a1aa', marginBottom: 4 }}
             labelFormatter={(label: any) => formatDate(String(label))}
             formatter={(value: any, name: any) => [
               formatCurrency(Number(value)),
@@ -66,7 +69,7 @@ export default function LineChartCard({ data }: LineChartCardProps) {
             formatter={(value: any) =>
               value === 'balance' ? 'Saldo' : value === 'income' ? 'Receita' : 'Despesa'
             }
-            wrapperStyle={{ fontSize: 12, color: '#94a3b8' }}
+            wrapperStyle={{ fontSize: 12, color: '#52525b' }}
           />
           <Line
             type="monotone"
@@ -88,11 +91,11 @@ export default function LineChartCard({ data }: LineChartCardProps) {
           <Line
             type="monotone"
             dataKey="expenses"
-            stroke="#ef4444"
+            stroke="#f43f5e"
             strokeWidth={1.5}
             dot={false}
             strokeDasharray="4 4"
-            activeDot={{ r: 3, fill: '#ef4444' }}
+            activeDot={{ r: 3, fill: '#f43f5e' }}
           />
         </LineChart>
       </ResponsiveContainer>

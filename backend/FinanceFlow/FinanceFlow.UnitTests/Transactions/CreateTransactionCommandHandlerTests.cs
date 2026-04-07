@@ -18,7 +18,7 @@ public class CreateTransactionCommandHandlerTests
     private readonly Mock<IEventPublisher> _eventPublisher = new();
     private readonly Mock<IAttachmentService> _attachmentService = new();
     private readonly Mock<IConfiguration> _configuration = new();
-    private readonly Mock<ICacheService> _cache = new(); // Adicionado
+    private readonly Mock<ICacheService> _cache = new();
     private readonly IMapper _mapper;
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -51,7 +51,7 @@ public class CreateTransactionCommandHandlerTests
                 It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        // Adicionado: cache não lança exceção por padrão
+        // Cache não lança exceção por padrão
         _cache
             .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -63,7 +63,7 @@ public class CreateTransactionCommandHandlerTests
             _eventPublisher.Object,
             _attachmentService.Object,
             _configuration.Object,
-            _cache.Object, // Adicionado
+            _cache.Object,
             _mapper);
 
     [Fact]
@@ -480,7 +480,7 @@ public class CreateTransactionCommandHandlerTests
         copiaFevereiro!.Date.Day.Should().Be(28);
     }
 
-    // Adicionado: testa invalidação do cache ao criar transação
+    // Testa invalidação do cache ao criar transação
     [Fact]
     public async Task Handle_DeveInvalidarCacheDashboard_QuandoTransacaoCriada()
     {

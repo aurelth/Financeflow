@@ -8,12 +8,8 @@ interface ExportButtonProps {
   defaultYear?:  number
 }
 
-export default function ExportButton({
-  defaultMonth,
-  defaultYear,
-}: ExportButtonProps) {
-  const now = new Date()
-
+export default function ExportButton({ defaultMonth, defaultYear }: ExportButtonProps) {
+  const now          = new Date()
   const initialMonth = defaultMonth ?? now.getMonth() + 1
   const initialYear  = defaultYear  ?? now.getFullYear()
 
@@ -23,53 +19,67 @@ export default function ExportButton({
 
   const requestReport = useRequestReport()
 
-  function handleOpen() {
-    setMonth(initialMonth)
-    setYear(initialYear)
-    setShowModal(true)
-  }
-
   function handleClose() {
     setMonth(initialMonth)
     setYear(initialYear)
     setShowModal(false)
   }
 
-  function handleRequest() {
-    requestReport.mutate({ month, year }, {
-      onSuccess: () => handleClose(),
-    })
-  }
-
   return (
     <>
       <button
-        onClick={handleOpen}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-800 hover:text-slate-200 transition-colors"
+        onClick={() => setShowModal(true)}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
+        style={{ border: '1px solid var(--ff-border)', color: 'var(--ff-text-secondary)' }} // Modificado
+        onMouseEnter={e => {
+          e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+          e.currentTarget.style.color = 'var(--ff-text-primary)'
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = 'transparent'
+          e.currentTarget.style.color = 'var(--ff-text-secondary)'
+        }}
       >
         <FileDown size={16} />
         Exportar CSV
       </button>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm shadow-2xl">
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-              <h2 className="text-slate-100 font-semibold text-lg">Exportar CSV</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div
+            className="w-full max-w-sm rounded-2xl shadow-2xl"
+            style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+          >
+            <div
+              className="flex items-center justify-between px-6 py-4"
+              style={{ borderBottom: '1px solid var(--ff-border)' }}
+            >
+              <h2 className="font-semibold text-lg" style={{ color: 'var(--ff-text-primary)' }}>
+                Exportar CSV
+              </h2>
               <button
                 onClick={handleClose}
-                className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-all"
+                className="p-1.5 rounded-lg transition-all"
+                style={{ color: 'var(--ff-text-muted)' }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.color = 'var(--ff-text-primary)'
+                  e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.color = 'var(--ff-text-muted)'
+                  e.currentTarget.style.background = 'transparent'
+                }}
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Body */}
             <div className="px-6 py-5 space-y-4">
               <div>
-                <label className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2 block">
+                <label
+                  className="text-xs font-medium uppercase tracking-wide mb-2 block"
+                  style={{ color: 'var(--ff-text-muted)' }}
+                >
                   Período
                 </label>
                 <MonthYearPicker
@@ -80,23 +90,31 @@ export default function ExportButton({
                   maxYear={now.getFullYear()}
                 />
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs" style={{ color: 'var(--ff-text-muted)' }}>
                 O arquivo CSV será gerado em background. Você receberá uma notificação quando estiver pronto para download.
               </p>
             </div>
 
-            {/* Footer */}
-            <div className="flex gap-3 px-6 py-4 border-t border-slate-800">
+            <div
+              className="flex gap-3 px-6 py-4"
+              style={{ borderTop: '1px solid var(--ff-border)' }}
+            >
               <button
                 onClick={handleClose}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-800 transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                style={{ border: '1px solid var(--ff-border)', color: 'var(--ff-text-secondary)' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-bg-elevated)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 Cancelar
               </button>
               <button
-                onClick={handleRequest}
+                onClick={() => requestReport.mutate({ month, year }, { onSuccess: handleClose })}
                 disabled={requestReport.isPending}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-sm font-semibold transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
+                onMouseEnter={e => { if (!requestReport.isPending) e.currentTarget.style.background = 'var(--ff-emerald-hover)' }}
+                onMouseLeave={e => { if (!requestReport.isPending) e.currentTarget.style.background = 'var(--ff-emerald)' }}
               >
                 {requestReport.isPending ? 'Solicitando...' : 'Solicitar'}
               </button>
