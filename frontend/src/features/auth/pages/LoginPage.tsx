@@ -10,21 +10,13 @@ const schema = z.object({
   email:    z.string().email('Email inválido'),
   password: z.string().min(1, 'Senha obrigatória'),
 })
-
 type FormData = z.infer<typeof schema>
 
-// Modificado: estilos com tokens da nova paleta
 const inputStyle: React.CSSProperties = {
-  width:        '100%',
-  background:   'rgba(26,26,26,0.8)',
-  border:       '1px solid var(--ff-border)',
-  borderRadius: '12px',
-  padding:      '11px 16px',
-  color:        'var(--ff-text-primary)',
-  fontSize:     '14px',
-  outline:      'none',
-  transition:   'border-color 0.15s',
-  height:       '44px',
+  width: '100%', background: 'rgba(26,26,26,0.8)',
+  border: '1px solid var(--ff-border)', borderRadius: '12px',
+  padding: '11px 16px', color: 'var(--ff-text-primary)',
+  fontSize: '14px', outline: 'none', transition: 'border-color 0.15s', height: '44px',
 }
 
 export default function LoginPage() {
@@ -40,7 +32,6 @@ export default function LoginPage() {
       className="rounded-2xl p-8 shadow-2xl"
       style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid var(--ff-border)', backdropFilter: 'blur(20px)' }}
     >
-      {/* Header */}
       <div className="text-center mb-8">
         <div
           className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
@@ -57,10 +48,13 @@ export default function LoginPage() {
       </div>
 
       <form onSubmit={handleSubmit(d => login(d))} className="space-y-5">
-
         <div className="space-y-1.5">
-          <label className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>Email</label>
+          {/* Modificado: htmlFor + id para acessibilidade */}
+          <label htmlFor="email" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Email
+          </label>
           <input
+            id="email"
             type="email"
             placeholder="seu@email.com"
             autoComplete="email"
@@ -74,19 +68,21 @@ export default function LoginPage() {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-sm" style={{ color: 'var(--ff-text-secondary)' }}>Senha</label>
+            {/* Modificado: htmlFor + id */}
+            <label htmlFor="password" className="text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+              Senha
+            </label>
             <Link
               to="/forgot-password"
               className="text-xs transition-colors"
               style={{ color: 'var(--ff-emerald)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-emerald-hover)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-emerald)')}
             >
               Esqueceu a senha?
             </Link>
           </div>
           <div className="relative">
             <input
+              id="password"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               autoComplete="current-password"
@@ -123,13 +119,7 @@ export default function LoginPage() {
 
       <p className="text-center text-sm mt-6" style={{ color: 'var(--ff-text-muted)' }}>
         Não tem uma conta?{' '}
-        <Link
-          to="/register"
-          className="font-medium transition-colors"
-          style={{ color: 'var(--ff-emerald)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-emerald-hover)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-emerald)')}
-        >
+        <Link to="/register" className="font-medium transition-colors" style={{ color: 'var(--ff-emerald)' }}>
           Criar conta
         </Link>
       </p>

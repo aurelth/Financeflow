@@ -12,7 +12,7 @@ const preferencesSchema = z.object({
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, 'Senha atual é obrigatória'),
-  newPassword:     z.string()
+  newPassword: z.string()
     .min(8, 'Mínimo 8 caracteres')
     .regex(/[A-Z]/, 'Deve ter pelo menos uma maiúscula')
     .regex(/[0-9]/, 'Deve ter pelo menos um número')
@@ -24,54 +24,54 @@ const passwordSchema = z.object({
 })
 
 type PreferencesForm = z.infer<typeof preferencesSchema>
-type PasswordForm    = z.infer<typeof passwordSchema>
+type PasswordForm = z.infer<typeof passwordSchema>
 
 const CURRENCIES = [
   { value: 'BRL', label: 'Real Brasileiro (BRL)' },
   { value: 'USD', label: 'Dólar Americano (USD)' },
-  { value: 'EUR', label: 'Euro (EUR)'             },
-  { value: 'GBP', label: 'Libra Esterlina (GBP)'  },
+  { value: 'EUR', label: 'Euro (EUR)' },
+  { value: 'GBP', label: 'Libra Esterlina (GBP)' },
 ]
 
 const TIMEZONES = [
-  { value: 'America/Sao_Paulo',   label: 'Brasília (GMT-3)'    },
-  { value: 'America/Manaus',      label: 'Manaus (GMT-4)'      },
-  { value: 'America/Belem',       label: 'Belém (GMT-3)'       },
-  { value: 'America/Fortaleza',   label: 'Fortaleza (GMT-3)'   },
-  { value: 'America/Recife',      label: 'Recife (GMT-3)'      },
-  { value: 'America/New_York',    label: 'Nova York (GMT-5)'   },
-  { value: 'America/Chicago',     label: 'Chicago (GMT-6)'     },
+  { value: 'America/Sao_Paulo', label: 'Brasília (GMT-3)' },
+  { value: 'America/Manaus', label: 'Manaus (GMT-4)' },
+  { value: 'America/Belem', label: 'Belém (GMT-3)' },
+  { value: 'America/Fortaleza', label: 'Fortaleza (GMT-3)' },
+  { value: 'America/Recife', label: 'Recife (GMT-3)' },
+  { value: 'America/New_York', label: 'Nova York (GMT-5)' },
+  { value: 'America/Chicago', label: 'Chicago (GMT-6)' },
   { value: 'America/Los_Angeles', label: 'Los Angeles (GMT-8)' },
-  { value: 'Europe/London',       label: 'Londres (GMT+0)'     },
-  { value: 'Europe/Paris',        label: 'Paris (GMT+1)'       },
+  { value: 'Europe/London', label: 'Londres (GMT+0)' },
+  { value: 'Europe/Paris', label: 'Paris (GMT+1)' },
 ]
 
 const inputStyle: React.CSSProperties = {
-  width:        '100%',
-  background:   'var(--ff-bg-elevated)',
-  border:       '1px solid var(--ff-border)',
+  width: '100%',
+  background: 'var(--ff-bg-elevated)',
+  border: '1px solid var(--ff-border)',
   borderRadius: '10px',
-  padding:      '9px 14px',
-  color:        'var(--ff-text-primary)',
-  fontSize:     '14px',
-  outline:      'none',
-  transition:   'border-color 0.15s',
+  padding: '9px 14px',
+  color: 'var(--ff-text-primary)',
+  fontSize: '14px',
+  outline: 'none',
+  transition: 'border-color 0.15s',
 }
 
 const readonlyStyle: React.CSSProperties = {
   ...inputStyle,
   cursor: 'default',
-  color:  'var(--ff-text-secondary)',
+  color: 'var(--ff-text-secondary)',
 }
 
 const labelStyle: React.CSSProperties = {
-  display:       'block',
-  fontSize:      '11px',
-  fontWeight:    500,
+  display: 'block',
+  fontSize: '11px',
+  fontWeight: 500,
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
-  color:         'var(--ff-text-muted)',
-  marginBottom:  '4px',
+  color: 'var(--ff-text-muted)',
+  marginBottom: '4px',
 }
 
 function onHoverEnterBtnEmerald(e: React.MouseEvent<HTMLButtonElement>) {
@@ -94,12 +94,12 @@ function onBlurBorder(e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>)
 }
 
 export default function ProfilePage() {
-  const { data: profile, isLoading }                      = useUserProfile()
-  const { mutate: updateProfile, isPending: isUpdating }  = useUpdateProfile()
+  const { data: profile, isLoading } = useUserProfile()
+  const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile()
   const { mutate: changePassword, isPending: isChanging } = useChangePassword()
 
   const [showCurrent, setShowCurrent] = useState(false)
-  const [showNew,     setShowNew]     = useState(false)
+  const [showNew, setShowNew] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
   const prefForm = useForm<PreferencesForm>({ resolver: zodResolver(preferencesSchema) })
@@ -122,12 +122,6 @@ export default function ProfilePage() {
 
   const prefErrors = prefForm.formState.errors
   const passErrors = passForm.formState.errors
-
-  const emailLink = (
-    <a href="mailto:suporte@financeflow.com" className="transition-opacity hover:opacity-75" style={{ color: 'var(--ff-emerald)' }}>
-      suporte@financeflow.com
-    </a>
-  )
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -162,7 +156,6 @@ export default function ProfilePage() {
               <div style={readonlyStyle}>{profile?.email ?? '—'}</div>
             </div>
           </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label style={labelStyle}>CPF</label>
@@ -176,7 +169,14 @@ export default function ProfilePage() {
         </div>
 
         <p className="text-xs mt-4" style={{ color: 'var(--ff-text-muted)' }}>
-          Para alterar seu nome, envie um email para {emailLink}
+          Para alterar seu nome, envie um email para{' '}
+
+          <a href="mailto:suporte@financeflow.com"
+            className="transition-opacity hover:opacity-75"
+            style={{ color: 'var(--ff-emerald)' }}
+          >
+            suporte@financeflow.com
+          </a>
         </p>
       </div>
 
@@ -193,8 +193,10 @@ export default function ProfilePage() {
         <form onSubmit={prefForm.handleSubmit(d => updateProfile(d))} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label style={labelStyle}>Moeda</label>
+              {/* Modificado: htmlFor + id */}
+              <label htmlFor="currency" style={labelStyle}>Moeda</label>
               <select
+                id="currency"
                 {...prefForm.register('currency')}
                 style={inputStyle}
                 onFocus={onFocusEmerald}
@@ -214,8 +216,10 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-1">
-              <label style={labelStyle}>Fuso horário</label>
+              {/* Modificado: htmlFor + id */}
+              <label htmlFor="timezone" style={labelStyle}>Fuso horário</label>
               <select
+                id="timezone"
                 {...prefForm.register('timezone')}
                 style={inputStyle}
                 onFocus={onFocusEmerald}
@@ -266,10 +270,13 @@ export default function ProfilePage() {
           )}
           className="space-y-4"
         >
+          {/* Senha atual */}
           <div className="space-y-1">
-            <label style={labelStyle}>Senha atual</label>
+            {/* Modificado: htmlFor + id */}
+            <label htmlFor="currentPassword" style={labelStyle}>Senha atual</label>
             <div className="relative">
               <input
+                id="currentPassword"
                 type={showCurrent ? 'text' : 'password'}
                 placeholder="••••••••"
                 autoComplete="current-password"
@@ -296,11 +303,14 @@ export default function ProfilePage() {
             )}
           </div>
 
+          {/* Nova senha + Confirmar */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label style={labelStyle}>Nova senha</label>
+              {/* Modificado: htmlFor + id */}
+              <label htmlFor="newPassword" style={labelStyle}>Nova senha</label>
               <div className="relative">
                 <input
+                  id="newPassword"
                   type={showNew ? 'text' : 'password'}
                   placeholder="••••••••"
                   autoComplete="new-password"
@@ -328,9 +338,11 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-1">
-              <label style={labelStyle}>Confirmar senha</label>
+              {/* Modificado: htmlFor + id */}
+              <label htmlFor="confirmPassword" style={labelStyle}>Confirmar senha</label>
               <div className="relative">
                 <input
+                  id="confirmPassword"
                   type={showConfirm ? 'text' : 'password'}
                   placeholder="••••••••"
                   autoComplete="new-password"

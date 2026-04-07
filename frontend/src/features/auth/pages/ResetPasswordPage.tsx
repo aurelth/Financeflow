@@ -59,9 +59,15 @@ export default function ResetPasswordPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1.5">
-          <label className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>Nova senha</label>
+          {/* Modificado: htmlFor + id */}
+          <label htmlFor="newPassword" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Nova senha
+          </label>
           <input
-            type="password" placeholder="••••••••" autoComplete="new-password"
+            id="newPassword"
+            type="password"
+            placeholder="••••••••"
+            autoComplete="new-password"
             {...register('newPassword')}
             style={inputStyle}
             onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
@@ -71,9 +77,15 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>Confirmar senha</label>
+          {/* Modificado: htmlFor + id */}
+          <label htmlFor="confirmPassword" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Confirmar senha
+          </label>
           <input
-            type="password" placeholder="••••••••" autoComplete="new-password"
+            id="confirmPassword"
+            type="password"
+            placeholder="••••••••"
+            autoComplete="new-password"
             {...register('confirmPassword')}
             style={inputStyle}
             onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}

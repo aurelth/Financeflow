@@ -38,8 +38,12 @@ export default function ForgotPasswordPage() {
 
       <form onSubmit={handleSubmit(d => forgotPassword(d))} className="space-y-4">
         <div className="space-y-1.5">
-          <label className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>Email</label>
+          {/* Modificado: htmlFor + id */}
+          <label htmlFor="email" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Email
+          </label>
           <input
+            id="email"
             type="email"
             placeholder="seu@email.com"
             autoComplete="email"

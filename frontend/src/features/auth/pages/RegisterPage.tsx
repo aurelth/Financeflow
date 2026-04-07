@@ -48,14 +48,12 @@ const inputStyle: React.CSSProperties = {
   fontSize: '14px', outline: 'none', transition: 'border-color 0.15s', height: '44px',
 }
 
-const selectStyle: React.CSSProperties = {
-  ...inputStyle, cursor: 'pointer',
-}
+const selectStyle: React.CSSProperties = { ...inputStyle, cursor: 'pointer' }
 
 export default function RegisterPage() {
-  const [showPassword, setShowPassword]   = useState(false)
-  const [showConfirm,  setShowConfirm]    = useState(false)
-  const { mutate: register_, isPending }  = useRegister()
+  const [showPassword, setShowPassword]  = useState(false)
+  const [showConfirm,  setShowConfirm]   = useState(false)
+  const { mutate: register_, isPending } = useRegister()
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -86,9 +84,13 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
+        {/* Nome — Modificado: htmlFor + id */}
         <div className="space-y-1.5">
-          <label className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>Nome completo</label>
+          <label htmlFor="name" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Nome completo
+          </label>
           <input
+            id="name"
             placeholder="Seu nome completo"
             {...register('name')}
             style={inputStyle}
@@ -99,9 +101,13 @@ export default function RegisterPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
+          {/* CPF — Modificado: htmlFor + id */}
           <div className="space-y-1.5">
-            <label className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>CPF</label>
+            <label htmlFor="cpf" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+              CPF
+            </label>
             <input
+              id="cpf"
               placeholder="000.000.000-00"
               value={watch('cpf') ?? ''}
               onChange={e => setValue('cpf', maskCpf(e.target.value), { shouldValidate: true })}
@@ -111,9 +117,14 @@ export default function RegisterPage() {
             />
             {errors.cpf && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.cpf.message}</p>}
           </div>
+
+          {/* Gênero — Modificado: htmlFor + id */}
           <div className="space-y-1.5">
-            <label className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>Gênero</label>
+            <label htmlFor="gender" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+              Gênero
+            </label>
             <select
+              id="gender"
               {...register('gender')}
               style={selectStyle}
               onFocus={e => (e.currentTarget.style.borderColor = 'var(--ff-emerald)')}
@@ -127,9 +138,13 @@ export default function RegisterPage() {
           </div>
         </div>
 
+        {/* Email — Modificado: htmlFor + id */}
         <div className="space-y-1.5">
-          <label className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>Email</label>
+          <label htmlFor="email" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Email
+          </label>
           <input
+            id="email"
             type="email"
             placeholder="seu@email.com"
             {...register('email')}
@@ -140,10 +155,14 @@ export default function RegisterPage() {
           {errors.email && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.email.message}</p>}
         </div>
 
+        {/* Senha — Modificado: htmlFor + id */}
         <div className="space-y-1.5">
-          <label className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>Senha</label>
+          <label htmlFor="password" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Senha
+          </label>
           <div className="relative">
             <input
+              id="password"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               {...register('password')}
@@ -163,10 +182,14 @@ export default function RegisterPage() {
           {errors.password && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.password.message}</p>}
         </div>
 
+        {/* Confirmar senha — Modificado: htmlFor + id */}
         <div className="space-y-1.5">
-          <label className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>Confirmar senha</label>
+          <label htmlFor="confirmPassword" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Confirmar senha
+          </label>
           <div className="relative">
             <input
+              id="confirmPassword"
               type={showConfirm ? 'text' : 'password'}
               placeholder="••••••••"
               {...register('confirmPassword')}
@@ -200,13 +223,7 @@ export default function RegisterPage() {
 
       <p className="text-center text-sm mt-6" style={{ color: 'var(--ff-text-muted)' }}>
         Já tem uma conta?{' '}
-        <Link
-          to="/login"
-          className="font-medium transition-colors"
-          style={{ color: 'var(--ff-emerald)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-emerald-hover)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-emerald)')}
-        >
+        <Link to="/login" className="font-medium transition-colors" style={{ color: 'var(--ff-emerald)' }}>
           Entrar
         </Link>
       </p>

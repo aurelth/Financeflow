@@ -52,7 +52,7 @@ describe('RegisterPage', () => {
     await user.click(screen.getByRole('button', { name: /criar conta/i }))
 
     await waitFor(() => {
-      expect(document.querySelectorAll('.text-red-400').length).toBeGreaterThan(0)
+      expect(screen.getByText(/nome deve ter pelo menos 2 caracteres/i)).toBeInTheDocument()
     })
 
     expect(mockMutate).not.toHaveBeenCalled()
