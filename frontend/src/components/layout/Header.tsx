@@ -25,45 +25,72 @@ export default function Header() {
     .toUpperCase() ?? 'U'
 
   return (
-    <header className="h-16 bg-slate-900 border-b border-slate-800 px-6 flex items-center justify-between">
-
+    <header
+      className="h-16 px-6 flex items-center justify-between"
+      style={{ // Modificado
+        background:   'var(--ff-bg-card)',
+        borderBottom: '1px solid var(--ff-border)',
+      }}
+    >
       <div />
 
-      {/* Ações */}
       <div className="flex items-center gap-3">
+        <NotificationDropdown />
 
-        {/* Notificações */}
-        <NotificationDropdown /> {/* adicionado */}
-
-        {/* Avatar + Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-800 transition-colors">
-              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+            <button
+              className="flex items-center gap-2 px-3 py-2 rounded-xl transition-colors"
+              style={{ color: 'var(--ff-text-secondary)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-bg-elevated)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0"
+                style={{ // Modificado: avatar verde esmeralda
+                  background: 'var(--ff-emerald-subtle)',
+                  color:      'var(--ff-emerald)',
+                }}
+              >
                 {initials}
               </div>
               <div className="text-left hidden sm:block">
-                <p className="text-slate-200 text-sm font-medium leading-none">{user?.name}</p>
-                <p className="text-slate-400 text-xs mt-0.5">{user?.email}</p>
+                <p className="text-sm font-medium leading-none" style={{ color: 'var(--ff-text-primary)' }}>
+                  {user?.name}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
+                  {user?.email}
+                </p>
               </div>
-              <ChevronDown size={14} className="text-slate-400" />
+              <ChevronDown size={14} style={{ color: 'var(--ff-text-muted)' }} />
             </button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end" className="w-52 bg-slate-900 border-slate-800">
-            <DropdownMenuLabel className="text-slate-400 text-xs">Minha Conta</DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-slate-800" />
+          <DropdownMenuContent
+            align="end"
+            className="w-52"
+            style={{ // Modificado
+              background:   'var(--ff-bg-card)',
+              border:       '1px solid var(--ff-border)',
+            }}
+          >
+            <DropdownMenuLabel style={{ color: 'var(--ff-text-muted)', fontSize: 11 }}>
+              Minha Conta
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator style={{ background: 'var(--ff-border)' }} />
             <DropdownMenuItem
               onClick={() => navigate('/profile')}
-              className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
+              className="cursor-pointer"
+              style={{ color: 'var(--ff-text-secondary)' }}
             >
               <User size={14} className="mr-2" />
               Perfil
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-slate-800" />
+            <DropdownMenuSeparator style={{ background: 'var(--ff-border)' }} />
             <DropdownMenuItem
               onClick={() => logout()}
-              className="text-red-400 hover:text-red-300 hover:bg-slate-800 cursor-pointer"
+              className="cursor-pointer"
+              style={{ color: 'var(--ff-expense)' }}
             >
               <LogOut size={14} className="mr-2" />
               Sair

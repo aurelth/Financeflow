@@ -11,40 +11,52 @@ interface TransactionFiltersProps {
   onClear:    () => void
 }
 
-export default function TransactionFilters({
-  filters,
-  categories,
-  onChange,
-  onClear,
-}: TransactionFiltersProps) {
+// Estilos inline dos inputs com tokens
+const inputStyle: React.CSSProperties = {
+  background:  'var(--ff-bg-elevated)',
+  border:      '1px solid var(--ff-border)',
+  color:       'var(--ff-text-primary)',
+  borderRadius: '8px',
+  padding:     '8px 12px',
+  fontSize:    '13px',
+  width:       '100%',
+  outline:     'none',
+  transition:  'border-color 0.15s',
+}
+
+export default function TransactionFilters({ filters, categories, onChange, onClear }: TransactionFiltersProps) {
   const hasFilters = Object.values(filters).some(v =>
     v !== undefined && v !== '' && v !== 1 && v !== 20
   )
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+    <div
+      className="rounded-xl p-4 space-y-3"
+      style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+    >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
 
         {/* Pesquisa */}
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--ff-text-muted)' }} />
           <input
             type="text"
             placeholder="Pesquisar..."
             value={filters.search ?? ''}
             onChange={e => onChange({ ...filters, search: e.target.value || undefined })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            style={{ ...inputStyle, paddingLeft: '34px' }}
+            onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
+            onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
           />
         </div>
 
         {/* Tipo */}
         <select
           value={filters.type ?? ''}
-          onChange={e => onChange({
-            ...filters,
-            type: e.target.value ? Number(e.target.value) as TransactionType : undefined
-          })}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
+          onChange={e => onChange({ ...filters, type: e.target.value ? Number(e.target.value) as TransactionType : undefined })}
+          style={inputStyle}
+          onFocus={e => (e.currentTarget.style.borderColor = 'var(--ff-emerald)')}
+          onBlur={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
         >
           <option value="">Todos os tipos</option>
           <option value={TransactionType.Income}>Receita</option>
@@ -54,11 +66,10 @@ export default function TransactionFilters({
         {/* Status */}
         <select
           value={filters.status ?? ''}
-          onChange={e => onChange({
-            ...filters,
-            status: e.target.value ? Number(e.target.value) as TransactionStatus : undefined
-          })}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
+          onChange={e => onChange({ ...filters, status: e.target.value ? Number(e.target.value) as TransactionStatus : undefined })}
+          style={inputStyle}
+          onFocus={e => (e.currentTarget.style.borderColor = 'var(--ff-emerald)')}
+          onBlur={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
         >
           <option value="">Todos os status</option>
           <option value={TransactionStatus.Paid}>Pago</option>
@@ -70,11 +81,7 @@ export default function TransactionFilters({
         <CategorySelect
           categories={categories}
           value={filters.categoryId ?? ''}
-          onChange={categoryId => onChange({
-            ...filters,
-            categoryId:    categoryId || undefined,
-            subcategoryId: undefined,
-          })}
+          onChange={categoryId => onChange({ ...filters, categoryId: categoryId || undefined, subcategoryId: undefined })}
           nullable
           nullLabel="Todas as categorias"
         />
@@ -84,7 +91,9 @@ export default function TransactionFilters({
           type="date"
           value={filters.dateFrom ?? ''}
           onChange={e => onChange({ ...filters, dateFrom: e.target.value || undefined })}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
+          style={inputStyle}
+          onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
+          onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
         />
 
         {/* Data fim */}
@@ -92,7 +101,9 @@ export default function TransactionFilters({
           type="date"
           value={filters.dateTo ?? ''}
           onChange={e => onChange({ ...filters, dateTo: e.target.value || undefined })}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
+          style={inputStyle}
+          onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
+          onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
         />
 
         {/* Valor mínimo */}
@@ -100,11 +111,10 @@ export default function TransactionFilters({
           type="number"
           placeholder="Valor mínimo"
           value={filters.amountMin ?? ''}
-          onChange={e => onChange({
-            ...filters,
-            amountMin: e.target.value ? Number(e.target.value) : undefined
-          })}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+          onChange={e => onChange({ ...filters, amountMin: e.target.value ? Number(e.target.value) : undefined })}
+          style={inputStyle}
+          onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
+          onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
         />
 
         {/* Valor máximo */}
@@ -112,11 +122,10 @@ export default function TransactionFilters({
           type="number"
           placeholder="Valor máximo"
           value={filters.amountMax ?? ''}
-          onChange={e => onChange({
-            ...filters,
-            amountMax: e.target.value ? Number(e.target.value) : undefined
-          })}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+          onChange={e => onChange({ ...filters, amountMax: e.target.value ? Number(e.target.value) : undefined })}
+          style={inputStyle}
+          onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
+          onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
         />
       </div>
 
@@ -125,7 +134,10 @@ export default function TransactionFilters({
         <div className="flex justify-end">
           <button
             onClick={onClear}
-            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition-colors"
+            className="flex items-center gap-1.5 text-xs transition-colors"
+            style={{ color: 'var(--ff-text-muted)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-text-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-text-muted)')}
           >
             <X size={12} />
             Limpar filtros

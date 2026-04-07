@@ -1,13 +1,9 @@
 import { useState } from 'react'
 import { Plus, Tag, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import { useCategories } from '../api/useCategories'
 import CategoryCard from '../components/CategoryCard'
 import CategoryModal, { type ModalState } from '../components/CategoryModal'
-import { TransactionType, type Category, type Subcategory } from '../types/category.types'
-
-// Filtros
+import { TransactionType } from '../types/category.types'
 
 type Filter = 'all' | 'income' | 'expense'
 
@@ -19,39 +15,15 @@ const FILTERS: { label: string; value: Filter }[] = [
 
 export default function CategoriesPage() {
   const [filter, setFilter] = useState<Filter>('all')
-  const [modal, setModal] = useState<ModalState>(null)
+  const [modal, setModal]   = useState<ModalState>(null)
 
   const { data: categories, isLoading } = useCategories()
-
-  // Filtragem
 
   const filtered = categories?.filter(c => {
     if (filter === 'income')  return c.type === TransactionType.Income
     if (filter === 'expense') return c.type === TransactionType.Expense
     return true
   }) ?? []
-
-  // Handlers de modal
-
-  const openCreateCategory = () =>
-    setModal({ type: 'create-category' })
-
-  const openEditCategory = (category: Category) =>
-    setModal({ type: 'edit-category', category })
-
-  const openDeleteCategory = (category: Category) =>
-    setModal({ type: 'delete-category', category })
-
-  const openAddSubcategory = (category: Category) =>
-    setModal({ type: 'create-subcategory', category })
-
-  const openEditSubcategory = (category: Category, subcategory: Subcategory) =>
-    setModal({ type: 'edit-subcategory', category, subcategory })
-
-  const openDeleteSubcategory = (category: Category, subcategory: Subcategory) =>
-    setModal({ type: 'delete-subcategory', category, subcategory })
-
-  // Estados visuais
 
   const isEmpty = !isLoading && filtered.length === 0
 
@@ -61,18 +33,23 @@ export default function CategoriesPage() {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-white">Categorias</h1>
-          <p className="text-slate-400 text-sm mt-0.5">
+          <h1 className="text-xl font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
+            Categorias
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
             Organize suas receitas e despesas por categoria
           </p>
         </div>
-        <Button
-          onClick={openCreateCategory}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white h-9 px-4 gap-2"
+        <button
+          onClick={() => setModal({ type: 'create-category' })}
+          className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
+          style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-emerald-hover)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-emerald)')}
         >
           <Plus size={16} />
           Nova categoria
-        </Button>
+        </button>
       </div>
 
       {/* Filtros */}
@@ -81,12 +58,23 @@ export default function CategoriesPage() {
           <button
             key={f.value}
             onClick={() => setFilter(f.value)}
-            className={cn(
-              'px-4 py-1.5 rounded-xl text-sm font-medium transition-all duration-200',
-              filter === f.value
-                ? 'bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-500/40'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-            )}
+            className="px-4 py-1.5 rounded-xl text-sm font-medium transition-all duration-200"
+            style={filter === f.value
+              ? { background: 'rgba(16,185,129,0.1)', color: 'var(--ff-emerald)', outline: '1px solid rgba(16,185,129,0.3)' }
+              : { color: 'var(--ff-text-muted)' }
+            }
+            onMouseEnter={e => {
+              if (filter !== f.value) {
+                e.currentTarget.style.color = 'var(--ff-text-primary)'
+                e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+              }
+            }}
+            onMouseLeave={e => {
+              if (filter !== f.value) {
+                e.currentTarget.style.color = 'var(--ff-text-muted)'
+                e.currentTarget.style.background = 'transparent'
+              }
+            }}
           >
             {f.label}
           </button>
@@ -96,7 +84,7 @@ export default function CategoriesPage() {
       {/* Loading */}
       {isLoading && (
         <div className="flex items-center justify-center py-20">
-          <Loader2 size={24} className="animate-spin text-indigo-400" />
+          <Loader2 size={24} className="animate-spin" style={{ color: 'var(--ff-emerald)' }} />
         </div>
       )}
 
@@ -105,15 +93,15 @@ export default function CategoriesPage() {
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
           {filtered.map(category => (
             <div key={category.id} className="break-inside-avoid mb-4">
-              <CategoryCard            
-              category={category}
-              onEdit={openEditCategory}
-              onDelete={openDeleteCategory}
-              onAddSub={openAddSubcategory}
-              onEditSub={openEditSubcategory}
-              onDeleteSub={openDeleteSubcategory}
+              <CategoryCard
+                category={category}
+                onEdit={cat => setModal({ type: 'edit-category', category: cat })}
+                onDelete={cat => setModal({ type: 'delete-category', category: cat })}
+                onAddSub={cat => setModal({ type: 'create-subcategory', category: cat })}
+                onEditSub={(cat, sub) => setModal({ type: 'edit-subcategory', category: cat, subcategory: sub })}
+                onDeleteSub={(cat, sub) => setModal({ type: 'delete-subcategory', category: cat, subcategory: sub })}
               />
-            </div>            
+            </div>
           ))}
         </div>
       )}
@@ -121,30 +109,32 @@ export default function CategoriesPage() {
       {/* Estado vazio */}
       {isEmpty && (
         <div className="flex flex-col items-center justify-center py-20 space-y-3">
-          <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center">
-            <Tag size={24} className="text-slate-500" />
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: 'var(--ff-bg-card)' }}
+          >
+            <Tag size={24} style={{ color: 'var(--ff-text-muted)' }} />
           </div>
-          <p className="text-slate-400 text-sm">
+          <p className="text-sm" style={{ color: 'var(--ff-text-muted)' }}>
             {filter === 'all'
               ? 'Nenhuma categoria encontrada'
               : `Nenhuma categoria de ${filter === 'income' ? 'receita' : 'despesa'} encontrada`
             }
           </p>
-          <Button
-            onClick={openCreateCategory}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white h-9 px-4 gap-2"
+          <button
+            onClick={() => setModal({ type: 'create-category' })}
+            className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
+            style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-emerald-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-emerald)')}
           >
             <Plus size={15} />
             Criar primeira categoria
-          </Button>
+          </button>
         </div>
       )}
 
-      {/* Modal */}
-      <CategoryModal
-        state={modal}
-        onClose={() => setModal(null)}
-      />
+      <CategoryModal state={modal} onClose={() => setModal(null)} />
     </div>
   )
 }

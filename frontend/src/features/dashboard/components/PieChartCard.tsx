@@ -1,10 +1,6 @@
 import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
+  PieChart, Pie, Cell,
+  Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
 import type { ExpensesByCategory } from '../types/dashboard.types'
 
@@ -18,23 +14,39 @@ const formatCurrency = (value: number) =>
 export default function PieChartCard({ data }: PieChartCardProps) {
   if (data.length === 0) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+      <div
+        className="rounded-2xl p-5"
+        style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+      >
         <div className="mb-4">
-          <h3 className="text-slate-200 font-semibold text-sm">Despesas por Categoria</h3>
-          <p className="text-slate-500 text-xs mt-0.5">Distribuição das despesas do mês</p>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--ff-text-primary)' }}>
+            Despesas por Categoria
+          </h3>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
+            Distribuição das despesas do mês
+          </p>
         </div>
         <div className="flex items-center justify-center h-[220px]">
-          <p className="text-slate-500 text-sm">Nenhuma despesa no período</p>
+          <p className="text-sm" style={{ color: 'var(--ff-text-muted)' }}>
+            Nenhuma despesa no período
+          </p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+    <div
+      className="rounded-2xl p-5"
+      style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+    >
       <div className="mb-4">
-        <h3 className="text-slate-200 font-semibold text-sm">Despesas por Categoria</h3>
-        <p className="text-slate-500 text-xs mt-0.5">Distribuição das despesas do mês</p>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--ff-text-primary)' }}>
+          Despesas por Categoria
+        </h3>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
+          Distribuição das despesas do mês
+        </p>
       </div>
 
       <ResponsiveContainer width="100%" height={220}>
@@ -55,21 +67,19 @@ export default function PieChartCard({ data }: PieChartCardProps) {
           </Pie>
           <Tooltip
             contentStyle={{
-              backgroundColor: '#0f172a',
-              border: '1px solid #1e293b',
+              backgroundColor: '#111111',
+              border: '1px solid #222222',
               borderRadius: '12px',
               fontSize: '12px',
+              color: '#a1a1aa',
             }}
-            formatter={(value: any, name: any) => [
-              formatCurrency(Number(value)),
-              name,
-            ]}
+            formatter={(value: any, name: any) => [formatCurrency(Number(value)), name]}
           />
           <Legend
             formatter={(value: any, entry: any) =>
               `${value} (${entry?.payload?.percentage?.toFixed(1) ?? 0}%)`
             }
-            wrapperStyle={{ fontSize: 11, color: '#94a3b8' }}
+            wrapperStyle={{ fontSize: 11, color: '#52525b' }}
           />
         </PieChart>
       </ResponsiveContainer>

@@ -1,6 +1,6 @@
 using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
-using FinanceFlow.Application.Common.Interfaces; // Adicionado
+using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
@@ -12,7 +12,7 @@ namespace FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransacti
 public class UpdateTransactionCommandHandler(
     ITransactionRepository transactionRepository,
     ICategoryRepository categoryRepository,
-    ICacheService cache, // Adicionado
+    ICacheService cache,
     IMapper mapper)
     : IRequestHandler<UpdateTransactionCommand, TransactionDto>
 {
@@ -43,7 +43,7 @@ public class UpdateTransactionCommandHandler(
             && (amountAlterado || descricaoAlterada || categoriaAlterada || subcategoriaAlterada);
 
         // Guarda a data original antes de alterar para invalidar o cache do mês correto
-        var dataOriginal = transaction.Date; // Adicionado
+        var dataOriginal = transaction.Date;
 
         // Atualiza a transação atual
         transaction.Amount = request.Amount;
@@ -86,7 +86,7 @@ public class UpdateTransactionCommandHandler(
             }
         }
 
-        // Adicionado: invalida o cache do dashboard para o mês da transação
+       // Invalida o cache do dashboard para o mês da transação
         await InvalidarCacheDashboardAsync(request.UserId, dataOriginal, cancellationToken);
 
         // Adicionado: invalida também para o novo mês caso a data tenha mudado
@@ -99,7 +99,7 @@ public class UpdateTransactionCommandHandler(
         return mapper.Map<TransactionDto>(updated);
     }
 
-    // Adicionado: invalida todas as chaves de cache do dashboard para o mês/ano da transação
+    // Invalida todas as chaves de cache do dashboard para o mês/ano da transação
     private async Task InvalidarCacheDashboardAsync(
         Guid userId,
         DateTime date,

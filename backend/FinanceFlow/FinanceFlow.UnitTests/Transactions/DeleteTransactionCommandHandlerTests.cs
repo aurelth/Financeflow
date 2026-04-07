@@ -1,5 +1,5 @@
 using FinanceFlow.Application.Common.Exceptions;
-using FinanceFlow.Application.Common.Interfaces; // Adicionado
+using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransaction;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
@@ -11,14 +11,14 @@ namespace FinanceFlow.UnitTests.Transactions;
 public class DeleteTransactionCommandHandlerTests
 {
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
-    private readonly Mock<ICacheService> _cache = new(); // Adicionado
+    private readonly Mock<ICacheService> _cache = new();
 
     private static readonly Guid UserId = Guid.NewGuid();
     private static readonly Guid TransactionId = Guid.NewGuid();
 
     public DeleteTransactionCommandHandlerTests()
     {
-        // Adicionado: cache não lança exceção por padrão
+        // Cache não lança exceção por padrão
         _cache
             .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -26,7 +26,7 @@ public class DeleteTransactionCommandHandlerTests
 
     private DeleteTransactionCommandHandler CreateHandler() =>
         new(_transactionRepository.Object,
-            _cache.Object); // Adicionado
+            _cache.Object);
 
     [Fact]
     public async Task Handle_DeveDeletarTransacao_QuandoExiste()
@@ -78,7 +78,7 @@ public class DeleteTransactionCommandHandlerTests
         await act.Should().ThrowAsync<NotFoundException>();
     }
 
-    // Adicionado: testa invalidação do cache ao deletar transação
+    // Testa invalidação do cache ao deletar transação
     [Fact]
     public async Task Handle_DeveInvalidarCacheDashboard_QuandoTransacaoDeletada()
     {

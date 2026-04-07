@@ -9,11 +9,11 @@ export default function AppLayout() {
   useNotificationHub()
 
   return (
-    <div className="flex h-screen bg-slate-950 overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--ff-bg-base)' }}> {/* Modificado */}
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-y-auto p-6 bg-slate-950">
+        <main className="flex-1 overflow-y-auto p-6" style={{ background: 'var(--ff-bg-base)' }}> {/* Modificado */}
           <Outlet />
         </main>
       </div>

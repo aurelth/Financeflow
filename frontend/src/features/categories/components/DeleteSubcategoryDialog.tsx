@@ -1,5 +1,4 @@
 import { Loader2, TriangleAlert } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import type { Subcategory } from '../types/category.types'
 
 interface DeleteSubcategoryDialogProps {
@@ -9,21 +8,20 @@ interface DeleteSubcategoryDialogProps {
   onCancel:    () => void
 }
 
-export default function DeleteSubcategoryDialog({
-  subcategory,
-  isPending,
-  onConfirm,
-  onCancel,
-}: DeleteSubcategoryDialogProps) {
+export default function DeleteSubcategoryDialog({ subcategory, isPending, onConfirm, onCancel }: DeleteSubcategoryDialogProps) {
   return (
     <div className="space-y-5">
-      <div className="flex gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-        <TriangleAlert size={18} className="text-red-400 flex-shrink-0 mt-0.5" />
+      <div
+        className="flex gap-3 p-4 rounded-xl"
+        style={{ background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)' }}
+      >
+        <TriangleAlert size={18} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--ff-expense)' }} />
         <div className="space-y-1">
-          <p className="text-slate-200 text-sm font-medium">
-            Remover <span className="text-white font-semibold">"{subcategory.name}"</span>?
+          <p className="text-sm font-medium" style={{ color: 'var(--ff-text-primary)' }}>
+            Remover{' '}
+            <span className="font-semibold">"{subcategory.name}"</span>?
           </p>
-          <p className="text-slate-400 text-xs leading-relaxed">
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--ff-text-muted)' }}>
             Se houver transações vinculadas, a subcategoria será desativada e preservada
             no histórico. Caso contrário, será removida permanentemente.
           </p>
@@ -31,23 +29,29 @@ export default function DeleteSubcategoryDialog({
       </div>
 
       <div className="flex gap-3">
-        <Button
+        <button
           type="button"
           onClick={onCancel}
-          className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 border-0 h-10"
+          className="flex-1 h-10 rounded-xl text-sm font-medium transition-colors"
+          style={{ background: 'var(--ff-bg-elevated)', color: 'var(--ff-text-secondary)', border: '1px solid var(--ff-border)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = '#222222')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-bg-elevated)')}
         >
           Cancelar
-        </Button>
-        <Button
+        </button>
+        <button
           onClick={onConfirm}
           disabled={isPending}
-          className="flex-1 bg-red-600 hover:bg-red-500 text-white h-10"
+          className="flex-1 h-10 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+          style={{ background: 'var(--ff-expense)', color: '#fff' }}
+          onMouseEnter={e => { if (!isPending) e.currentTarget.style.background = '#e11d48' }}
+          onMouseLeave={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-expense)' }}
         >
           {isPending
-            ? <><Loader2 size={15} className="animate-spin mr-2" />Removendo...</>
+            ? <span className="flex items-center justify-center gap-2"><Loader2 size={15} className="animate-spin" />Removendo...</span>
             : 'Sim, remover'
           }
-        </Button>
+        </button>
       </div>
     </div>
   )

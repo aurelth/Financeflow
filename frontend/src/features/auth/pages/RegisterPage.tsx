@@ -4,9 +4,6 @@ import { z } from 'zod'
 import { Link } from 'react-router-dom'
 import { Eye, EyeOff, Loader2, Sparkles } from 'lucide-react'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useRegister } from '../api/useAuth'
 
 const isValidCpf = (cpf: string): boolean => {
@@ -34,31 +31,29 @@ const maskCpf = (value: string): string => {
 }
 
 const schema = z.object({
-  name: z.string()
-    .min(2, 'Nome deve ter pelo menos 2 caracteres')
-    .max(100, 'Nome muito longo'),
-  cpf: z.string()
-    .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, 'CPF deve estar no formato 000.000.000-00')
-    .refine(isValidCpf, 'CPF inválido'),
-  gender: z.enum(['Male', 'Female']),
-  email: z.string().email('Email inválido'),
-  password: z.string()
-    .min(8, 'Mínimo 8 caracteres')
-    .regex(/[A-Z]/, 'Deve ter pelo menos uma maiúscula')
-    .regex(/[0-9]/, 'Deve ter pelo menos um número')
-    .regex(/[^a-zA-Z0-9]/, 'Deve ter pelo menos um símbolo'),
+  name:            z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
+  cpf:             z.string().regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, 'CPF deve estar no formato 000.000.000-00').refine(isValidCpf, 'CPF inválido'),
+  gender:          z.enum(['Male', 'Female']),
+  email:           z.string().email('Email inválido'),
+  password:        z.string().min(8, 'Mínimo 8 caracteres').regex(/[A-Z]/, 'Deve ter pelo menos uma maiúscula').regex(/[0-9]/, 'Deve ter pelo menos um número').regex(/[^a-zA-Z0-9]/, 'Deve ter pelo menos um símbolo'),
   confirmPassword: z.string(),
-}).refine(d => d.password === d.confirmPassword, {
-  message: 'As senhas não coincidem',
-  path: ['confirmPassword'],
-})
+}).refine(d => d.password === d.confirmPassword, { message: 'As senhas não coincidem', path: ['confirmPassword'] })
 
 type FormData = z.infer<typeof schema>
 
+const inputStyle: React.CSSProperties = {
+  width: '100%', background: 'rgba(26,26,26,0.8)',
+  border: '1px solid var(--ff-border)', borderRadius: '12px',
+  padding: '11px 16px', color: 'var(--ff-text-primary)',
+  fontSize: '14px', outline: 'none', transition: 'border-color 0.15s', height: '44px',
+}
+
+const selectStyle: React.CSSProperties = { ...inputStyle, cursor: 'pointer' }
+
 export default function RegisterPage() {
-  const [showPassword, setShowPassword]       = useState(false)
-  const [showConfirmPassword, setShowConfirm] = useState(false)
-  const { mutate: register_, isPending }      = useRegister()
+  const [showPassword, setShowPassword]  = useState(false)
+  const [showConfirm,  setShowConfirm]   = useState(false)
+  const { mutate: register_, isPending } = useRegister()
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -68,120 +63,167 @@ export default function RegisterPage() {
     register_({ name, cpf, gender, email, password, currency: 'BRL', timezone: 'America/Sao_Paulo' })
 
   return (
-    <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 shadow-2xl">
-
+    <div
+      className="rounded-2xl p-8 shadow-2xl"
+      style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid var(--ff-border)', backdropFilter: 'blur(20px)' }}
+    >
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-14 h-14 bg-violet-500/20 border border-violet-500/30 rounded-2xl mb-4">
-          <Sparkles className="text-violet-400" size={26} />
+        <div
+          className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
+          style={{ background: 'var(--ff-emerald-subtle)', border: '1px solid rgba(16,185,129,0.3)' }}
+        >
+          <Sparkles style={{ color: 'var(--ff-emerald)' }} size={26} />
         </div>
-        <h1 className="text-2xl font-bold text-white">Criar sua conta</h1>
-        <p className="text-slate-400 text-sm mt-1">Comece a controlar suas finanças hoje</p>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--ff-text-primary)' }}>
+          Criar sua conta
+        </h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--ff-text-muted)' }}>
+          Comece a controlar suas finanças hoje
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-        <div className="space-y-2">
-          <Label htmlFor="name" className="text-slate-300 text-sm">Nome completo</Label>
-          <Input
+        {/* Nome — Modificado: htmlFor + id */}
+        <div className="space-y-1.5">
+          <label htmlFor="name" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Nome completo
+          </label>
+          <input
             id="name"
             placeholder="Seu nome completo"
             {...register('name')}
-            className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500/20 h-11"
+            style={inputStyle}
+            onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
+            onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
           />
-          {errors.name && <p className="text-red-400 text-xs">{errors.name.message}</p>}
+          {errors.name && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.name.message}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label htmlFor="cpf" className="text-slate-300 text-sm">CPF</Label>
-            <Input
+          {/* CPF — Modificado: htmlFor + id */}
+          <div className="space-y-1.5">
+            <label htmlFor="cpf" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+              CPF
+            </label>
+            <input
               id="cpf"
               placeholder="000.000.000-00"
               value={watch('cpf') ?? ''}
               onChange={e => setValue('cpf', maskCpf(e.target.value), { shouldValidate: true })}
-              className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500/20 h-11"
+              style={inputStyle}
+              onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
             />
-            {errors.cpf && <p className="text-red-400 text-xs">{errors.cpf.message}</p>}
+            {errors.cpf && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.cpf.message}</p>}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="gender" className="text-slate-300 text-sm">Gênero</Label>
+          {/* Gênero — Modificado: htmlFor + id */}
+          <div className="space-y-1.5">
+            <label htmlFor="gender" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+              Gênero
+            </label>
             <select
               id="gender"
               {...register('gender')}
-              className="w-full h-11 px-3 rounded-md bg-slate-800/50 border border-slate-700 text-white focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/20 text-sm"
+              style={selectStyle}
+              onFocus={e => (e.currentTarget.style.borderColor = 'var(--ff-emerald)')}
+              onBlur={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
             >
-              <option value="" className="bg-slate-800">Selecione</option>
-              <option value="Male" className="bg-slate-800">Masculino</option>
-              <option value="Female" className="bg-slate-800">Feminino</option>
+              <option value="" style={{ background: '#111' }}>Selecione</option>
+              <option value="Male" style={{ background: '#111' }}>Masculino</option>
+              <option value="Female" style={{ background: '#111' }}>Feminino</option>
             </select>
-            {errors.gender && <p className="text-red-400 text-xs">{errors.gender.message}</p>}
+            {errors.gender && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.gender.message}</p>}
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-slate-300 text-sm">Email</Label>
-          <Input
+        {/* Email — Modificado: htmlFor + id */}
+        <div className="space-y-1.5">
+          <label htmlFor="email" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Email
+          </label>
+          <input
             id="email"
             type="email"
             placeholder="seu@email.com"
             {...register('email')}
-            className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500/20 h-11"
+            style={inputStyle}
+            onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
+            onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
           />
-          {errors.email && <p className="text-red-400 text-xs">{errors.email.message}</p>}
+          {errors.email && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.email.message}</p>}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password" className="text-slate-300 text-sm">Senha</Label>
+        {/* Senha — Modificado: htmlFor + id */}
+        <div className="space-y-1.5">
+          <label htmlFor="password" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Senha
+          </label>
           <div className="relative">
-            <Input
+            <input
               id="password"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               {...register('password')}
-              className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500/20 h-11 pr-11"
+              style={{ ...inputStyle, paddingRight: '44px' }}
+              onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
             />
             <button type="button" onClick={() => setShowPassword(p => !p)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+              className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+              style={{ color: 'var(--ff-text-muted)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-text-primary)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-text-muted)')}
+            >
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
-          {errors.password && <p className="text-red-400 text-xs">{errors.password.message}</p>}
+          {errors.password && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.password.message}</p>}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-slate-300 text-sm">Confirmar senha</Label>
+        {/* Confirmar senha — Modificado: htmlFor + id */}
+        <div className="space-y-1.5">
+          <label htmlFor="confirmPassword" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+            Confirmar senha
+          </label>
           <div className="relative">
-            <Input
+            <input
               id="confirmPassword"
-              type={showConfirmPassword ? 'text' : 'password'}
+              type={showConfirm ? 'text' : 'password'}
               placeholder="••••••••"
               {...register('confirmPassword')}
-              className="bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500/20 h-11 pr-11"
+              style={{ ...inputStyle, paddingRight: '44px' }}
+              onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
             />
             <button type="button" onClick={() => setShowConfirm(p => !p)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
-              {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+              style={{ color: 'var(--ff-text-muted)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-text-primary)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-text-muted)')}
+            >
+              {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
-          {errors.confirmPassword && <p className="text-red-400 text-xs">{errors.confirmPassword.message}</p>}
+          {errors.confirmPassword && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.confirmPassword.message}</p>}
         </div>
 
-        <Button
+        <button
           type="submit"
           disabled={isPending}
-          className="w-full h-11 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-xl transition-all duration-200 shadow-lg shadow-violet-500/25 mt-2"
+          className="w-full h-11 rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+          style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
+          onMouseEnter={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald-hover)' }}
+          onMouseLeave={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald)' }}
         >
-          {isPending
-            ? <><Loader2 size={16} className="animate-spin mr-2" />Criando conta...</>
-            : 'Criar conta'
-          }
-        </Button>
+          {isPending ? <><Loader2 size={16} className="animate-spin" />Criando conta...</> : 'Criar conta'}
+        </button>
       </form>
 
-      <p className="text-center text-slate-400 text-sm mt-6">
+      <p className="text-center text-sm mt-6" style={{ color: 'var(--ff-text-muted)' }}>
         Já tem uma conta?{' '}
-        <Link to="/login" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">
+        <Link to="/login" className="font-medium transition-colors" style={{ color: 'var(--ff-emerald)' }}>
           Entrar
         </Link>
       </p>

@@ -41,6 +41,26 @@ export default {
         border:  'hsl(var(--border))',
         input:   'hsl(var(--input))',
         ring:    'hsl(var(--ring))',
+
+        // Adicionado: paleta FinanceFlow
+        ff: {
+          base:           'var(--ff-bg-base)',
+          card:           'var(--ff-bg-card)',
+          elevated:       'var(--ff-bg-elevated)',
+          border:         'var(--ff-border)',
+          'border-subtle': 'var(--ff-border-subtle)',
+          emerald:        'var(--ff-emerald)',
+          'emerald-hover': 'var(--ff-emerald-hover)',
+          'emerald-subtle': 'var(--ff-emerald-subtle)',
+          'emerald-text': 'var(--ff-emerald-text)',
+          'text-primary':   'var(--ff-text-primary)',
+          'text-secondary': 'var(--ff-text-secondary)',
+          'text-muted':     'var(--ff-text-muted)',
+          income:    'var(--ff-income)',
+          expense:   'var(--ff-expense)',
+          pending:   'var(--ff-pending)',
+          scheduled: 'var(--ff-scheduled)',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

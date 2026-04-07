@@ -17,7 +17,7 @@ public class CreateTransactionCommandHandler(
     IEventPublisher eventPublisher,
     IAttachmentService attachmentService,
     IConfiguration configuration,
-    ICacheService cache, // Adicionado
+    ICacheService cache,
     IMapper mapper)
     : IRequestHandler<CreateTransactionCommand, TransactionDto>
 {
@@ -81,7 +81,7 @@ public class CreateTransactionCommandHandler(
                 await transactionRepository.AddAsync(copy, cancellationToken);
         }
 
-        // Adicionado: invalida o cache do dashboard para o mês da transação
+        // Invalida o cache do dashboard para o mês da transação
         await InvalidarCacheDashboardAsync(request.UserId, request.Date, cancellationToken);
 
         var topic = configuration["Kafka:Topics:TransactionCreated"]
@@ -143,7 +143,7 @@ public class CreateTransactionCommandHandler(
         return copies;
     }
 
-    // Adicionado: invalida todas as chaves de cache do dashboard para o mês/ano da transação
+    // Invalida todas as chaves de cache do dashboard para o mês/ano da transação
     private async Task InvalidarCacheDashboardAsync(
         Guid userId,
         DateTime date,

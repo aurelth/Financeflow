@@ -28,23 +28,32 @@ interface SummaryCardProps {
   title:     string
   value:     number
   icon:      React.ReactNode
-  color:     string
+  iconBg:    string
   subtitle?: string
 }
 
-function SummaryCard({ title, value, icon, color, subtitle }: SummaryCardProps) {
+// Usa tokens CSS da nova paleta
+function SummaryCard({ title, value, icon, iconBg, subtitle }: SummaryCardProps) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center gap-4">
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+    <div
+      className="rounded-2xl p-5 flex items-center gap-4"
+      style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+    >
+      <div
+        className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ background: iconBg }}
+      >
         {icon}
       </div>
       <div>
-        <p className="text-xs text-slate-400 uppercase tracking-wide mb-0.5">{title}</p>
-        <p className="text-lg font-semibold text-slate-100">
+        <p className="text-xs uppercase tracking-wide mb-0.5" style={{ color: 'var(--ff-text-muted)' }}>
+          {title}
+        </p>
+        <p className="text-lg font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
           {value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
         </p>
         {subtitle && (
-          <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>{subtitle}</p>
         )}
       </div>
     </div>
@@ -94,8 +103,10 @@ export default function DashboardPage() {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-white">Dashboard</h1>
-          <p className="text-slate-400 text-sm mt-0.5">
+          <h1 className="text-xl font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
+            Dashboard
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
             Visão geral das suas finanças
           </p>
         </div>
@@ -103,26 +114,49 @@ export default function DashboardPage() {
       </div>
 
       {/* Seletor de mês/ano */}
-      <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-2xl px-5 py-3">
+      <div
+        className="flex items-center justify-between rounded-2xl px-5 py-3"
+        style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+      >
         <button
           onClick={handlePrevMonth}
-          className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-all"
+          className="p-1.5 rounded-lg transition-all"
+          style={{ color: 'var(--ff-text-muted)' }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = 'var(--ff-text-primary)'
+            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = 'var(--ff-text-muted)'
+            e.currentTarget.style.background = 'transparent'
+          }}
         >
           <ChevronLeft size={18} />
         </button>
-        <span className="text-slate-200 font-medium capitalize">{monthLabel}</span>
+        <span className="font-medium capitalize" style={{ color: 'var(--ff-text-primary)' }}>
+          {monthLabel}
+        </span>
         <button
           onClick={handleNextMonth}
-          className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-all"
+          className="p-1.5 rounded-lg transition-all"
+          style={{ color: 'var(--ff-text-muted)' }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = 'var(--ff-text-primary)'
+            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = 'var(--ff-text-muted)'
+            e.currentTarget.style.background = 'transparent'
+          }}
         >
           <ChevronRight size={18} />
         </button>
       </div>
 
-      {/* Loading */}
+      {/* Loading — spinner verde */}
       {isLoading && (
         <div className="flex items-center justify-center py-20">
-          <Loader2 size={24} className="animate-spin text-indigo-400" />
+          <Loader2 size={24} className="animate-spin" style={{ color: 'var(--ff-emerald)' }} />
         </div>
       )}
 
@@ -134,26 +168,26 @@ export default function DashboardPage() {
             <SummaryCard
               title="Receitas"
               value={summary?.totalIncome ?? 0}
-              icon={<TrendingUp size={20} className="text-emerald-400" />}
-              color="bg-emerald-500/10 border border-emerald-500/20"
+              icon={<TrendingUp size={20} style={{ color: 'var(--ff-income)' }} />}
+              iconBg="rgba(16, 185, 129, 0.1)"
             />
             <SummaryCard
               title="Despesas"
               value={summary?.totalExpenses ?? 0}
-              icon={<TrendingDown size={20} className="text-red-400" />}
-              color="bg-red-500/10 border border-red-500/20"
+              icon={<TrendingDown size={20} style={{ color: 'var(--ff-expense)' }} />}
+              iconBg="rgba(244, 63, 94, 0.1)"
             />
             <SummaryCard
               title="Saldo"
               value={summary?.balance ?? 0}
-              icon={<Wallet size={20} className="text-indigo-400" />}
-              color="bg-indigo-500/10 border border-indigo-500/20"
+              icon={<Wallet size={20} style={{ color: 'var(--ff-scheduled)' }} />}
+              iconBg="rgba(99, 102, 241, 0.1)"
             />
             <SummaryCard
               title="Saldo Projetado"
               value={summary?.projectedBalance ?? 0}
-              icon={<CalendarClock size={20} className="text-violet-400" />}
-              color="bg-violet-500/10 border border-violet-500/20"
+              icon={<CalendarClock size={20} style={{ color: 'var(--ff-pending)' }} />}
+              iconBg="rgba(245, 158, 11, 0.1)"
               subtitle="Inclui transações agendadas"
             />
           </div>

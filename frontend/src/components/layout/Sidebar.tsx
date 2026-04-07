@@ -12,34 +12,39 @@ import {
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { to: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard'    },
-  { to: '/transactions', icon: ArrowLeftRight,  label: 'Transações'   },
-  { to: '/categories',   icon: Tag,             label: 'Categorias'   },
-  { to: '/budgets',      icon: PiggyBank,       label: 'Orçamentos'   },
-  { to: '/comparison',   icon: GitCompare,      label: 'Comparativo'  },
-  { to: '/reports',      icon: BarChart3,       label: 'Relatórios'   },
-  { to: '/exports',      icon: FileText,        label: 'Exportar'     },
+  { to: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard'   },
+  { to: '/transactions', icon: ArrowLeftRight,  label: 'Transações'  },
+  { to: '/categories',   icon: Tag,             label: 'Categorias'  },
+  { to: '/budgets',      icon: PiggyBank,       label: 'Orçamentos'  },
+  { to: '/comparison',   icon: GitCompare,      label: 'Comparativo' },
+  { to: '/reports',      icon: BarChart3,       label: 'Relatórios'  },
+  { to: '/exports',      icon: FileText,        label: 'Exportar'    },
 ]
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
-
+    <aside
+      className="w-64 flex flex-col"
+      style={{ background: 'var(--ff-bg-card)', borderRight: '1px solid var(--ff-border)' }} // Modificado
+    >
       {/* Logo */}
-      <div className="p-6 border-b border-slate-800">
+      <div className="p-6" style={{ borderBottom: '1px solid var(--ff-border)' }}> {/* Modificado */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
-            <span className="text-white font-bold">FF</span>
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'var(--ff-emerald)' }} // Modificado
+          >
+            <span style={{ color: 'var(--ff-emerald-subtle)', fontWeight: 700, fontSize: 13 }}>FF</span>
           </div>
           <div>
-            <p className="text-white font-semibold">FinanceFlow</p>
-            <p className="text-slate-400 text-xs">Gestão Financeira</p>
+            <p style={{ color: 'var(--ff-text-primary)', fontWeight: 600, fontSize: 14 }}>FinanceFlow</p>
+            <p style={{ color: 'var(--ff-text-muted)', fontSize: 11 }}>Gestão Financeira</p>
           </div>
         </div>
       </div>
 
       {/* Navegação */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-0.5">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
@@ -47,11 +52,33 @@ export default function Sidebar() {
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
-                isActive
-                  ? 'bg-indigo-500/20 text-indigo-400 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                isActive ? 'ff-nav-active' : 'ff-nav-default'
               )
             }
+            style={({ isActive }) =>
+              isActive
+                ? { // Modificado: verde esmeralda no item ativo
+                    background: 'var(--ff-emerald-subtle)',
+                    color: 'var(--ff-emerald)',
+                  }
+                : {
+                    color: 'var(--ff-text-muted)',
+                  }
+            }
+            onMouseEnter={e => {
+              const el = e.currentTarget
+              if (!el.classList.contains('ff-nav-active')) {
+                el.style.color = 'var(--ff-text-secondary)'
+                el.style.background = 'var(--ff-bg-elevated)'
+              }
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget
+              if (!el.classList.contains('ff-nav-active')) {
+                el.style.color = 'var(--ff-text-muted)'
+                el.style.background = 'transparent'
+              }
+            }}
           >
             <Icon size={18} />
             {label}
@@ -59,18 +86,28 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Settings */}
-      <div className="p-4 border-t border-slate-800">
+      {/* Configurações */}
+      <div className="p-4" style={{ borderTop: '1px solid var(--ff-border)' }}> {/* Modificado */}
         <NavLink
           to="/settings"
-          className={({ isActive }) =>
-            cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
-              isActive
-                ? 'bg-indigo-500/20 text-indigo-400'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-            )
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+          style={({ isActive }) =>
+            isActive
+              ? { background: 'var(--ff-emerald-subtle)', color: 'var(--ff-emerald)' }
+              : { color: 'var(--ff-text-muted)' }
           }
+          onMouseEnter={e => {
+            const el = e.currentTarget
+            el.style.color = 'var(--ff-text-secondary)'
+            el.style.background = 'var(--ff-bg-elevated)'
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget
+            if (window.location.pathname !== '/settings') {
+              el.style.color = 'var(--ff-text-muted)'
+              el.style.background = 'transparent'
+            }
+          }}
         >
           <Settings size={18} />
           Configurações

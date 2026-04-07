@@ -1,5 +1,3 @@
-import { cn } from '@/lib/utils'
-
 const ICONS = [
   '🍔', '🚗', '🏠', '💊', '📚', '🎮', '✈️', '👕',
   '💡', '📱', '🎵', '🏋️', '🐶', '☕', '🎁', '💼',
@@ -19,12 +17,13 @@ export default function IconPicker({ value, onChange }: IconPickerProps) {
           key={icon}
           type="button"
           onClick={() => onChange(icon)}
-          className={cn(
-            'w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all duration-200',
-            value === icon
-              ? 'bg-indigo-500/20 ring-1 ring-indigo-500/50 scale-110'
-              : 'bg-slate-800 hover:bg-slate-700'
-          )}
+          className="w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all duration-200"
+          style={value === icon
+            ? { background: 'var(--ff-emerald-subtle)', outline: '1px solid rgba(16,185,129,0.4)', transform: 'scale(1.1)' }
+            : { background: 'var(--ff-bg-elevated)' }
+          }
+          onMouseEnter={e => { if (value !== icon) e.currentTarget.style.background = '#222222' }}
+          onMouseLeave={e => { if (value !== icon) e.currentTarget.style.background = 'var(--ff-bg-elevated)' }}
         >
           {icon}
         </button>

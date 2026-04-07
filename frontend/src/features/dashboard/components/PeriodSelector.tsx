@@ -7,15 +7,16 @@ interface Period {
 }
 
 interface PeriodSelectorProps {
-  periods:    Period[]
-  onChange:   (periods: Period[]) => void
+  periods:     Period[]
+  onChange:    (periods: Period[]) => void
   maxPeriods?: number
 }
 
-const COLORS: Array<{ colorClass: string }> = [
-  { colorClass: 'text-indigo-400'  },
-  { colorClass: 'text-emerald-400' },
-  { colorClass: 'text-amber-400'   },
+// Cores dos períodos com tokens da nova paleta
+const COLORS = [
+  { colorClass: 'text-indigo-400',  color: '#6366f1' },
+  { colorClass: 'text-emerald-400', color: '#10b981' },
+  { colorClass: 'text-amber-400',   color: '#f59e0b' },
 ]
 
 export default function PeriodSelector({
@@ -24,8 +25,8 @@ export default function PeriodSelector({
   maxPeriods = 3,
 }: PeriodSelectorProps) {
   function handleChange(index: number, month: number, year: number) {
-    const updated   = [...periods]
-    updated[index]  = { month, year }
+    const updated  = [...periods]
+    updated[index] = { month, year }
     onChange(updated)
   }
 
@@ -55,7 +56,16 @@ export default function PeriodSelector({
           {periods.length > 1 && (
             <button
               onClick={() => handleRemove(index)}
-              className="mt-2.5 p-1 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-all"
+              className="mt-2.5 p-1 rounded-lg transition-all"
+              style={{ color: 'var(--ff-text-muted)' }}
+              onMouseEnter={e => {
+                e.currentTarget.style.color = 'var(--ff-expense)'
+                e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.color = 'var(--ff-text-muted)'
+                e.currentTarget.style.background = 'transparent'
+              }}
             >
               <X size={14} />
             </button>
@@ -66,7 +76,19 @@ export default function PeriodSelector({
       {periods.length < maxPeriods && (
         <button
           onClick={handleAdd}
-          className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-dashed border-slate-600 text-slate-500 hover:text-slate-300 hover:border-slate-500 text-sm transition-all"
+          className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-dashed text-sm transition-all"
+          style={{
+            borderColor: 'var(--ff-border)',
+            color:       'var(--ff-text-muted)',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color       = 'var(--ff-text-secondary)'
+            e.currentTarget.style.borderColor = 'var(--ff-emerald)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color       = 'var(--ff-text-muted)'
+            e.currentTarget.style.borderColor = 'var(--ff-border)'
+          }}
         >
           <Plus size={14} />
           Adicionar período

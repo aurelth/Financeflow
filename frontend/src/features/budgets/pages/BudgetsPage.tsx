@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Plus, PiggyBank, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { useBudgetSummary } from '../api/useBudgets'
 import BudgetCard from '../components/BudgetCard'
 import BudgetForm from '../components/BudgetForm'
@@ -19,12 +18,10 @@ export default function BudgetsPage() {
   const [deletingBudget, setDeletingBudget] = useState<Budget | null>(null)
 
   const { data: summaries = [], isLoading } = useBudgetSummary(period)
-
   const isEmpty = !isLoading && summaries.length === 0
 
   const monthLabel = new Date(period.year, period.month - 1).toLocaleString('pt-BR', {
-    month: 'long',
-    year:  'numeric',
+    month: 'long', year: 'numeric',
   })
 
   function handlePrevMonth() {
@@ -42,26 +39,23 @@ export default function BudgetsPage() {
   }
 
   function handleEdit(summary: BudgetSummary) {
-    // Converte BudgetSummary para Budget para o formulário
     const budget: Budget = {
-      id:            summary.id,
-      categoryId:    summary.categoryId,
-      categoryName:  summary.categoryName,
-      categoryIcon:  summary.categoryIcon,
-      categoryColor: summary.categoryColor,
-      month:         summary.month,
-      year:          summary.year,
-      limitAmount:   summary.limitAmount,
-      createdAt:     '',
-      updatedAt:     null,
+      id: summary.id, categoryId: summary.categoryId, categoryName: summary.categoryName,
+      categoryIcon: summary.categoryIcon, categoryColor: summary.categoryColor,
+      month: summary.month, year: summary.year, limitAmount: summary.limitAmount,
+      createdAt: '', updatedAt: null,
     }
     setEditingBudget(budget)
     setShowForm(true)
   }
 
-  function handleCloseForm() {
-    setShowForm(false)
-    setEditingBudget(null)
+  function toBudget(summary: BudgetSummary): Budget {
+    return {
+      id: summary.id, categoryId: summary.categoryId, categoryName: summary.categoryName,
+      categoryIcon: summary.categoryIcon, categoryColor: summary.categoryColor,
+      month: summary.month, year: summary.year, limitAmount: summary.limitAmount,
+      createdAt: '', updatedAt: null,
+    }
   }
 
   return (
@@ -70,32 +64,60 @@ export default function BudgetsPage() {
       {/* Cabeçalho */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-white">Orçamentos</h1>
-          <p className="text-slate-400 text-sm mt-0.5">
+          <h1 className="text-xl font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
+            Orçamentos
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
             Defina limites mensais por categoria e acompanhe os seus gastos
           </p>
         </div>
-        <Button
+        <button
           onClick={() => setShowForm(true)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white h-9 px-4 gap-2"
+          className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
+          style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-emerald-hover)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-emerald)')}
         >
           <Plus size={16} />
           Novo orçamento
-        </Button>
+        </button>
       </div>
 
       {/* Seletor de mês/ano */}
-      <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-2xl px-5 py-3">
+      <div
+        className="flex items-center justify-between rounded-2xl px-5 py-3"
+        style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+      >
         <button
           onClick={handlePrevMonth}
-          className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-all"
+          className="p-1.5 rounded-lg transition-all"
+          style={{ color: 'var(--ff-text-muted)' }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = 'var(--ff-text-primary)'
+            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = 'var(--ff-text-muted)'
+            e.currentTarget.style.background = 'transparent'
+          }}
         >
           <ChevronLeft size={18} />
         </button>
-        <span className="text-slate-200 font-medium capitalize">{monthLabel}</span>
+        <span className="font-medium capitalize" style={{ color: 'var(--ff-text-primary)' }}>
+          {monthLabel}
+        </span>
         <button
           onClick={handleNextMonth}
-          className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-all"
+          className="p-1.5 rounded-lg transition-all"
+          style={{ color: 'var(--ff-text-muted)' }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = 'var(--ff-text-primary)'
+            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = 'var(--ff-text-muted)'
+            e.currentTarget.style.background = 'transparent'
+          }}
         >
           <ChevronRight size={18} />
         </button>
@@ -104,7 +126,7 @@ export default function BudgetsPage() {
       {/* Loading */}
       {isLoading && (
         <div className="flex items-center justify-center py-20">
-          <Loader2 size={24} className="animate-spin text-indigo-400" />
+          <Loader2 size={24} className="animate-spin" style={{ color: 'var(--ff-emerald)' }} />
         </div>
       )}
 
@@ -116,18 +138,7 @@ export default function BudgetsPage() {
               key={summary.id}
               summary={summary}
               onEdit={() => handleEdit(summary)}
-              onDelete={() => setDeletingBudget({
-                id:            summary.id,
-                categoryId:    summary.categoryId,
-                categoryName:  summary.categoryName,
-                categoryIcon:  summary.categoryIcon,
-                categoryColor: summary.categoryColor,
-                month:         summary.month,
-                year:          summary.year,
-                limitAmount:   summary.limitAmount,
-                createdAt:     '',
-                updatedAt:     null,
-              })}
+              onDelete={() => setDeletingBudget(toBudget(summary))}
             />
           ))}
         </div>
@@ -136,38 +147,39 @@ export default function BudgetsPage() {
       {/* Estado vazio */}
       {isEmpty && (
         <div className="flex flex-col items-center justify-center py-20 space-y-3">
-          <div className="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center">
-            <PiggyBank size={24} className="text-slate-500" />
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: 'var(--ff-bg-card)' }}
+          >
+            <PiggyBank size={24} style={{ color: 'var(--ff-text-muted)' }} />
           </div>
-          <p className="text-slate-400 text-sm">
+          <p className="text-sm" style={{ color: 'var(--ff-text-muted)' }}>
             Nenhum orçamento definido para {monthLabel}
           </p>
-          <Button
+          <button
             onClick={() => setShowForm(true)}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white h-9 px-4 gap-2"
+            className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
+            style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-emerald-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-emerald)')}
           >
             <Plus size={15} />
             Criar primeiro orçamento
-          </Button>
+          </button>
         </div>
       )}
 
-      {/* Modal de criação/edição */}
       {showForm && (
         <BudgetForm
           budget={editingBudget ?? undefined}
           month={period.month}
           year={period.year}
-          onClose={handleCloseForm}
+          onClose={() => { setShowForm(false); setEditingBudget(null) }}
         />
       )}
 
-      {/* Modal de confirmação de exclusão */}
       {deletingBudget && (
-        <DeleteBudgetDialog
-          budget={deletingBudget}
-          onClose={() => setDeletingBudget(null)}
-        />
+        <DeleteBudgetDialog budget={deletingBudget} onClose={() => setDeletingBudget(null)} />
       )}
     </div>
   )

@@ -7,7 +7,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 import { useNotificationStore } from '@/store/notificationStore'
 import { useNotifications, useMarkAsRead, useMarkAllAsRead } from '../api/useNotifications'
 import type { Notification } from '../types/notification.types'
@@ -17,75 +16,74 @@ export default function NotificationDropdown() {
   const { mutate: markAsRead }    = useMarkAsRead()
   const { mutate: markAllAsRead } = useMarkAllAsRead()
   const {
-    notifications,
-    unreadCount,
-    setNotifications,
-    markAsRead: storeMarkAsRead,
-    markAllAsRead: storeMarkAllAsRead,
+    notifications, unreadCount,
+    setNotifications, markAsRead: storeMarkAsRead, markAllAsRead: storeMarkAllAsRead,
   } = useNotificationStore()
 
   useEffect(() => {
     if (data) setNotifications(data)
   }, [data, setNotifications])
 
-  const handleMarkAsRead = (id: string) => {
-    markAsRead(id)
-    storeMarkAsRead(id)
+  const handleMarkAsRead    = (id: string) => { markAsRead(id); storeMarkAsRead(id) }
+  const handleMarkAllAsRead = () => { markAllAsRead(); storeMarkAllAsRead() }
+
+  // Modificado: config de tipos com tokens da nova paleta
+  const typeConfig: Record<string, { bg: string; border: string; color: string; label: string }> = {
+    BudgetCritical:         { bg: 'rgba(244,63,94,0.08)',  border: 'rgba(244,63,94,0.2)',  color: 'var(--ff-expense)',   label: '🚨 Crítico'        },
+    BudgetWarning:          { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', color: 'var(--ff-pending)',   label: '🔔 Aviso'          },
+    TransactionDueTomorrow: { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', color: 'var(--ff-pending)',   label: '⏰ Vence amanhã'   },
+    TransactionDueIn3Days:  { bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)', color: 'var(--ff-scheduled)', label: '📅 Vence em 3 dias' },
   }
 
-  const handleMarkAllAsRead = () => {
-    markAllAsRead()
-    storeMarkAllAsRead()
-  }
-
-  const getTypeStyles = (type: string) => {
-    switch (type) {
-      case 'BudgetCritical':        return 'bg-red-500/10 border-red-500/20 text-red-400'
-      case 'BudgetWarning':         return 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
-      case 'TransactionDueTomorrow': return 'bg-orange-500/10 border-orange-500/20 text-orange-400'
-      case 'TransactionDueIn3Days':  return 'bg-blue-500/10 border-blue-500/20 text-blue-400'
-      default:                      return 'bg-slate-500/10 border-slate-500/20 text-slate-400'
-    }
-  }
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'BudgetCritical':         return '🚨 Crítico'
-      case 'BudgetWarning':          return '🔔 Aviso'
-      case 'TransactionDueTomorrow': return '⏰ Vence amanhã'
-      case 'TransactionDueIn3Days':  return '📅 Vence em 3 dias'
-      default:                       return '🔔 Notificação'
-    }
-  }
+  const defaultType = { bg: 'var(--ff-bg-elevated)', border: 'var(--ff-border)', color: 'var(--ff-text-muted)', label: '🔔 Notificação' }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+        <button
+          className="relative p-2 rounded-xl transition-colors"
+          style={{ color: 'var(--ff-text-muted)' }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = 'var(--ff-text-primary)'
+            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = 'var(--ff-text-muted)'
+            e.currentTarget.style.background = 'transparent'
+          }}
         >
           <Bell size={18} />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-indigo-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
+            <span
+              className="absolute -top-1 -right-1 w-5 h-5 text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse"
+              style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
+            >
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
-        </Button>
+        </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
-        className="w-96 bg-slate-900 border-slate-800 p-0"
+        className="w-96 p-0"
+        style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+        <div
+          className="flex items-center justify-between px-4 py-3"
+          style={{ borderBottom: '1px solid var(--ff-border)' }}
+        >
           <div className="flex items-center gap-2">
-            <Bell size={15} className="text-slate-400" />
-            <span className="text-slate-200 text-sm font-semibold">Notificações</span>
+            <Bell size={15} style={{ color: 'var(--ff-text-muted)' }} />
+            <span className="text-sm font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
+              Notificações
+            </span>
             {unreadCount > 0 && (
-              <span className="bg-indigo-500/20 text-indigo-400 text-xs px-2 py-0.5 rounded-full font-medium">
+              <span
+                className="text-xs px-2 py-0.5 rounded-full font-medium"
+                style={{ background: 'var(--ff-emerald-subtle)', color: 'var(--ff-emerald)' }}
+              >
                 {unreadCount} nova{unreadCount > 1 ? 's' : ''}
               </span>
             )}
@@ -93,7 +91,10 @@ export default function NotificationDropdown() {
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllAsRead}
-              className="flex items-center gap-1 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+              className="flex items-center gap-1 text-xs transition-colors"
+              style={{ color: 'var(--ff-emerald)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-emerald-hover)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-emerald)')}
             >
               <CheckCheck size={13} />
               Marcar todas
@@ -105,21 +106,25 @@ export default function NotificationDropdown() {
         <div className="max-h-80 overflow-y-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+              <div
+                className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
+                style={{ borderColor: 'var(--ff-emerald)', borderTopColor: 'transparent' }}
+              />
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 gap-2">
-              <Bell size={28} className="text-slate-600" />
-              <p className="text-slate-500 text-sm">Nenhuma notificação</p>
+              <Bell size={28} style={{ color: 'var(--ff-text-muted)' }} />
+              <p className="text-sm" style={{ color: 'var(--ff-text-muted)' }}>
+                Nenhuma notificação
+              </p>
             </div>
           ) : (
             notifications.map(n => (
               <NotificationItem
                 key={n.id}
                 notification={n}
+                config={typeConfig[n.type] ?? defaultType}
                 onMarkAsRead={handleMarkAsRead}
-                getTypeStyles={getTypeStyles}
-                getTypeLabel={getTypeLabel}
               />
             ))
           )}
@@ -130,48 +135,50 @@ export default function NotificationDropdown() {
 }
 
 interface NotificationItemProps {
-  notification:  Notification
-  onMarkAsRead:  (id: string) => void
-  getTypeStyles: (type: string) => string
-  getTypeLabel:  (type: string) => string
+  notification: Notification
+  config:       { bg: string; border: string; color: string; label: string }
+  onMarkAsRead: (id: string) => void
 }
 
-function NotificationItem({
-  notification,
-  onMarkAsRead,
-  getTypeStyles,
-  getTypeLabel,
-}: NotificationItemProps) {
+function NotificationItem({ notification, config, onMarkAsRead }: NotificationItemProps) {
   const dateStr = notification.createdAt.endsWith('Z')
     ? notification.createdAt
     : `${notification.createdAt}Z`
 
-  const timeAgo = formatDistanceToNow(new Date(dateStr), {
-    addSuffix: true,
-    locale:    ptBR,
-  })
+  const timeAgo = formatDistanceToNow(new Date(dateStr), { addSuffix: true, locale: ptBR })
 
   return (
     <div
-      className={`px-4 py-3 border-b border-slate-800/50 transition-colors ${
-        notification.isRead ? 'opacity-60' : 'bg-slate-800/30'
-      }`}
+      className="px-4 py-3 transition-colors"
+      style={{
+        borderBottom: '1px solid var(--ff-border-subtle)',
+        opacity:      notification.isRead ? 0.6 : 1,
+        background:   notification.isRead ? 'transparent' : 'var(--ff-bg-elevated)',
+      }}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full border mb-1.5 ${getTypeStyles(notification.type)}`}>
-            {getTypeLabel(notification.type)}
+          <span
+            className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1.5"
+            style={{ background: config.bg, border: `1px solid ${config.border}`, color: config.color }}
+          >
+            {config.label}
           </span>
-          <p className="text-slate-300 text-xs leading-relaxed">
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--ff-text-secondary)' }}>
             {notification.message}
           </p>
-          <p className="text-slate-500 text-[11px] mt-1">{timeAgo}</p>
+          <p className="text-[11px] mt-1" style={{ color: 'var(--ff-text-muted)' }}>
+            {timeAgo}
+          </p>
         </div>
         {!notification.isRead && (
           <button
             onClick={() => onMarkAsRead(notification.id)}
             title="Marcar como lida"
-            className="mt-1 text-slate-500 hover:text-indigo-400 transition-colors flex-shrink-0"
+            className="mt-1 flex-shrink-0 transition-colors"
+            style={{ color: 'var(--ff-text-muted)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-emerald)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-text-muted)')}
           >
             <Check size={14} />
           </button>

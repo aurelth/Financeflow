@@ -1,5 +1,5 @@
 using FinanceFlow.Application.Common.Exceptions;
-using FinanceFlow.Application.Common.Interfaces; // Adicionado
+using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
@@ -8,7 +8,7 @@ namespace FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransacti
 
 public class DeleteTransactionCommandHandler(
     ITransactionRepository transactionRepository,
-    ICacheService cache) // Adicionado
+    ICacheService cache)
     : IRequestHandler<DeleteTransactionCommand>
 {
     public async Task Handle(
@@ -38,11 +38,11 @@ public class DeleteTransactionCommandHandler(
             }
         }
 
-        // Adicionado: invalida o cache do dashboard para o mês da transação
+        // Invalida o cache do dashboard para o mês da transação
         await InvalidarCacheDashboardAsync(transaction.UserId, transaction.Date, cancellationToken);
     }
 
-    // Adicionado: invalida todas as chaves de cache do dashboard para o mês/ano da transação
+    // Invalida todas as chaves de cache do dashboard para o mês/ano da transação
     private async Task InvalidarCacheDashboardAsync(
         Guid userId,
         DateTime date,

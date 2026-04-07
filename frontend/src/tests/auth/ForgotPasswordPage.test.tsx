@@ -9,7 +9,7 @@ const mockMutate = vi.fn()
 
 vi.mock('@/features/auth/api/useAuth', () => ({
   useForgotPassword: () => ({
-    mutate:    mockMutate,
+    mutate: mockMutate,
     isPending: false,
   }),
 }))
@@ -46,7 +46,7 @@ describe('ForgotPasswordPage', () => {
     await user.click(screen.getByRole('button', { name: /enviar link/i }))
 
     await waitFor(() => {
-      expect(document.querySelector('.text-red-400')).toBeInTheDocument()
+      expect(screen.getByText(/email inválido/i)).toBeInTheDocument()
     })
 
     expect(mockMutate).not.toHaveBeenCalled()
