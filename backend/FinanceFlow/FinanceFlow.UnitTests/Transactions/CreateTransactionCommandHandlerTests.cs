@@ -18,6 +18,7 @@ public class CreateTransactionCommandHandlerTests
     private readonly Mock<IEventPublisher> _eventPublisher = new();
     private readonly Mock<IAttachmentService> _attachmentService = new();
     private readonly Mock<IConfiguration> _configuration = new();
+    private readonly Mock<ICacheService> _cache = new(); // Adicionado
     private readonly IMapper _mapper;
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -49,6 +50,11 @@ public class CreateTransactionCommandHandlerTests
                 It.IsAny<object>(),
                 It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+
+        // Adicionado: cache não lança exceção por padrão
+        _cache
+            .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
     }
 
     private CreateTransactionCommandHandler CreateHandler() =>
@@ -57,6 +63,7 @@ public class CreateTransactionCommandHandlerTests
             _eventPublisher.Object,
             _attachmentService.Object,
             _configuration.Object,
+            _cache.Object, // Adicionado
             _mapper);
 
     [Fact]
@@ -276,7 +283,7 @@ public class CreateTransactionCommandHandlerTests
             UserId: UserId,
             Amount: 100.00m,
             Type: TransactionType.Expense,
-            Date: new DateTime(2026, 12, 1), // Dezembro — nenhuma cópia gerada
+            Date: new DateTime(2026, 12, 1),
             Description: "Assinatura",
             Status: TransactionStatus.Paid,
             IsRecurring: true,
@@ -351,7 +358,7 @@ public class CreateTransactionCommandHandlerTests
     [Fact]
     public async Task Handle_DeveGerarCopiasParaMesesRestantes_QuandoIsRecurringTrue()
     {
-        // Arrange — criada em Outubro, devem ser geradas cópias para Nov e Dez
+        // Arrange
         var command = new CreateTransactionCommand(
             UserId: UserId,
             Amount: 50.00m,
@@ -396,7 +403,7 @@ public class CreateTransactionCommandHandlerTests
     [Fact]
     public async Task Handle_NaoDeveGerarCopias_QuandoCriadaEmDezembro()
     {
-        // Arrange — criada em Dezembro, nenhuma cópia deve ser gerada
+        // Arrange
         var command = new CreateTransactionCommand(
             UserId: UserId,
             Amount: 50.00m,
@@ -428,14 +435,14 @@ public class CreateTransactionCommandHandlerTests
         // Act
         await CreateHandler().Handle(command, default);
 
-        // Assert — apenas a transação original, nenhuma cópia
+        // Assert
         todasTransactions.Should().HaveCount(1);
     }
 
     [Fact]
     public async Task Handle_DeveAjustarDia_QuandoMesDestinoTemMenosDias()
     {
-        // Arrange — dia 31 de Janeiro, cópia de Fevereiro deve ir para dia 28
+        // Arrange
         var command = new CreateTransactionCommand(
             UserId: UserId,
             Amount: 200.00m,
@@ -467,9 +474,60 @@ public class CreateTransactionCommandHandlerTests
         // Act
         await CreateHandler().Handle(command, default);
 
-        // Assert — cópia de Fevereiro deve ter dia 28
+        // Assert
         var copiaFevereiro = todasTransactions.FirstOrDefault(t => t.Date.Month == 2);
         copiaFevereiro.Should().NotBeNull();
         copiaFevereiro!.Date.Day.Should().Be(28);
+    }
+
+    // Adicionado: testa invalidação do cache ao criar transação
+    [Fact]
+    public async Task Handle_DeveInvalidarCacheDashboard_QuandoTransacaoCriada()
+    {
+        // Arrange
+        var command = new CreateTransactionCommand(
+            UserId: UserId,
+            Amount: 100.00m,
+            Type: TransactionType.Expense,
+            Date: new DateTime(2026, 4, 1),
+            Description: "Teste cache",
+            Status: TransactionStatus.Paid,
+            IsRecurring: false,
+            RecurrenceType: RecurrenceType.None,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: []);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+
+        _transactionRepository
+            .Setup(r => r.AddAsync(It.IsAny<Transaction>(), default))
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
+            .ReturnsAsync(new Transaction
+            {
+                Id = Guid.NewGuid(),
+                UserId = UserId,
+                Amount = 100.00m,
+                Type = TransactionType.Expense,
+                Date = new DateTime(2026, 4, 1),
+                CategoryId = CategoryId,
+                Category = ValidCategory,
+                Tags = "[]"
+            });
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert — cache deve ter sido invalidado para o mês da transação
+        _cache.Verify(c =>
+            c.RemoveAsync(
+                It.Is<string>(k => k.Contains($"{UserId}:2026:4")),
+                default),
+            Times.AtLeastOnce);
     }
 }

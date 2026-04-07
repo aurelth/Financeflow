@@ -65,6 +65,7 @@ export const useCreateTransaction = () => {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Transação criada com sucesso!')
     },
     onError: (err: any) => {
@@ -89,6 +90,7 @@ export const useUpdateTransaction = (id: string) => {
       api.put<Transaction>(`/api/transactions/${id}`, data).then(r => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Transação atualizada com sucesso!')
     },
     onError: (err: any) => {
@@ -116,6 +118,7 @@ export const useDeleteTransaction = () => {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       toast.success('Transação removida com sucesso!')
     },
     onError: (err: any) => {

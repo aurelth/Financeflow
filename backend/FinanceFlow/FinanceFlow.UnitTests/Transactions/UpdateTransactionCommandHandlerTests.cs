@@ -1,5 +1,6 @@
 using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
+using FinanceFlow.Application.Common.Interfaces; // Adicionado
 using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
 using FinanceFlow.Domain.Entities;
@@ -13,6 +14,7 @@ public class UpdateTransactionCommandHandlerTests
 {
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
+    private readonly Mock<ICacheService> _cache = new(); // Adicionado
     private readonly IMapper _mapper;
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -31,7 +33,6 @@ public class UpdateTransactionCommandHandlerTests
         UserId = UserId
     };
 
-    // Adicionado: segunda categoria para testar propagação
     private static readonly Category ValidCategory2 = new()
     {
         Id = CategoryId2,
@@ -55,7 +56,7 @@ public class UpdateTransactionCommandHandlerTests
         Category = ValidCategory,
         Tags = "[]"
     };
-    
+
     private static Transaction CreateRecurringTransaction() => new()
     {
         Id = TransactionId,
@@ -78,11 +79,17 @@ public class UpdateTransactionCommandHandlerTests
         var config = new MapperConfiguration(cfg =>
             cfg.AddProfile<TransactionMappingProfile>());
         _mapper = config.CreateMapper();
+
+        // Adicionado: cache não lança exceção por padrão
+        _cache
+            .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
     }
 
     private UpdateTransactionCommandHandler CreateHandler() =>
         new(_transactionRepository.Object,
             _categoryRepository.Object,
+            _cache.Object, // Adicionado
             _mapper);
 
     [Fact]
@@ -274,8 +281,7 @@ public class UpdateTransactionCommandHandlerTests
             RecurrenceType: RecurrenceType.None,
             CategoryId: CategoryId,
             SubcategoryId: null,
-            Tags: []
-        );
+            Tags: []);
 
         _transactionRepository
             .Setup(r => r.GetByIdAsync(TransactionId, UserId, default))
@@ -307,7 +313,7 @@ public class UpdateTransactionCommandHandlerTests
             Times.Once);
     }
 
-    // Adicionado: testes de propagação para recorrentes
+    // Testes de propagação para recorrentes
 
     [Fact]
     public async Task Handle_DevePropagar_QuandoAmountAlteradoEPropagateTrue()
@@ -365,7 +371,7 @@ public class UpdateTransactionCommandHandlerTests
         // Act
         await CreateHandler().Handle(command, default);
 
-        // Assert — UpdateAsync chamado 2x: atual + futura
+        // Assert
         _transactionRepository.Verify(r =>
             r.UpdateAsync(It.IsAny<Transaction>(), default), Times.Exactly(2));
 
@@ -407,7 +413,7 @@ public class UpdateTransactionCommandHandlerTests
             Status: TransactionStatus.Paid,
             IsRecurring: true,
             RecurrenceType: RecurrenceType.Monthly,
-            CategoryId: CategoryId2, // Categoria alterada
+            CategoryId: CategoryId2,
             SubcategoryId: null,
             Tags: [],
             PropagateToFuture: true);
@@ -432,7 +438,7 @@ public class UpdateTransactionCommandHandlerTests
         // Act
         await CreateHandler().Handle(command, default);
 
-        // Assert — futura deve ter a nova categoria
+        // Assert
         _transactionRepository.Verify(r =>
             r.UpdateAsync(
                 It.Is<Transaction>(t =>
@@ -477,12 +483,11 @@ public class UpdateTransactionCommandHandlerTests
         // Act
         await CreateHandler().Handle(command, default);
 
-        // Assert — GetFutureRecurringAsync nunca deve ser chamado
+        // Assert
         _transactionRepository.Verify(r =>
             r.GetFutureRecurringAsync(It.IsAny<Guid>(), It.IsAny<DateTime>(), default),
             Times.Never);
 
-        // UpdateAsync chamado apenas 1x (só a atual)
         _transactionRepository.Verify(r =>
             r.UpdateAsync(It.IsAny<Transaction>(), default), Times.Once);
     }
@@ -490,7 +495,7 @@ public class UpdateTransactionCommandHandlerTests
     [Fact]
     public async Task Handle_NaoDevePropagar_QuandoNadaRelevanteFoiAlterado()
     {
-        // Arrange — mesmo Amount, Description e CategoryId — só Status muda
+        // Arrange
         var command = new UpdateTransactionCommand(
             Id: TransactionId,
             UserId: UserId,
@@ -522,12 +527,53 @@ public class UpdateTransactionCommandHandlerTests
         // Act
         await CreateHandler().Handle(command, default);
 
-        // Assert — nada relevante mudou, não deve buscar futuras
+        // Assert
         _transactionRepository.Verify(r =>
             r.GetFutureRecurringAsync(It.IsAny<Guid>(), It.IsAny<DateTime>(), default),
             Times.Never);
 
         _transactionRepository.Verify(r =>
             r.UpdateAsync(It.IsAny<Transaction>(), default), Times.Once);
+    }
+
+    // Adicionado: testa invalidação do cache ao atualizar transação
+    [Fact]
+    public async Task Handle_DeveInvalidarCacheDashboard_QuandoTransacaoAtualizada()
+    {
+        // Arrange
+        var command = new UpdateTransactionCommand(
+            Id: TransactionId,
+            UserId: UserId,
+            Amount: 200.00m,
+            Type: TransactionType.Expense,
+            Date: DateTime.UtcNow,
+            Description: "Atualizado",
+            Status: TransactionStatus.Paid,
+            IsRecurring: false,
+            RecurrenceType: RecurrenceType.None,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: []);
+
+        _transactionRepository
+            .SetupSequence(r => r.GetByIdAsync(TransactionId, UserId, default))
+            .ReturnsAsync(ExistingTransaction)
+            .ReturnsAsync(ExistingTransaction);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+
+        _transactionRepository
+            .Setup(r => r.UpdateAsync(It.IsAny<Transaction>(), default))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert
+        _cache.Verify(c =>
+            c.RemoveAsync(It.IsAny<string>(), default),
+            Times.AtLeastOnce);
     }
 }

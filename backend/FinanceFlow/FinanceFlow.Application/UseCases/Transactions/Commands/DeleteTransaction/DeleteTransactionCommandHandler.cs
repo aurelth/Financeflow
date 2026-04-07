@@ -1,4 +1,5 @@
 using FinanceFlow.Application.Common.Exceptions;
+using FinanceFlow.Application.Common.Interfaces; // Adicionado
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
@@ -6,7 +7,8 @@ using MediatR;
 namespace FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransaction;
 
 public class DeleteTransactionCommandHandler(
-    ITransactionRepository transactionRepository)
+    ITransactionRepository transactionRepository,
+    ICacheService cache) // Adicionado
     : IRequestHandler<DeleteTransactionCommand>
 {
     public async Task Handle(
@@ -35,5 +37,26 @@ public class DeleteTransactionCommandHandler(
                 await transactionRepository.UpdateAsync(futura, cancellationToken);
             }
         }
+
+        // Adicionado: invalida o cache do dashboard para o mês da transação
+        await InvalidarCacheDashboardAsync(transaction.UserId, transaction.Date, cancellationToken);
+    }
+
+    // Adicionado: invalida todas as chaves de cache do dashboard para o mês/ano da transação
+    private async Task InvalidarCacheDashboardAsync(
+        Guid userId,
+        DateTime date,
+        CancellationToken cancellationToken)
+    {
+        var prefixes = new[]
+        {
+            $"dashboard:summary:{userId}:{date.Year}:{date.Month}",
+            $"dashboard:balance-evolution:{userId}:{date.Year}:{date.Month}",
+            $"dashboard:expenses-by-category:{userId}:{date.Year}:{date.Month}",
+            $"dashboard:weekly-comparison:{userId}:{date.Year}:{date.Month}",
+        };
+
+        foreach (var prefix in prefixes)
+            await cache.RemoveAsync(prefix, cancellationToken);
     }
 }
