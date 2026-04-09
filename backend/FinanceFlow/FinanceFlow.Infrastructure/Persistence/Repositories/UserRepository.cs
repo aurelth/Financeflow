@@ -60,4 +60,19 @@ public class UserRepository(FinanceFlowDbContext context) : IUserRepository
         .Where(u => u.DeletedAt == null)
         .Select(u => u.Id)
         .ToListAsync(cancellationToken);
+
+    // Soft-delete do utilizador
+    public async Task DeleteAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
+        if (user is null) return;
+
+        user.DeletedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync(cancellationToken);
+    }
 }
