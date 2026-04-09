@@ -8,5 +8,7 @@ public record DueTransactionDto(
     DateTime Date,
     bool IsRecurring,
     string RecurrenceType,
-    string Type
+    string Type,
+    bool NotifyDueTomorrow,
+    bool NotifyDueIn3Days
 );
