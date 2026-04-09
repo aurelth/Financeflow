@@ -32,6 +32,111 @@ public class SettingsEndpointsTests(FinanceFlowWebApplicationFactory factory)
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
     }
 
+    // GET /api/settings/notifications
+
+    [Fact]
+    public async Task GetNotifications_DeveRetornar200_ComPreferenciasPadrao()
+    {
+        // Arrange
+        var client = CreateClient();
+        await AuthenticateAsync(client, "settings.getnotif@teste.com");
+
+        // Act
+        var response = await client.GetAsync("/api/settings/notifications");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var result = await response.Content.ReadFromJsonAsync<NotificationPreferencesDto>();
+        result.Should().NotBeNull();
+        result!.BudgetWarningEnabled.Should().BeTrue();
+        result.BudgetCriticalEnabled.Should().BeTrue();
+        result.TransactionDueTomorrowEnabled.Should().BeTrue();
+        result.TransactionDueIn3DaysEnabled.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetNotifications_DeveRetornar401_QuandoNaoAutenticado()
+    {
+        // Arrange
+        var client = CreateClient();
+
+        // Act
+        var response = await client.GetAsync("/api/settings/notifications");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    // PUT /api/settings/notifications
+
+    [Fact]
+    public async Task UpdateNotifications_DeveRetornar204_QuandoDadosValidos()
+    {
+        // Arrange
+        var client = CreateClient();
+        await AuthenticateAsync(client, "settings.updatenotif@teste.com");
+
+        var body = new UpdateNotificationPreferencesRequestDto(
+            BudgetWarningEnabled: false,
+            BudgetCriticalEnabled: true,
+            TransactionDueTomorrowEnabled: false,
+            TransactionDueIn3DaysEnabled: true
+        );
+
+        // Act
+        var response = await client.PutAsJsonAsync("/api/settings/notifications", body);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task UpdateNotifications_DevePersistirAlteracoes()
+    {
+        // Arrange
+        var client = CreateClient();
+        await AuthenticateAsync(client, "settings.updatenotif.persist@teste.com");
+
+        var body = new UpdateNotificationPreferencesRequestDto(
+            BudgetWarningEnabled: false,
+            BudgetCriticalEnabled: false,
+            TransactionDueTomorrowEnabled: false,
+            TransactionDueIn3DaysEnabled: false
+        );
+
+        // Act
+        await client.PutAsJsonAsync("/api/settings/notifications", body);
+        var response = await client.GetAsync("/api/settings/notifications");
+
+        // Assert
+        var result = await response.Content.ReadFromJsonAsync<NotificationPreferencesDto>();
+        result!.BudgetWarningEnabled.Should().BeFalse();
+        result.BudgetCriticalEnabled.Should().BeFalse();
+        result.TransactionDueTomorrowEnabled.Should().BeFalse();
+        result.TransactionDueIn3DaysEnabled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task UpdateNotifications_DeveRetornar401_QuandoNaoAutenticado()
+    {
+        // Arrange
+        var client = CreateClient();
+
+        var body = new UpdateNotificationPreferencesRequestDto(
+            BudgetWarningEnabled: false,
+            BudgetCriticalEnabled: false,
+            TransactionDueTomorrowEnabled: false,
+            TransactionDueIn3DaysEnabled: false
+        );
+
+        // Act
+        var response = await client.PutAsJsonAsync("/api/settings/notifications", body);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     // POST /api/settings/logout-all
 
     [Fact]
