@@ -26,8 +26,7 @@ public class UserRepository(FinanceFlowDbContext context) : IUserRepository
     public async Task<bool> ExistsByEmailAsync(
         string email,
         CancellationToken cancellationToken = default) =>
-        await context.Users
-            .IgnoreQueryFilters()
+        await context.Users           
             .AnyAsync(u => u.Email == email, cancellationToken);
 
     public async Task<bool> ExistsByCpfAsync(
@@ -60,4 +59,27 @@ public class UserRepository(FinanceFlowDbContext context) : IUserRepository
         .Where(u => u.DeletedAt == null)
         .Select(u => u.Id)
         .ToListAsync(cancellationToken);
+
+    // Soft-delete do utilizador
+    public async Task DeleteAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
+        if (user is null) return;
+
+        user.DeletedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    // Respeita query filter — não retorna utilizadores eliminados
+    public async Task<User?> GetActiveByEmailAsync(
+        string email,
+        CancellationToken cancellationToken = default) =>
+        await context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 }

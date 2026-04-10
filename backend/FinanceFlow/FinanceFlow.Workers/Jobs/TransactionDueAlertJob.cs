@@ -69,7 +69,7 @@ public class TransactionDueAlertJob(
 
         var list = transactions.ToList();
 
-        // Filtra apenas despesas (Type == Expense)
+        // Filtra apenas despesas
         var despesas = list
             .Where(t => t.Type == "Expense")
             .ToList();
@@ -82,7 +82,19 @@ public class TransactionDueAlertJob(
         {
             var type = daysAhead == 1 ? "TransactionDueTomorrow" : "TransactionDueIn3Days";
 
-            // Verifica deduplicação antes de enviar
+            // Adicionado: respeita preferências de notificação do utilizador
+            var preferenceEnabled = daysAhead == 1
+                ? transaction.NotifyDueTomorrow
+                : transaction.NotifyDueIn3Days;
+
+            if (!preferenceEnabled)
+            {
+                logger.LogDebug(
+                    "Notificação [{Type}] desativada pelo utilizador {UserId} — ignorando.",
+                    type, transaction.UserId);
+                continue;
+            }
+
             var jaEnviada = await deduplicationService.AlreadySentTodayAsync(
                 transaction.Id, type, cancellationToken);
 
@@ -110,7 +122,6 @@ public class TransactionDueAlertJob(
 
             await notificationDispatchService.ProcessAsync(notification, cancellationToken);
 
-            // Marca como enviada no Redis após despacho bem-sucedido
             await deduplicationService.MarkAsSentAsync(
                 transaction.Id, type, cancellationToken);
         }

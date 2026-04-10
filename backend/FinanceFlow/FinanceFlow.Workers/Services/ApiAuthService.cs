@@ -18,25 +18,47 @@ public class ApiAuthService(
 
         logger.LogInformation("A renovar JWT de serviço...");
 
-        var client = httpClientFactory.CreateClient("FinanceFlowApi");
-        var serviceKey = configuration["ServiceAuth:ServiceKey"]!;
+        // Retry com backoff exponencial para aguardar a API arrancar
+        var maxAttempts = 5;
+        var delay = TimeSpan.FromSeconds(3);
 
-        var response = await client.PostAsJsonAsync(
-            "api/auth/service-token",
-            new { ServiceKey = serviceKey },
-            cancellationToken);
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                var client = httpClientFactory.CreateClient("FinanceFlowApi");
+                var serviceKey = configuration["ServiceAuth:ServiceKey"]!;
 
-        response.EnsureSuccessStatusCode();
+                var response = await client.PostAsJsonAsync(
+                    "api/auth/service-token",
+                    new { ServiceKey = serviceKey },
+                    cancellationToken);
 
-        var result = await response.Content
-            .ReadFromJsonAsync<ServiceTokenResponse>(cancellationToken: cancellationToken)
-            ?? throw new InvalidOperationException("Resposta de token inválida.");
+                response.EnsureSuccessStatusCode();
 
-        _cachedToken = result.AccessToken;
-        _tokenExpiresAt = result.ExpiresAt;
+                var result = await response.Content
+                    .ReadFromJsonAsync<ServiceTokenResponse>(cancellationToken: cancellationToken)
+                    ?? throw new InvalidOperationException("Resposta de token inválida.");
 
-        logger.LogInformation("JWT de serviço renovado. Expira em {ExpiresAt}", _tokenExpiresAt);
+                _cachedToken = result.AccessToken;
+                _tokenExpiresAt = result.ExpiresAt;
 
-        return _cachedToken;
+                logger.LogInformation("JWT de serviço renovado. Expira em {ExpiresAt}", _tokenExpiresAt);
+
+                return _cachedToken;
+            }
+            catch (HttpRequestException ex) when (attempt < maxAttempts)
+            {
+                logger.LogWarning(
+                    "Tentativa {Attempt}/{Max} de obter token falhou: {Message}. Aguardando {Delay}s...",
+                    attempt, maxAttempts, ex.Message, delay.TotalSeconds);
+
+                await Task.Delay(delay, cancellationToken);
+                delay *= 2; // backoff exponencial: 3s, 6s, 12s, 24s
+            }
+        }
+
+        throw new InvalidOperationException(
+            "Não foi possível obter token de serviço após várias tentativas.");
     }
 }

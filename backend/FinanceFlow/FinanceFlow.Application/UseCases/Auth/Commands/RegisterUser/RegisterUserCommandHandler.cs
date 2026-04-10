@@ -46,11 +46,19 @@ public class RegisterUserCommandHandler(
             Name = request.Name.Trim(),
             Email = request.Email.Trim().ToLowerInvariant(),
             PasswordHash = passwordService.Hash(request.Password),
-            Cpf = request.Cpf, // adicionado
-            Gender = request.Gender, // adicionado
+            Cpf = request.Cpf,
+            Gender = request.Gender,
             Currency = request.Currency ?? "BRL",
             Timezone = request.Timezone ?? "America/Sao_Paulo",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            // Cria preferências de notificação padrão via navigation property
+            NotificationPreferences = new UserNotificationPreferences
+            {
+                BudgetWarningEnabled = true,
+                BudgetCriticalEnabled = true,
+                TransactionDueTomorrowEnabled = true,
+                TransactionDueIn3DaysEnabled = true,
+            }
         };
 
         await userRepository.AddAsync(user, cancellationToken);

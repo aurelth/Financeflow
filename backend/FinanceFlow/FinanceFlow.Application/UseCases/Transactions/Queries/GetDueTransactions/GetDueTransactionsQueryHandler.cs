@@ -23,7 +23,10 @@ public class GetDueTransactionsQueryHandler(
             Date: t.Date,
             IsRecurring: t.IsRecurring,
             RecurrenceType: t.RecurrenceType.ToString(),
-            Type: t.Type.ToString()
+            Type: t.Type.ToString(),
+            // Injeta preferências do utilizador (default true se não existir)
+            NotifyDueTomorrow: t.User?.NotificationPreferences?.TransactionDueTomorrowEnabled ?? true,
+            NotifyDueIn3Days: t.User?.NotificationPreferences?.TransactionDueIn3DaysEnabled ?? true
         ));
     }
 }

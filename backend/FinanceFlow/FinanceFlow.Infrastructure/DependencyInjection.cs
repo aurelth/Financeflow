@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IReportRepository, ReportRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+        services.AddScoped<INotificationPreferencesRepository, NotificationPreferencesRepository>();
 
 
         // Caching

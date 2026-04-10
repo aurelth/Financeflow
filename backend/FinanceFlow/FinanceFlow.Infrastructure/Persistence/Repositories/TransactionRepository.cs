@@ -86,13 +86,14 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
             .FirstOrDefaultAsync(cancellationToken);
 
     public async Task<IEnumerable<Transaction>> GetDueTransactionsAsync(
-        DateTime targetDate,
-        CancellationToken cancellationToken = default)
+    DateTime targetDate,
+    CancellationToken cancellationToken = default)
     {
         var targetDateOnly = targetDate.Date;
-
         return await context.Transactions
             .IgnoreQueryFilters()
+            .Include(t => t.User)
+                .ThenInclude(u => u.NotificationPreferences)
             .Where(t =>
                 t.DeletedAt == null &&
                 (

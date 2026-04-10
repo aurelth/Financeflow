@@ -410,9 +410,56 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasFilter("[Cpf] <> ''");
 
                     b.HasIndex("Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[DeletedAt] IS NULL");
 
                     b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.UserNotificationPreferences", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("BudgetCriticalEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("BudgetWarningEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("TransactionDueIn3DaysEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("TransactionDueTomorrowEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserNotificationPreferences", (string)null);
                 });
 
             modelBuilder.Entity("FinanceFlow.Domain.Entities.Budget", b =>
@@ -514,6 +561,17 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.UserNotificationPreferences", b =>
+                {
+                    b.HasOne("FinanceFlow.Domain.Entities.User", "User")
+                        .WithOne("NotificationPreferences")
+                        .HasForeignKey("FinanceFlow.Domain.Entities.UserNotificationPreferences", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FinanceFlow.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Budgets");
@@ -533,6 +591,8 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.Navigation("Budgets");
 
                     b.Navigation("Categories");
+
+                    b.Navigation("NotificationPreferences");
 
                     b.Navigation("Notifications");
 

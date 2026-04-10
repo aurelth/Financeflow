@@ -17,4 +17,5 @@ public class User : BaseEntity
     public ICollection<Notification> Notifications { get; set; } = [];
     public ICollection<Report> Reports { get; set; } = [];
     public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = [];
+    public UserNotificationPreferences? NotificationPreferences { get; set; }
 }

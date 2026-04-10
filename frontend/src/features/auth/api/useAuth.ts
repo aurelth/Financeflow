@@ -14,6 +14,13 @@ import type {
   UserProfile,
 } from '../types/auth.types'
 
+// Utilitário para extrair mensagem de erro da API
+const getApiError = (err: any, fallback: string): string => {
+  const errors = err?.response?.data?.errors
+  if (errors) return Object.values(errors).flat().join(' ')
+  return err?.response?.data?.message ?? err?.response?.data?.title ?? fallback
+}
+
 // Register
 export const useRegister = () => {
   const navigate = useNavigate()
@@ -24,15 +31,9 @@ export const useRegister = () => {
     onSuccess: () => {
       toast.success('Conta criada com sucesso! Faça login para continuar.')
       navigate('/login')
-    },
+    },    
     onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error('Erro ao criar conta. Tente novamente.')
-      }
+      toast.error(getApiError(err, 'Erro ao criar conta. Tente novamente.'))
     },
   })
 }
@@ -49,9 +50,9 @@ export const useLogin = () => {
       setUser(data.user, data.accessToken)
       toast.success(`Bem-vindo, ${data.user.name}!`)
       navigate('/dashboard')
-    },
-    onError: () => {
-      toast.error('Email ou senha incorreto.')
+    },    
+    onError: (err: any) => {
+      toast.error(getApiError(err, 'Email ou senha incorreto.'))
     },
   })
 }
@@ -96,33 +97,25 @@ export const useUpdateProfile = () => {
       updateUser(data)
       qc.invalidateQueries({ queryKey: ['user', 'profile'] })
       toast.success('Perfil atualizado com sucesso!')
-    },
-    onError: () => {
-      toast.error('Erro ao atualizar perfil. Tente novamente.')
+    },    
+    onError: (err: any) => {
+      toast.error(getApiError(err, 'Erro ao atualizar perfil. Tente novamente.'))
     },
   })
 }
 
-// Change Password // adicionado
-export const useChangePassword = () => // adicionado
-  useMutation({ // adicionado
-    mutationFn: (data: ChangePasswordRequest) => // adicionado
-      api.patch('/api/users/change-password', data), // adicionado
-    onSuccess: () => { // adicionado
-      toast.success('Senha alterada com sucesso!') // adicionado
-    }, // adicionado
-    onError: (err: any) => { // adicionado
-      const errors = err.response?.data?.errors // adicionado
-      if (errors) { // adicionado
-        const msgs = Object.values(errors).flat().join(' ') // adicionado
-        toast.error(msgs) // adicionado
-      } else { // adicionado
-        toast.error( // adicionado
-          err.response?.data?.message ?? 'Erro ao alterar senha. Tente novamente.' // adicionado
-        ) // adicionado
-      } // adicionado
-    }, // adicionado
-  }) // adicionado
+// Change Password
+export const useChangePassword = () =>
+  useMutation({
+    mutationFn: (data: ChangePasswordRequest) =>
+      api.patch('/api/users/change-password', data),
+    onSuccess: () => {
+      toast.success('Senha alterada com sucesso!')
+    },
+    onError: (err: any) => {
+      toast.error(getApiError(err, 'Erro ao alterar senha. Tente novamente.'))
+    },
+  })
 
 // Forgot Password
 export const useForgotPassword = () =>
@@ -131,15 +124,9 @@ export const useForgotPassword = () =>
       api.post('/api/auth/forgot-password', data),
     onSuccess: () => {
       toast.success('Se o email existir, receberá um link em breve.')
-    },
+    },    
     onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error('Erro ao processar solicitação. Tente novamente.')
-      }
+      toast.error(getApiError(err, 'Erro ao processar solicitação. Tente novamente.'))
     },
   })
 
@@ -153,17 +140,9 @@ export const useResetPassword = () => {
     onSuccess: () => {
       toast.success('Senha redefinida com sucesso! Faça login para continuar.')
       navigate('/login')
-    },
+    },  
     onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error(
-          err.response?.data?.message ?? 'Token inválido ou expirado.'
-        )
-      }
+      toast.error(getApiError(err, 'Token inválido ou expirado.'))
     },
   })
 }
