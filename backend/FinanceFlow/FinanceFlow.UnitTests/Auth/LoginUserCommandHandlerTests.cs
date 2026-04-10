@@ -1,7 +1,7 @@
 using AutoMapper;
-using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Auth.Commands.LoginUser;
+using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.UnitTests.Common;
 using FluentAssertions;
@@ -39,17 +39,14 @@ public class LoginUserCommandHandlerTests
         var command = new LoginUserCommand(user.Email, "Teste@123");
 
         _userRepository
-            .Setup(r => r.GetByEmailAsync(user.Email, default))
+            .Setup(r => r.GetActiveByEmailAsync(user.Email, default))
             .ReturnsAsync(user);
-
         _passwordService
             .Setup(p => p.Verify(command.Password, user.PasswordHash))
             .Returns(true);
-
         _tokenService
             .Setup(t => t.GenerateAccessToken(user))
             .Returns("access_token");
-
         _tokenService
             .Setup(t => t.GenerateRefreshToken())
             .Returns("refresh_token");
@@ -64,7 +61,6 @@ public class LoginUserCommandHandlerTests
         result.TokenType.Should().Be("Bearer");
         result.ExpiresIn.Should().Be(900);
         result.User.Email.Should().Be(user.Email);
-
         _refreshTokenService.Verify(r =>
             r.SaveAsync(user.Id, "refresh_token", default), Times.Once);
     }
@@ -76,8 +72,11 @@ public class LoginUserCommandHandlerTests
         var command = new LoginUserCommand("inexistente@teste.com", "Teste@123");
 
         _userRepository
+            .Setup(r => r.GetActiveByEmailAsync(It.IsAny<string>(), default))
+            .ReturnsAsync((User?)null);
+        _userRepository
             .Setup(r => r.GetByEmailAsync(It.IsAny<string>(), default))
-            .ReturnsAsync((Domain.Entities.User?)null);
+            .ReturnsAsync((User?)null);
 
         // Act
         var act = async () => await CreateHandler().Handle(command, default);
@@ -95,9 +94,8 @@ public class LoginUserCommandHandlerTests
         var command = new LoginUserCommand(user.Email, "senha_errada");
 
         _userRepository
-            .Setup(r => r.GetByEmailAsync(user.Email, default))
+            .Setup(r => r.GetActiveByEmailAsync(user.Email, default))
             .ReturnsAsync(user);
-
         _passwordService
             .Setup(p => p.Verify(command.Password, user.PasswordHash))
             .Returns(false);
@@ -108,5 +106,34 @@ public class LoginUserCommandHandlerTests
         // Assert
         await act.Should().ThrowAsync<UnauthorizedException>()
             .WithMessage("*Email ou senha incorreto*");
+    }
+
+    // Conta excluída
+    [Fact]
+    public async Task Handle_DeveLancarUnauthorizedException_QuandoContaExcluida()
+    {
+        // Arrange
+        var deletedUser = UserBuilder.Build();
+        deletedUser.DeletedAt = DateTime.UtcNow;
+
+        var command = new LoginUserCommand(deletedUser.Email, "Teste@123");
+
+        _userRepository
+            .Setup(r => r.GetActiveByEmailAsync(deletedUser.Email, default))
+            .ReturnsAsync((User?)null);
+        _userRepository
+            .Setup(r => r.GetByEmailAsync(deletedUser.Email, default))
+            .ReturnsAsync(deletedUser);
+
+        // Act
+        var act = async () => await CreateHandler().Handle(command, default);
+
+        // Assert
+        await act.Should().ThrowAsync<UnauthorizedException>()
+            .WithMessage("*excluída*");
+
+        _refreshTokenService.Verify(
+            r => r.SaveAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 }

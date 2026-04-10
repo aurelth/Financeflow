@@ -26,8 +26,7 @@ public class UserRepository(FinanceFlowDbContext context) : IUserRepository
     public async Task<bool> ExistsByEmailAsync(
         string email,
         CancellationToken cancellationToken = default) =>
-        await context.Users
-            .IgnoreQueryFilters()
+        await context.Users           
             .AnyAsync(u => u.Email == email, cancellationToken);
 
     public async Task<bool> ExistsByCpfAsync(
@@ -75,4 +74,12 @@ public class UserRepository(FinanceFlowDbContext context) : IUserRepository
         user.DeletedAt = DateTime.UtcNow;
         await context.SaveChangesAsync(cancellationToken);
     }
+
+    // Respeita query filter — não retorna utilizadores eliminados
+    public async Task<User?> GetActiveByEmailAsync(
+        string email,
+        CancellationToken cancellationToken = default) =>
+        await context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 }

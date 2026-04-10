@@ -226,4 +226,59 @@ public class SettingsEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    [Fact]
+    public async Task DeleteAccount_DevePermitirNovaConta_ComEmailDeContaExcluida()
+    {
+        // Arrange
+        var client = CreateClient();
+        var email = "settings.reuse.email@teste.com";
+        await AuthenticateAsync(client, email);
+
+        // Exclui a conta
+        await client.SendAsync(new HttpRequestMessage(
+            HttpMethod.Delete, "/api/settings/account")
+        {
+            Content = JsonContent.Create(new { CurrentPassword = "Teste@123" })
+        });
+
+        // Act — tenta criar nova conta com o mesmo email
+        var newClient = CreateClient();
+        var response = await newClient.PostAsJsonAsync("/api/auth/register",
+            new RegisterRequestDto(
+                Name: "Aurel Reuse",
+                Email: email,
+                Password: "Teste@123",
+                Cpf: TestCpfGenerator.Next(),
+                Gender: "Male",
+                Currency: "BRL",
+                Timezone: "America/Sao_Paulo"));
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task Login_DeveRetornar401_QuandoContaExcluida()
+    {
+        // Arrange
+        var client = CreateClient();
+        var email = "settings.login.deleted@teste.com";
+        await AuthenticateAsync(client, email);
+
+        // Exclui a conta
+        await client.SendAsync(new HttpRequestMessage(
+            HttpMethod.Delete, "/api/settings/account")
+        {
+            Content = JsonContent.Create(new { CurrentPassword = "Teste@123" })
+        });
+
+        // Act — tenta fazer login com conta excluída
+        var newClient = CreateClient();
+        var response = await newClient.PostAsJsonAsync("/api/auth/login",
+            new LoginRequestDto(email, "Teste@123"));
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 }

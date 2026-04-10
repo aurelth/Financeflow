@@ -8,6 +8,13 @@ import type {
   DeleteAccountRequest,
 } from '../types/settings.types'
 
+// Utilitário para extrair mensagem de erro da API
+const getApiError = (err: any, fallback: string): string => {
+  const errors = err?.response?.data?.errors
+  if (errors) return Object.values(errors).flat().join(' ')
+  return err?.response?.data?.message ?? err?.response?.data?.title ?? fallback
+}
+
 // GET /api/settings/notifications
 export function useNotificationPreferences() {
   return useQuery({
@@ -33,8 +40,8 @@ export function useUpdateNotificationPreferences() {
       queryClient.invalidateQueries({ queryKey: ['settings', 'notifications'] })
       toast.success('Preferências de notificação atualizadas.')
     },
-    onError: () => {
-      toast.error('Erro ao atualizar preferências.')
+    onError: (err: any) => {
+      toast.error(getApiError(err, 'Erro ao atualizar preferências.'))
     },
   })
 }
@@ -51,8 +58,8 @@ export function useLogoutAll() {
       toast.success('Todas as sessões foram encerradas.')
       logout()
     },
-    onError: () => {
-      toast.error('Erro ao encerrar sessões.')
+    onError: (err: any) => {
+      toast.error(getApiError(err, 'Erro ao encerrar sessões.'))
     },
   })
 }
@@ -68,9 +75,9 @@ export function useDeleteAccount() {
     onSuccess: () => {
       toast.success('Conta excluída com sucesso.')
       logout()
-    },
-    onError: () => {
-      toast.error('Senha incorreta ou erro ao excluir conta.')
+    },    
+    onError: (err: any) => {
+      toast.error(getApiError(err, 'Erro ao excluir conta. Tente novamente.'))
     },
   })
 }

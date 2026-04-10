@@ -18,12 +18,24 @@ public class LoginUserCommandHandler(
         LoginUserCommand request,
         CancellationToken cancellationToken)
     {
-        // Busca utilizador pelo email
-        var user = await userRepository.GetByEmailAsync(
+        // Busca utilizador activo pelo email (respeita soft-delete)
+        var user = await userRepository.GetActiveByEmailAsync(
             request.Email.Trim().ToLowerInvariant(), cancellationToken);
 
-        // Mensagem genérica — não revela se o email existe ou não
-        if (user is null || !passwordService.Verify(request.Password, user.PasswordHash))
+        if (user is null)
+        {
+            // Verifica se existe conta excluída com este email
+            var deletedUser = await userRepository.GetByEmailAsync(
+                request.Email.Trim().ToLowerInvariant(), cancellationToken);
+
+            if (deletedUser is not null)
+                throw new UnauthorizedException("Esta conta foi excluída e não pode ser acessada.");
+
+            // Mensagem genérica — não revela se o email existe ou não
+            throw new UnauthorizedException("Email ou senha incorreto.");
+        }
+
+        if (!passwordService.Verify(request.Password, user.PasswordHash))
             throw new UnauthorizedException("Email ou senha incorreto.");
 
         // Gera tokens
@@ -37,7 +49,7 @@ public class LoginUserCommandHandler(
             AccessToken: accessToken,
             RefreshToken: refreshToken,
             TokenType: "Bearer",
-            ExpiresIn: 15 * 60, // 15 minutos em segundos
+            ExpiresIn: 15 * 60,
             User: mapper.Map<UserProfileDto>(user)
         );
     }

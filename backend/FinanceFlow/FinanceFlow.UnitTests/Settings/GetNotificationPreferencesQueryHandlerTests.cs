@@ -1,4 +1,5 @@
-using FinanceFlow.Application.Common.Exceptions;
+using AutoMapper;
+using FinanceFlow.Application.DTOs;
 using FinanceFlow.Application.UseCases.Settings.Queries.GetNotificationPreferences;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
@@ -45,18 +46,37 @@ public class GetNotificationPreferencesQueryHandlerTests
         Assert.False(result.TransactionDueIn3DaysEnabled);
     }
 
+    // Handler agora cria preferências padrão em vez de lançar NotFoundException
     [Fact]
-    public async Task Handle_DeveLancarNotFoundException_QuandoNaoExistem()
+    public async Task Handle_DeveCriarPreferenciasPadrao_QuandoNaoExistem()
     {
         // Arrange
         var userId = Guid.NewGuid();
+
         _repository.Setup(r => r.GetByUserIdAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((UserNotificationPreferences?)null);
 
         var query = new GetNotificationPreferencesQuery(userId);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => _handler.Handle(query, CancellationToken.None));
+        // Act
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        // Assert — valores padrão
+        Assert.True(result.BudgetWarningEnabled);
+        Assert.True(result.BudgetCriticalEnabled);
+        Assert.True(result.TransactionDueTomorrowEnabled);
+        Assert.True(result.TransactionDueIn3DaysEnabled);
+
+        // Verifica que foi criado no repositório
+        _repository.Verify(
+            r => r.CreateAsync(
+                It.Is<UserNotificationPreferences>(p =>
+                    p.UserId == userId &&
+                    p.BudgetWarningEnabled == true &&
+                    p.BudgetCriticalEnabled == true &&
+                    p.TransactionDueTomorrowEnabled == true &&
+                    p.TransactionDueIn3DaysEnabled == true),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }

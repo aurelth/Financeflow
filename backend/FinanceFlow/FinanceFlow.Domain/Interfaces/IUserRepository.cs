@@ -14,4 +14,7 @@ public interface IUserRepository
     /// <summary>Retorna IDs de todos os usuários ativos (uso interno do Worker).</summary>
     Task<IEnumerable<Guid>> GetAllIdsAsync(CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+
+    // Busca por email respeitando soft-delete (para login)
+    Task<User?> GetActiveByEmailAsync(string email, CancellationToken cancellationToken = default);
 }
