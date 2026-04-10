@@ -1,4 +1,5 @@
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
@@ -82,4 +83,67 @@ public class UserRepository(FinanceFlowDbContext context) : IUserRepository
         await context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+
+    public async Task<(IEnumerable<User> Users, int Total)> GetAllPagedAsync(
+        int page,
+        int pageSize,
+        string? search,
+        bool? isActive,
+        CancellationToken cancellationToken = default)
+    {
+        var query = context.Users
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .AsQueryable();
+
+        // Filtro de status
+        if (isActive.HasValue)
+            query = isActive.Value
+                ? query.Where(u => u.DeletedAt == null)
+                : query.Where(u => u.DeletedAt != null);
+
+        // Filtro de busca por nome ou email
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim().ToLower();
+            query = query.Where(u =>
+                u.Name.ToLower().Contains(term) ||
+                u.Email.ToLower().Contains(term));
+        }
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var users = await query
+            .OrderBy(u => u.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (users, total);
+    }
+
+    // Conta Admins ativos — usado para validar o último Admin
+    public async Task<int> CountActiveAdminsAsync(
+        CancellationToken cancellationToken = default) =>
+        await context.Users
+            .IgnoreQueryFilters()
+            .CountAsync(u =>
+                u.Role == UserRole.Admin &&
+                u.DeletedAt == null,
+                cancellationToken);
+
+    // Reativa conta desativada
+    public async Task ReactivateAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await context.Users
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
+        if (user is null) return;
+
+        user.DeletedAt = null;
+        await context.SaveChangesAsync(cancellationToken);
+    }
 }

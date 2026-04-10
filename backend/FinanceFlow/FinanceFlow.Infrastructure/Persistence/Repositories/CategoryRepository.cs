@@ -83,4 +83,42 @@ public class CategoryRepository(FinanceFlowDbContext context) : ICategoryReposit
         context.Categories.Remove(category);
         await context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<Category>> GetAllDefaultAsync(
+        CancellationToken cancellationToken = default) =>
+        await context.Categories
+            .IgnoreQueryFilters()
+            .Where(c =>
+                c.IsDefault == true &&
+                c.DeletedAt == null)
+            .OrderBy(c => c.Type)
+            .ThenBy(c => c.Name)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    
+    public async Task<Category?> GetDefaultByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken = default) =>
+        await context.Categories
+            .IgnoreQueryFilters()
+            .Where(c =>
+                c.Id == id &&
+                c.IsDefault == true &&
+                c.DeletedAt == null)
+            .FirstOrDefaultAsync(cancellationToken);
+    
+    public async Task<bool> DefaultExistsByNameAsync(
+        string name,
+        TransactionType type,
+        Guid? excludeId = null,
+        CancellationToken cancellationToken = default) =>
+        await context.Categories
+            .IgnoreQueryFilters()
+            .AnyAsync(c =>
+                c.IsDefault == true &&
+                c.DeletedAt == null &&
+                c.Name == name.Trim() &&
+                c.Type == type &&
+                (excludeId == null || c.Id != excludeId),
+            cancellationToken);
 }
