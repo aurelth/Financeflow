@@ -11,4 +11,8 @@ public interface INotificationPreferencesRepository
     Task UpdateAsync(
         UserNotificationPreferences preferences,
         CancellationToken cancellationToken = default);
+
+    Task CreateAsync(
+        UserNotificationPreferences preferences,
+        CancellationToken cancellationToken = default);
 }

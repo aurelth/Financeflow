@@ -21,4 +21,12 @@ public class NotificationPreferencesRepository(FinanceFlowDbContext context)
         context.Set<UserNotificationPreferences>().Update(preferences);
         await context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task CreateAsync(
+        UserNotificationPreferences preferences,
+        CancellationToken cancellationToken = default)
+    {
+        await context.Set<UserNotificationPreferences>().AddAsync(preferences, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
+    }
 }
