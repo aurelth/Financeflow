@@ -51,7 +51,7 @@ using (var scope = app.Services.CreateScope())
         .GetRequiredService<FinanceFlowDbContext>();
     var logger = scope.ServiceProvider
         .GetRequiredService<ILogger<Program>>();
-    await DbSeeder.SeedAsync(context, logger);
+    await DbSeeder.SeedAsync(context, logger, app.Configuration);
 }
 
 app.Run();

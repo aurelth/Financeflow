@@ -29,7 +29,8 @@ public class JwtTokenService(IConfiguration configuration) : ITokenService
             new Claim(JwtRegisteredClaimNames.Jti,   Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Iat,
                 DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
-                ClaimValueTypes.Integer64)
+                ClaimValueTypes.Integer64),
+            new Claim("role", user.Role.ToString()),
         };
 
         var token = new JwtSecurityToken(
