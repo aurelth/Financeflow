@@ -1,22 +1,25 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import AuthLayout   from '@/components/layout/AuthLayout'
-import AppLayout    from '@/components/layout/AppLayout'
-import PrivateRoute from './PrivateRoute'
-import PublicRoute  from './PublicRoute'
-import LoginPage    from '@/features/auth/pages/LoginPage'
-import RegisterPage from '@/features/auth/pages/RegisterPage'
-import ForgotPasswordPage from '@/features/auth/pages/ForgotPasswordPage'
-import ResetPasswordPage  from '@/features/auth/pages/ResetPasswordPage' 
-import CategoriesPage   from '@/features/categories/pages/CategoriesPage'
-import TransactionsPage from '@/features/transactions/pages/TransactionsPage'
-import BudgetsPage      from '@/features/budgets/pages/BudgetsPage'
-import DashboardPage    from '@/features/dashboard/pages/DashboardPage'
-import ComparisonPage from '@/features/dashboard/pages/ComparisonPage'
-import ExportsPage from '@/features/reports/pages/ExportsPage'
-import ProfilePage from '@/features/auth/pages/ProfilePage'
-import SettingsPage from '@/features/settings/pages/SettingsPage'
+import AuthLayout          from '@/components/layout/AuthLayout'
+import AppLayout           from '@/components/layout/AppLayout'
+import PrivateRoute        from './PrivateRoute'
+import PublicRoute         from './PublicRoute'
+import AdminRoute          from './AdminRoute'
+import LoginPage           from '@/features/auth/pages/LoginPage'
+import RegisterPage        from '@/features/auth/pages/RegisterPage'
+import ForgotPasswordPage  from '@/features/auth/pages/ForgotPasswordPage'
+import ResetPasswordPage   from '@/features/auth/pages/ResetPasswordPage'
+import CategoriesPage      from '@/features/categories/pages/CategoriesPage'
+import TransactionsPage    from '@/features/transactions/pages/TransactionsPage'
+import BudgetsPage         from '@/features/budgets/pages/BudgetsPage'
+import DashboardPage       from '@/features/dashboard/pages/DashboardPage'
+import ComparisonPage      from '@/features/dashboard/pages/ComparisonPage'
+import ExportsPage         from '@/features/reports/pages/ExportsPage'
+import ProfilePage         from '@/features/auth/pages/ProfilePage'
+import SettingsPage        from '@/features/settings/pages/SettingsPage'
+import AdminDashboardPage  from '@/features/admin/pages/AdminDashboardPage'
+import AdminUsersPage      from '@/features/admin/pages/AdminUsersPage'
+import AdminCategoriesPage from '@/features/admin/pages/AdminCategoriesPage'
 
-// Placeholder para fases futuras
 const Placeholder = ({ title }: { title: string }) => (
   <div className="flex items-center justify-center h-full">
     <div className="text-center">
@@ -34,10 +37,10 @@ export default function AppRouter() {
         {/* Rotas públicas */}
         <Route element={<PublicRoute />}>
           <Route element={<AuthLayout />}>
-            <Route path="/login"    element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password"  element={<ForgotPasswordPage />} />
-            <Route path="/reset-password"   element={<ResetPasswordPage />} />
+            <Route path="/login"           element={<LoginPage />} />
+            <Route path="/register"        element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password"  element={<ResetPasswordPage />} />
           </Route>
         </Route>
 
@@ -51,8 +54,15 @@ export default function AppRouter() {
             <Route path="/comparison"   element={<ComparisonPage />} />
             <Route path="/reports"      element={<Placeholder title="Relatórios" />} />
             <Route path="/exports"      element={<ExportsPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/profile"      element={<ProfilePage />} />
+            <Route path="/settings"     element={<SettingsPage />} />
+
+            {/* Adicionado: rotas Admin dentro do AppLayout */}
+            <Route element={<AdminRoute />}>
+              <Route path="/admin"            element={<AdminDashboardPage />} />
+              <Route path="/admin/users"      element={<AdminUsersPage />} />
+              <Route path="/admin/categories" element={<AdminCategoriesPage />} />
+            </Route>
           </Route>
         </Route>
 
