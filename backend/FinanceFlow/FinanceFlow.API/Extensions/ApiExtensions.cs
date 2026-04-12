@@ -32,11 +32,11 @@ public static class ApiExtensions
                         "https://localhost:3000")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
-                    .AllowCredentials(); // necessário para cookies httpOnly
+                    .AllowCredentials();
             });
         });
 
-        // JWT Bearer
+        // JWT Bearer — Modificado: consolidado num único bloco com RoleClaimType
         services
             .AddAuthentication(options =>
             {
@@ -44,25 +44,20 @@ public static class ApiExtensions
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(options =>
-            {               
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = false,
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
-        
-        services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-            .Configure<IConfiguration>((options, config) =>
             {
-                var secret = config["Jwt:Secret"]
+                var diagSecret = configuration["Jwt:Secret"];
+                var diagIssuer = configuration["Jwt:Issuer"];
+                var diagAud = configuration["Jwt:Audience"];
+
+                Console.WriteLine($"=== DIAG JWT Secret length : {diagSecret?.Length ?? 0} ===");
+                Console.WriteLine($"=== DIAG JWT Issuer        : {diagIssuer} ===");
+                Console.WriteLine($"=== DIAG JWT Audience      : {diagAud} ===");
+
+                var secret = configuration["Jwt:Secret"]
                     ?? throw new InvalidOperationException("Jwt:Secret não configurado.");
-                var issuer = config["Jwt:Issuer"]
+                var issuer = configuration["Jwt:Issuer"]
                     ?? throw new InvalidOperationException("Jwt:Issuer não configurado.");
-                var audience = config["Jwt:Audience"]
+                var audience = configuration["Jwt:Audience"]
                     ?? throw new InvalidOperationException("Jwt:Audience não configurado.");
 
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -76,14 +71,16 @@ public static class ApiExtensions
                     ValidAudience = audience,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero,
-                    RoleClaimType = "role"
+                    // Adicionado: mapeia a claim "role" corretamente
+                    RoleClaimType = "role",
                 };
-            });        
+            });
 
+        // Policy de Admin
         services.AddAuthorization(options =>
         {
             options.AddPolicy("RequireAdmin", policy =>
-                policy.RequireRole("Admin"));
+                policy.RequireClaim("role", "Admin"));
         });
 
         return services;
@@ -91,7 +88,6 @@ public static class ApiExtensions
 
     public static WebApplication MapHubs(this WebApplication app)
     {
-        // Hubs SignalR
         app.MapHub<ReportHub>("/hubs/reports");
         app.MapHub<NotificationHub>("/hubs/notifications");
         return app;

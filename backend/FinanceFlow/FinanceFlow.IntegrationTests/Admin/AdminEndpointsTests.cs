@@ -259,4 +259,29 @@ public class AdminEndpointsTests(FinanceFlowWebApplicationFactory factory)
         result!.TotalUsers.Should().BeGreaterThan(0);
         result.DefaultCategories.Should().BeGreaterThan(0);
     }
+
+    // Verifica que o token JWT contém a claim role correta
+    [Fact]
+    public async Task Login_DeveGerarTokenComRoleAdmin_QuandoUsuarioEAdmin()
+    {
+        // Arrange
+        var client = CreateClient();
+
+        // Act
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login",
+            new LoginRequestDto("admin@financeflow.com", "Admin@123456"));
+
+        loginResponse.EnsureSuccessStatusCode();
+
+        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+
+        // Decodifica o JWT sem validar a assinatura
+        var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(auth!.AccessToken);
+
+        // Assert
+        var roleClaim = jwt.Claims.FirstOrDefault(c => c.Type == "role");
+        roleClaim.Should().NotBeNull();
+        roleClaim!.Value.Should().Be("Admin");
+    }
 }

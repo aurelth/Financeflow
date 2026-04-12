@@ -34,7 +34,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(u => u.Cpf)
                .IsUnique()
-               .HasFilter("[Cpf] <> ''");
+               .HasFilter("[Cpf] <> '' AND [DeletedAt] IS NULL");
 
         builder.Property(u => u.Gender)
                .IsRequired()

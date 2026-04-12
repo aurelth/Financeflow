@@ -62,6 +62,18 @@ describe('AdminCategoriesPage', () => {
     expect(screen.getByText('Salário')).toBeInTheDocument()
   })
 
+  // Verifica que os ícones são renderizados como SVG (Lucide) e não como texto
+  it('deve renderizar ícones Lucide em vez de texto literal', () => {
+    renderPage()
+    // O ícone 'utensils' deve ser renderizado como SVG, não como texto "utensils"
+    const textUtensils = screen.queryByText('utensils')
+    const textBriefcase = screen.queryByText('briefcase')
+    expect(textUtensils).not.toBeInTheDocument()
+    expect(textBriefcase).not.toBeInTheDocument()
+    // Verifica que existem SVGs na página
+    expect(document.querySelectorAll('svg').length).toBeGreaterThan(0)
+  })
+
   it('deve abrir modal de criação ao clicar em nova categoria', async () => {
     renderPage()
     const user = userEvent.setup()

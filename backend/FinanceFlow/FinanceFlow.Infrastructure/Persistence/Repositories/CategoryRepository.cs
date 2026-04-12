@@ -91,8 +91,7 @@ public class CategoryRepository(FinanceFlowDbContext context) : ICategoryReposit
             .Where(c =>
                 c.IsDefault == true &&
                 c.DeletedAt == null)
-            .OrderBy(c => c.Type)
-            .ThenBy(c => c.Name)
+            .OrderBy(c => c.Name)            
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     

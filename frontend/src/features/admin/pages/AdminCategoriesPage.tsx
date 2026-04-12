@@ -7,6 +7,7 @@ import {
   useDeleteDefaultCategory,
 } from '../api/useAdmin'
 import type { AdminCategory, CreateDefaultCategoryRequest, UpdateDefaultCategoryRequest } from '../types/admin.types'
+import CategoryIcon from '@/features/categories/components/CategoryIcon'
 
 const ICONS = [
   'utensils', 'car', 'heart-pulse', 'house', 'graduation-cap',
@@ -51,21 +52,21 @@ const defaultForm: CategoryFormState = {
 }
 
 export default function AdminCategoriesPage() {
-  const [showForm,    setShowForm]    = useState(false)
-  const [formMode,    setFormMode]    = useState<FormMode>('create')
-  const [editingId,   setEditingId]   = useState<string | null>(null)
-  const [form,        setForm]        = useState<CategoryFormState>(defaultForm)
-  const [deleteTarget, setDeleteTarget] = useState<AdminCategory | null>(null)
-  const [filterType,  setFilterType]  = useState<'All' | 'Expense' | 'Income'>('All')
+  const [showForm,      setShowForm]      = useState(false)
+  const [formMode,      setFormMode]      = useState<FormMode>('create')
+  const [editingId,     setEditingId]     = useState<string | null>(null)
+  const [form,          setForm]          = useState<CategoryFormState>(defaultForm)
+  const [deleteTarget,  setDeleteTarget]  = useState<AdminCategory | null>(null)
+  const [filterType,    setFilterType]    = useState<'All' | 'Expense' | 'Income'>('All')
 
   const { data: categories, isLoading } = useAdminCategories()
   const createCategory = useCreateDefaultCategory()
   const updateCategory = useUpdateDefaultCategory()
   const deleteCategory = useDeleteDefaultCategory()
 
-  const filtered = categories?.filter(c =>
-    filterType === 'All' ? true : c.type === filterType
-  )
+  const filtered = categories
+    ?.filter(c => filterType === 'All' ? true : c.type === filterType)
+    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
 
   function openCreate() {
     setForm(defaultForm)
@@ -181,11 +182,12 @@ export default function AdminCategoriesPage() {
               {filtered?.map(cat => (
                 <tr key={cat.id} style={{ borderBottom: '1px solid var(--ff-border-subtle)' }}>
                   <td className="px-4 py-3">
+                    {/* Usa CategoryIcon */}
                     <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
-                      style={{ background: `${cat.color}22`, color: cat.color }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center"
+                      style={{ background: `${cat.color}22` }}
                     >
-                      {cat.icon}
+                      <CategoryIcon icon={cat.icon} color={cat.color} size={16} />
                     </div>
                   </td>
                   <td className="px-4 py-3 font-medium" style={{ color: 'var(--ff-text-primary)' }}>
@@ -305,14 +307,19 @@ export default function AdminCategoriesPage() {
                       key={icon}
                       type="button"
                       onClick={() => setForm(f => ({ ...f, icon }))}
-                      className="h-10 rounded-lg text-xs transition-colors"
+                      className="h-10 rounded-lg flex items-center justify-center transition-colors"
                       style={{
                         background: form.icon === icon ? 'var(--ff-emerald-subtle)' : 'var(--ff-bg-elevated)',
-                        color:      form.icon === icon ? 'var(--ff-emerald)'         : 'var(--ff-text-muted)',
                         border:     form.icon === icon ? '1px solid rgba(16,185,129,0.3)' : '1px solid var(--ff-border)',
                       }}
+                      title={icon}
                     >
-                      {icon}
+                      {/* Usa CategoryIcon no seletor de ícones */}
+                      <CategoryIcon
+                        icon={icon}
+                        color={form.icon === icon ? 'var(--ff-emerald)' : 'var(--ff-text-muted)'}
+                        size={16}
+                      />
                     </button>
                   ))}
                 </div>

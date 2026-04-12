@@ -1,17 +1,22 @@
+using AspNetCoreRateLimit;
 using FinanceFlow.API.Extensions;
 using FinanceFlow.API.Middlewares;
-using FinanceFlow.Infrastructure;
 using FinanceFlow.Application;
+using FinanceFlow.Infrastructure;
 using FinanceFlow.Infrastructure.Persistence;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using Serilog;
-using AspNetCoreRateLimit;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Serilog
 builder.Host.UseSerilog((ctx, lc) => lc
     .ReadFrom.Configuration(ctx.Configuration));
+
+// Desativa o mapeamento automático de claims do JWT
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
 // Extensions
 builder.Services

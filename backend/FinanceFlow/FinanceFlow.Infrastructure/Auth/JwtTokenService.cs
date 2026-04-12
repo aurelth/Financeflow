@@ -13,6 +13,7 @@ public class JwtTokenService(IConfiguration configuration) : ITokenService
 {
     public string GenerateAccessToken(User user)
     {
+        Console.WriteLine($"=== GENERATING TOKEN FOR: {user.Email}, ROLE: {user.Role} ===");
         var secret = configuration["Jwt:Secret"]!;
         var issuer = configuration["Jwt:Issuer"]!;
         var audience = configuration["Jwt:Audience"]!;

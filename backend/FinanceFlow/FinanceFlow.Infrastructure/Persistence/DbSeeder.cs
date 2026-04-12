@@ -69,11 +69,10 @@ public static class DbSeeder
 
     // Seed do Admin padrão
     private static async Task SeedAdminAsync(
-        FinanceFlowDbContext context,
-        ILogger logger,
-        IConfiguration configuration)
+    FinanceFlowDbContext context,
+    ILogger logger,
+    IConfiguration configuration)
     {
-        // Só executa se não existir nenhum Admin ativo
         var adminExists = await context.Users
             .IgnoreQueryFilters()
             .AnyAsync(u => u.Role == UserRole.Admin && u.DeletedAt == null);
@@ -87,26 +86,35 @@ public static class DbSeeder
         logger.LogInformation("Executando seed do Admin padrão...");
 
         var adminConfig = configuration.GetSection("AdminSeed");
-        var name = adminConfig["Name"] ?? "Administrador";
         var email = adminConfig["Email"] ?? "admin@financeflow.com";
         var password = adminConfig["Password"] ?? "Admin@123";
+        var name = adminConfig["Name"] ?? "Administrador";
 
-        // Verifica se já existe usuário com esse email (pode estar excluído)
-        var existingUser = await context.Users
+        // Verifica se já existe usuário com esse email
+        var existingUserId = await context.Users
             .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(u => u.Email == email);
+            .Where(u => u.Email == email && u.DeletedAt == null)
+            .Select(u => u.Id)
+            .FirstOrDefaultAsync();
 
-        if (existingUser is not null)
+        if (existingUserId != Guid.Empty)
         {
-            // Reativa e promove a Admin se estava excluído
-            existingUser.Role = UserRole.Admin;
-            existingUser.DeletedAt = null;
-            await context.SaveChangesAsync();
+            var user = await context.Users
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(u => u.Id == existingUserId);
+
+            if (user is not null)
+            {
+                user.Role = UserRole.Admin;
+                user.DeletedAt = null;
+                await context.SaveChangesAsync();
+            }
 
             logger.LogInformation("Usuário existente promovido a Admin: {Email}", email);
             return;
         }
 
+        // Cria novo Admin
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(password, 12);
 
         var admin = new User
