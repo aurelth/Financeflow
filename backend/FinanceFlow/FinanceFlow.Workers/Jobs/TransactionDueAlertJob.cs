@@ -82,7 +82,7 @@ public class TransactionDueAlertJob(
         {
             var type = daysAhead == 1 ? "TransactionDueTomorrow" : "TransactionDueIn3Days";
 
-            // Adicionado: respeita preferências de notificação do utilizador
+            // Respeita preferências de notificação do utilizador
             var preferenceEnabled = daysAhead == 1
                 ? transaction.NotifyDueTomorrow
                 : transaction.NotifyDueIn3Days;

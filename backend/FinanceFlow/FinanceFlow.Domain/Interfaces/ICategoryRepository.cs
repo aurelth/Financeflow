@@ -31,7 +31,7 @@ public interface ICategoryRepository
     Task UpdateAsync(Category category, CancellationToken cancellationToken = default);
     Task DeleteAsync(Category category, CancellationToken cancellationToken = default);
 
-    // Adicionado: métodos de Admin para categorias padrão
+    // Métodos de Admin para categorias padrão
     Task<IEnumerable<Category>> GetAllDefaultAsync(CancellationToken cancellationToken = default);
     Task<Category?> GetDefaultByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> DefaultExistsByNameAsync(string name, TransactionType type, Guid? excludeId = null, CancellationToken cancellationToken = default);

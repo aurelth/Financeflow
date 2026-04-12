@@ -309,7 +309,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                     isRecurring:    e.target.checked,
                     recurrenceType: e.target.checked ? RecurrenceType.Monthly : RecurrenceType.None,
                   }))}
-                  style={{ accentColor: 'var(--ff-emerald)', width: 16, height: 16 }} // Modificado
+                  style={{ accentColor: 'var(--ff-emerald)', width: 16, height: 16 }}
                 />
                 <span className="text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
                   Transação recorrente
@@ -500,7 +500,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
               onClick={isEditing ? handleSubmit : handleCreate}
               disabled={isPending || !form.categoryId || form.amount <= 0}
               className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
-              style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }} // Modificado
+              style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
               onMouseEnter={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald-hover)' }}
               onMouseLeave={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald)' }}
             >

@@ -193,7 +193,7 @@ export default function ProfilePage() {
         <form onSubmit={prefForm.handleSubmit(d => updateProfile(d))} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              {/* Modificado: htmlFor + id */}
+              {/* htmlFor + id */}
               <label htmlFor="currency" style={labelStyle}>Moeda</label>
               <select
                 id="currency"
@@ -216,7 +216,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-1">
-              {/* Modificado: htmlFor + id */}
+              {/* htmlFor + id */}
               <label htmlFor="timezone" style={labelStyle}>Fuso horário</label>
               <select
                 id="timezone"
@@ -272,7 +272,7 @@ export default function ProfilePage() {
         >
           {/* Senha atual */}
           <div className="space-y-1">
-            {/* Modificado: htmlFor + id */}
+            {/* htmlFor + id */}
             <label htmlFor="currentPassword" style={labelStyle}>Senha atual</label>
             <div className="relative">
               <input
@@ -306,7 +306,7 @@ export default function ProfilePage() {
           {/* Nova senha + Confirmar */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              {/* Modificado: htmlFor + id */}
+              {/* htmlFor + id */}
               <label htmlFor="newPassword" style={labelStyle}>Nova senha</label>
               <div className="relative">
                 <input
@@ -338,7 +338,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-1">
-              {/* Modificado: htmlFor + id */}
+              {/* htmlFor + id */}
               <label htmlFor="confirmPassword" style={labelStyle}>Confirmar senha</label>
               <div className="relative">
                 <input

@@ -166,13 +166,4 @@ public class AdminController(IMediator mediator) : ControllerBase
         var result = await mediator.Send(new GetMetricsQuery(), cancellationToken);
         return Ok(result);
     }
-
-    // Temporário: diagnóstico de claims
-    [HttpGet("debug-claims")]
-    [Authorize]
-    public IActionResult DebugClaims()
-    {
-        var claims = User.Claims.Select(c => new { c.Type, c.Value });
-        return Ok(claims);
-    }
 }

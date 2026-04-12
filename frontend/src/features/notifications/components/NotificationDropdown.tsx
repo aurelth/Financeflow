@@ -27,7 +27,7 @@ export default function NotificationDropdown() {
   const handleMarkAsRead    = (id: string) => { markAsRead(id); storeMarkAsRead(id) }
   const handleMarkAllAsRead = () => { markAllAsRead(); storeMarkAllAsRead() }
 
-  // Modificado: config de tipos com tokens da nova paleta
+  // Config de tipos com tokens da nova paleta
   const typeConfig: Record<string, { bg: string; border: string; color: string; label: string }> = {
     BudgetCritical:         { bg: 'rgba(244,63,94,0.08)',  border: 'rgba(244,63,94,0.2)',  color: 'var(--ff-expense)',   label: '🚨 Crítico'        },
     BudgetWarning:          { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', color: 'var(--ff-pending)',   label: '🔔 Aviso'          },

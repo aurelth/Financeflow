@@ -35,8 +35,7 @@ public static class ApiExtensions
                     .AllowCredentials();
             });
         });
-
-        // JWT Bearer — Modificado: consolidado num único bloco com RoleClaimType
+        
         services
             .AddAuthentication(options =>
             {
@@ -44,15 +43,7 @@ public static class ApiExtensions
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(options =>
-            {
-                var diagSecret = configuration["Jwt:Secret"];
-                var diagIssuer = configuration["Jwt:Issuer"];
-                var diagAud = configuration["Jwt:Audience"];
-
-                Console.WriteLine($"=== DIAG JWT Secret length : {diagSecret?.Length ?? 0} ===");
-                Console.WriteLine($"=== DIAG JWT Issuer        : {diagIssuer} ===");
-                Console.WriteLine($"=== DIAG JWT Audience      : {diagAud} ===");
-
+            {                              
                 var secret = configuration["Jwt:Secret"]
                     ?? throw new InvalidOperationException("Jwt:Secret não configurado.");
                 var issuer = configuration["Jwt:Issuer"]
@@ -70,8 +61,7 @@ public static class ApiExtensions
                     ValidateAudience = true,
                     ValidAudience = audience,
                     ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero,
-                    // Adicionado: mapeia a claim "role" corretamente
+                    ClockSkew = TimeSpan.Zero,                    
                     RoleClaimType = "role",
                 };
             });

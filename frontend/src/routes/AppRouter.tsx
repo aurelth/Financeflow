@@ -57,7 +57,7 @@ export default function AppRouter() {
             <Route path="/profile"      element={<ProfilePage />} />
             <Route path="/settings"     element={<SettingsPage />} />
 
-            {/* Adicionado: rotas Admin dentro do AppLayout */}
+            {/* Rotas Admin dentro do AppLayout */}
             <Route element={<AdminRoute />}>
               <Route path="/admin"            element={<AdminDashboardPage />} />
               <Route path="/admin/users"      element={<AdminUsersPage />} />

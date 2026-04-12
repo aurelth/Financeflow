@@ -143,7 +143,7 @@ describe('AdminUsersPage', () => {
 
         await user.click(screen.getAllByTitle('Desativar')[0])
 
-        // Modificado: pega o último botão com esse texto (é o de confirmação)
+        // Pega o último botão com esse texto (é o de confirmação)
         await waitFor(async () => {
             const btns = screen.getAllByRole('button', { name: /desativar usuário/i })
             await user.click(btns[btns.length - 1])

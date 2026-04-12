@@ -89,7 +89,7 @@ public class UpdateTransactionCommandHandler(
        // Invalida o cache do dashboard para o mês da transação
         await InvalidarCacheDashboardAsync(request.UserId, dataOriginal, cancellationToken);
 
-        // Adicionado: invalida também para o novo mês caso a data tenha mudado
+        // Invalida também para o novo mês caso a data tenha mudado
         if (request.Date.Month != dataOriginal.Month || request.Date.Year != dataOriginal.Year)
             await InvalidarCacheDashboardAsync(request.UserId, request.Date, cancellationToken);
 

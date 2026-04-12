@@ -84,7 +84,7 @@ export default function RegisterPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-        {/* Nome — Modificado: htmlFor + id */}
+        {/* Nome: htmlFor + id */}
         <div className="space-y-1.5">
           <label htmlFor="name" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
             Nome completo
@@ -101,7 +101,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          {/* CPF — Modificado: htmlFor + id */}
+          {/* CPF: htmlFor + id */}
           <div className="space-y-1.5">
             <label htmlFor="cpf" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
               CPF
@@ -118,7 +118,7 @@ export default function RegisterPage() {
             {errors.cpf && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.cpf.message}</p>}
           </div>
 
-          {/* Gênero — Modificado: htmlFor + id */}
+          {/* Gênero: htmlFor + id */}
           <div className="space-y-1.5">
             <label htmlFor="gender" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
               Gênero
@@ -138,7 +138,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Email — Modificado: htmlFor + id */}
+        {/* Email: htmlFor + id */}
         <div className="space-y-1.5">
           <label htmlFor="email" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
             Email
@@ -155,7 +155,7 @@ export default function RegisterPage() {
           {errors.email && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.email.message}</p>}
         </div>
 
-        {/* Senha — Modificado: htmlFor + id */}
+        {/* Senha: htmlFor + id */}
         <div className="space-y-1.5">
           <label htmlFor="password" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
             Senha
@@ -182,7 +182,7 @@ export default function RegisterPage() {
           {errors.password && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.password.message}</p>}
         </div>
 
-        {/* Confirmar senha — Modificado: htmlFor + id */}
+        {/* Confirmar senha: htmlFor + id */}
         <div className="space-y-1.5">
           <label htmlFor="confirmPassword" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
             Confirmar senha

@@ -49,7 +49,7 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit(d => login(d))} className="space-y-5">
         <div className="space-y-1.5">
-          {/* Modificado: htmlFor + id para acessibilidade */}
+          {/* htmlFor + id para acessibilidade */}
           <label htmlFor="email" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
             Email
           </label>
@@ -68,7 +68,7 @@ export default function LoginPage() {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            {/* Modificado: htmlFor + id */}
+            {/* htmlFor + id */}
             <label htmlFor="password" className="text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
               Senha
             </label>

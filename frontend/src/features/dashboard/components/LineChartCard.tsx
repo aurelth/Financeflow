@@ -16,7 +16,7 @@ const formatDate = (date: string) => {
   return `Dia ${parseInt(day)}`
 }
 
-// Modificado: estilos do tooltip e grid com tokens da nova paleta
+// Estilos do tooltip e grid com tokens da nova paleta
 export default function LineChartCard({ data }: LineChartCardProps) {
   return (
     <div

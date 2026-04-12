@@ -52,7 +52,7 @@ export default function ComparisonPage() {
         style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
       >
         <div className="flex items-center gap-2">
-          <GitCompare size={16} style={{ color: 'var(--ff-emerald)' }} /> {/* Modificado: verde */}
+          <GitCompare size={16} style={{ color: 'var(--ff-emerald)' }} /> {/* Verde */}
           <span className="text-sm font-medium" style={{ color: 'var(--ff-text-primary)' }}>
             Períodos selecionados
           </span>

@@ -42,7 +42,7 @@ export default {
         input:   'hsl(var(--input))',
         ring:    'hsl(var(--ring))',
 
-        // Adicionado: paleta FinanceFlow
+        // Paleta FinanceFlow
         ff: {
           base:           'var(--ff-bg-base)',
           card:           'var(--ff-bg-card)',
