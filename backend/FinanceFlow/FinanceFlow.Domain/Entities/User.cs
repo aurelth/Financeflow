@@ -1,3 +1,5 @@
+using FinanceFlow.Domain.Enums;
+
 namespace FinanceFlow.Domain.Entities;
 
 public class User : BaseEntity
@@ -9,6 +11,7 @@ public class User : BaseEntity
     public Gender Gender { get; set; }
     public string Currency { get; set; } = "BRL";
     public string Timezone { get; set; } = "America/Sao_Paulo";
+    public UserRole Role { get; set; } = UserRole.User;
 
     // Navegação
     public ICollection<Category> Categories { get; set; } = [];

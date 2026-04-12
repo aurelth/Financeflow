@@ -12,7 +12,7 @@ namespace FinanceFlow.Infrastructure.Auth;
 public class JwtTokenService(IConfiguration configuration) : ITokenService
 {
     public string GenerateAccessToken(User user)
-    {
+    {        
         var secret = configuration["Jwt:Secret"]!;
         var issuer = configuration["Jwt:Issuer"]!;
         var audience = configuration["Jwt:Audience"]!;
@@ -29,7 +29,8 @@ public class JwtTokenService(IConfiguration configuration) : ITokenService
             new Claim(JwtRegisteredClaimNames.Jti,   Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Iat,
                 DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
-                ClaimValueTypes.Integer64)
+                ClaimValueTypes.Integer64),
+            new Claim("role", user.Role.ToString()),
         };
 
         var token = new JwtSecurityToken(

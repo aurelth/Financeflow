@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
 
       <form onSubmit={handleSubmit(d => forgotPassword(d))} className="space-y-4">
         <div className="space-y-1.5">
-          {/* Modificado: htmlFor + id */}
+          {/* htmlFor + id */}
           <label htmlFor="email" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
             Email
           </label>

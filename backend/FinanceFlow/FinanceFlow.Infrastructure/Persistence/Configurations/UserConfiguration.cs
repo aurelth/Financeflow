@@ -1,4 +1,5 @@
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -33,7 +34,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(u => u.Cpf)
                .IsUnique()
-               .HasFilter("[Cpf] <> ''");
+               .HasFilter("[Cpf] <> '' AND [DeletedAt] IS NULL");
 
         builder.Property(u => u.Gender)
                .IsRequired()
@@ -47,5 +48,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Timezone)
                .HasMaxLength(50)
                .HasDefaultValue("America/Sao_Paulo");
+
+        builder.Property(u => u.Role)
+               .IsRequired()
+               .HasConversion<string>()
+               .HasMaxLength(10)
+               .HasDefaultValue(UserRole.User);
     }
 }

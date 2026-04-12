@@ -393,6 +393,13 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasDefaultValue("User");
+
                     b.Property<string>("Timezone")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -407,7 +414,7 @@ namespace FinanceFlow.Infrastructure.Migrations
 
                     b.HasIndex("Cpf")
                         .IsUnique()
-                        .HasFilter("[Cpf] <> ''");
+                        .HasFilter("[Cpf] <> '' AND [DeletedAt] IS NULL");
 
                     b.HasIndex("Email")
                         .IsUnique()

@@ -59,7 +59,7 @@ export default function ResetPasswordPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1.5">
-          {/* Modificado: htmlFor + id */}
+          {/* htmlFor + id */}
           <label htmlFor="newPassword" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
             Nova senha
           </label>
@@ -77,7 +77,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="space-y-1.5">
-          {/* Modificado: htmlFor + id */}
+          {/* htmlFor + id */}
           <label htmlFor="confirmPassword" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
             Confirmar senha
           </label>

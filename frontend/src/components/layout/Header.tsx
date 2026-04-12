@@ -27,7 +27,7 @@ export default function Header() {
   return (
     <header
       className="h-16 px-6 flex items-center justify-between"
-      style={{ // Modificado
+      style={{
         background:   'var(--ff-bg-card)',
         borderBottom: '1px solid var(--ff-border)',
       }}
@@ -47,7 +47,7 @@ export default function Header() {
             >
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0"
-                style={{ // Modificado: avatar verde esmeralda
+                style={{ // Avatar verde esmeralda
                   background: 'var(--ff-emerald-subtle)',
                   color:      'var(--ff-emerald)',
                 }}
@@ -69,7 +69,7 @@ export default function Header() {
           <DropdownMenuContent
             align="end"
             className="w-52"
-            style={{ // Modificado
+            style={{
               background:   'var(--ff-bg-card)',
               border:       '1px solid var(--ff-border)',
             }}

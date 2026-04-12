@@ -75,7 +75,7 @@ export default function TransactionsPage() {
           <button
             onClick={() => setShowForm(true)}
             className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
-            style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }} // Modificado
+            style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-emerald-hover)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-emerald)')}
           >

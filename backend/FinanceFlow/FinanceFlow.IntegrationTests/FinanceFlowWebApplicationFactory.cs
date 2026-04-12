@@ -71,6 +71,10 @@ public class FinanceFlowWebApplicationFactory
                 ["IpRateLimiting:GeneralRules:2:Limit"] = "10000",
                 ["IpRateLimiting:GeneralRules:3:Period"] = "1h",
                 ["IpRateLimiting:GeneralRules:3:Limit"] = "10000",
+                // Credenciais do Admin de teste
+                ["AdminSeed:Name"] = "Admin Teste",
+                ["AdminSeed:Email"] = "admin@financeflow.com",
+                ["AdminSeed:Password"] = "Admin@123456",
             });
         });
 

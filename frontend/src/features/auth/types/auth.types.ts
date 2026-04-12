@@ -1,12 +1,13 @@
 export interface UserProfile {
-  id: string
-  name: string
-  email: string
+  id:        string
+  name:      string
+  email:     string
   cpf:       string
   gender:    string
-  currency: string
-  timezone: string
+  currency:  string
+  timezone:  string
   createdAt: string
+  role:      'User' | 'Admin'
 }
 
 export interface AuthResponse {

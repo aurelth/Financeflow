@@ -10,6 +10,8 @@ public class UserMappingProfile : Profile
     {
         CreateMap<User, UserProfileDto>()
             .ForCtorParam(nameof(UserProfileDto.Gender),
-                opt => opt.MapFrom(src => src.Gender.ToString()));
+                opt => opt.MapFrom(src => src.Gender.ToString()))
+            .ForCtorParam(nameof(UserProfileDto.Role),
+                opt => opt.MapFrom(src => src.Role.ToString()));
     }
 }

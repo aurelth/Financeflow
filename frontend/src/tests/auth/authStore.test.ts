@@ -11,6 +11,13 @@ const mockUser: UserProfile = {
   currency:  'BRL',
   timezone:  'America/Sao_Paulo',
   createdAt: '2026-01-01T00:00:00Z',
+  role:      'User',
+}
+
+const mockAdmin: UserProfile = {
+  ...mockUser,
+  id:   '999e4567-e89b-12d3-a456-426614174000',
+  role: 'Admin',
 }
 
 describe('authStore', () => {
@@ -52,5 +59,39 @@ describe('authStore', () => {
     expect(user).toBeNull()
     expect(isAuthenticated).toBe(false)
     expect(sessionStorage.getItem('accessToken')).toBeNull()
+  })
+
+  // Persistência do usuário no sessionStorage
+  it('deve persistir o usuário no sessionStorage ao chamar setUser', () => {
+    useAuthStore.getState().setUser(mockUser, 'token')
+
+    const stored = sessionStorage.getItem('user')
+    expect(stored).not.toBeNull()
+    expect(JSON.parse(stored!)).toEqual(mockUser)
+  })
+
+  it('deve atualizar o usuário no sessionStorage ao chamar updateUser', () => {
+    useAuthStore.getState().setUser(mockUser, 'token')
+
+    const updatedUser = { ...mockUser, name: 'Aurel Atualizado' }
+    useAuthStore.getState().updateUser(updatedUser)
+
+    const stored = sessionStorage.getItem('user')
+    expect(JSON.parse(stored!).name).toBe('Aurel Atualizado')
+  })
+
+  it('deve remover o usuário do sessionStorage ao chamar logout', () => {
+    useAuthStore.getState().setUser(mockUser, 'token')
+    useAuthStore.getState().logout()
+
+    expect(sessionStorage.getItem('user')).toBeNull()
+  })
+
+  // Teste da role no sessionStorage
+  it('deve persistir a role Admin no sessionStorage', () => {
+    useAuthStore.getState().setUser(mockAdmin, 'admin-token')
+
+    const stored = JSON.parse(sessionStorage.getItem('user')!)
+    expect(stored.role).toBe('Admin')
   })
 })

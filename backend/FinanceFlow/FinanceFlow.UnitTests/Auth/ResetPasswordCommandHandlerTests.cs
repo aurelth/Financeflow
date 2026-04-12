@@ -31,7 +31,7 @@ public class ResetPasswordCommandHandlerTests
             Token = tokenValue,
             ExpiresAt = DateTime.UtcNow.AddHours(1),
             IsUsed = false,
-            User = user // adicionado — simula o Include do repositório
+            User = user // Simula o Include do repositório
         };
     }
 

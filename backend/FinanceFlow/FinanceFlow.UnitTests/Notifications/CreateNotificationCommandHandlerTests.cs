@@ -66,7 +66,7 @@ public class CreateNotificationCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_DeveCriarNotificacao_ComReferenceId() // adicionado
+    public async Task Handle_DeveCriarNotificacao_ComReferenceId()
     {
         // Arrange
         var command = new CreateNotificationCommand(
@@ -98,7 +98,7 @@ public class CreateNotificationCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_DeveIgnorarDuplicata_QuandoNotificacaoJaExisteHoje() // adicionado
+    public async Task Handle_DeveIgnorarDuplicata_QuandoNotificacaoJaExisteHoje()
     {
         // Arrange
         var command = new CreateNotificationCommand(
@@ -122,7 +122,7 @@ public class CreateNotificationCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_NaoVerificaDuplicata_QuandoReferenceIdNulo() // adicionado
+    public async Task Handle_NaoVerificaDuplicata_QuandoReferenceIdNulo()
     {
         // Arrange
         var command = new CreateNotificationCommand(

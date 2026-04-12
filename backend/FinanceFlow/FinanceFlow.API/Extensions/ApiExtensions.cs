@@ -32,11 +32,10 @@ public static class ApiExtensions
                         "https://localhost:3000")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
-                    .AllowCredentials(); // necessário para cookies httpOnly
+                    .AllowCredentials();
             });
         });
-
-        // JWT Bearer
+        
         services
             .AddAuthentication(options =>
             {
@@ -44,25 +43,12 @@ public static class ApiExtensions
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(options =>
-            {               
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = false,
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                };
-            });
-        
-        services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
-            .Configure<IConfiguration>((options, config) =>
-            {
-                var secret = config["Jwt:Secret"]
+            {                              
+                var secret = configuration["Jwt:Secret"]
                     ?? throw new InvalidOperationException("Jwt:Secret não configurado.");
-                var issuer = config["Jwt:Issuer"]
+                var issuer = configuration["Jwt:Issuer"]
                     ?? throw new InvalidOperationException("Jwt:Issuer não configurado.");
-                var audience = config["Jwt:Audience"]
+                var audience = configuration["Jwt:Audience"]
                     ?? throw new InvalidOperationException("Jwt:Audience não configurado.");
 
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -75,18 +61,23 @@ public static class ApiExtensions
                     ValidateAudience = true,
                     ValidAudience = audience,
                     ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
+                    ClockSkew = TimeSpan.Zero,                    
+                    RoleClaimType = "role",
                 };
             });
 
-        services.AddAuthorization();
+        // Policy de Admin
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("RequireAdmin", policy =>
+                policy.RequireClaim("role", "Admin"));
+        });
 
         return services;
     }
 
     public static WebApplication MapHubs(this WebApplication app)
     {
-        // Hubs SignalR
         app.MapHub<ReportHub>("/hubs/reports");
         app.MapHub<NotificationHub>("/hubs/notifications");
         return app;

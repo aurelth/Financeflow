@@ -6,15 +6,20 @@ public interface IUserRepository
 {
     Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
+
+    // Busca por email respeitando soft-delete (para login)
+    Task<User?> GetActiveByEmailAsync(string email, CancellationToken cancellationToken = default);
     Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default);
     Task<bool> ExistsByCpfAsync(string cpf, CancellationToken cancellationToken = default);
     Task AddAsync(User user, CancellationToken cancellationToken = default);
     Task UpdateAsync(User user, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>Retorna IDs de todos os usuários ativos (uso interno do Worker).</summary>
     Task<IEnumerable<Guid>> GetAllIdsAsync(CancellationToken cancellationToken = default);
-    Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
-
-    // Busca por email respeitando soft-delete (para login)
-    Task<User?> GetActiveByEmailAsync(string email, CancellationToken cancellationToken = default);
+    Task<(IEnumerable<User> Users, int Total)> GetAllPagedAsync(
+        int page, int pageSize, string? search, bool? isActive,
+        CancellationToken cancellationToken = default);
+    Task<int> CountActiveAdminsAsync(CancellationToken cancellationToken = default);
+    Task ReactivateAsync(Guid id, CancellationToken cancellationToken = default);
 }

@@ -108,7 +108,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
                     {tx.isRecurring && recurrenceLabel[tx.recurrenceType] && (
                       <span
                         className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md flex-shrink-0"
-                        style={{ // Modificado: usa verde esmeralda para recorrência
+                        style={{ // Usa verde esmeralda para recorrência
                           background: 'var(--ff-emerald-subtle)',
                           color:      'var(--ff-emerald)',
                           border:     '1px solid rgba(16,185,129,0.2)',

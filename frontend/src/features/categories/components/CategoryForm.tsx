@@ -22,7 +22,7 @@ interface CategoryFormProps {
   onCancel:   () => void
 }
 
-// Modificado: estilos com tokens da nova paleta
+// Estilos com tokens da nova paleta
 const inputStyle: React.CSSProperties = {
   width:        '100%',
   background:   'var(--ff-bg-elevated)',

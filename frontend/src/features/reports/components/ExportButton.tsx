@@ -30,7 +30,7 @@ export default function ExportButton({ defaultMonth, defaultYear }: ExportButton
       <button
         onClick={() => setShowModal(true)}
         className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
-        style={{ border: '1px solid var(--ff-border)', color: 'var(--ff-text-secondary)' }} // Modificado
+        style={{ border: '1px solid var(--ff-border)', color: 'var(--ff-text-secondary)' }}
         onMouseEnter={e => {
           e.currentTarget.style.background = 'var(--ff-bg-elevated)'
           e.currentTarget.style.color = 'var(--ff-text-primary)'
