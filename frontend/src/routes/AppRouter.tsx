@@ -19,6 +19,7 @@ import SettingsPage        from '@/features/settings/pages/SettingsPage'
 import AdminDashboardPage  from '@/features/admin/pages/AdminDashboardPage'
 import AdminUsersPage      from '@/features/admin/pages/AdminUsersPage'
 import AdminCategoriesPage from '@/features/admin/pages/AdminCategoriesPage'
+import ImportsPage from '@/features/imports/pages/ImportsPage'
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="flex items-center justify-center h-full">
@@ -54,6 +55,7 @@ export default function AppRouter() {
             <Route path="/comparison"   element={<ComparisonPage />} />
             <Route path="/reports"      element={<Placeholder title="Relatórios" />} />
             <Route path="/exports"      element={<ExportsPage />} />
+            <Route path="/imports" element={<ImportsPage />} />
             <Route path="/profile"      element={<ProfilePage />} />
             <Route path="/settings"     element={<SettingsPage />} />
 
