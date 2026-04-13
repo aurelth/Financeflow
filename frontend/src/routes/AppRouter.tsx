@@ -57,7 +57,7 @@ export default function AppRouter() {
             <Route path="/reports"              element={<Placeholder title="Relatórios" />} />
             <Route path="/exports"              element={<ExportsPage />} />
             <Route path="/imports"              element={<ImportsPage />} />
-            <Route path="/imports/:id/preview"  element={<ImportsPreviewPage />} />
+            <Route path="/imports/:id/preview"  element={<ImportsPreviewPage key={window.location.pathname} />} />
             <Route path="/profile"              element={<ProfilePage />} />
             <Route path="/settings"             element={<SettingsPage />} />
 

@@ -9,7 +9,7 @@ import type {
 const API_URL = import.meta.env.VITE_API_URL
 
 function getAuthHeaders() {
-  const token = sessionStorage.getItem('accessToken') // Modificado
+  const token = sessionStorage.getItem('accessToken')
   return { Authorization: `Bearer ${token}` }
 }
 

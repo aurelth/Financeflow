@@ -1,32 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, Loader2, FileText } from 'lucide-react'
 import { useImportPreview, useConfirmImport } from '../api/useImports'
 import { useCategories } from '@/features/categories/api/useCategories'
-import ImportPreviewTable from '../components/ImportPreviewTable'
-import type { BankImportTransactionDto } from '../types/imports.types'
+import ImportPreviewTable, { type ImportPreviewTableHandle } from '../components/ImportPreviewTable'
 import { toast } from 'sonner'
 
 export default function ImportsPreviewPage() {
-  const { id }     = useParams<{ id: string }>()
-  const navigate   = useNavigate()
+  const { id }   = useParams<{ id: string }>()
+  const navigate = useNavigate()
 
-  const { data: preview, isLoading } = useImportPreview(id ?? null)
-  const { data: categories = [] }    = useCategories()
+  const { data: preview, isLoading }   = useImportPreview(id ?? null)
+  const { data: categories = [] }      = useCategories()
   const { mutate: confirm, isPending } = useConfirmImport(id ?? '')
-
-  const [transactions, setTransactions] = useState<BankImportTransactionDto[]>([])
-
-  useEffect(() => {
-    if (preview?.transactions) {
-      setTransactions(preview.transactions)
-    }
-  }, [preview])
+  const tableRef = useRef<ImportPreviewTableHandle>(null)
 
   function handleConfirm() {
-    const selectedIds = transactions
-      .filter(t => t.isSelected && !t.isDuplicate)
-      .map(t => t.id)
+    const selectedIds = tableRef.current?.getSelected() ?? []
 
     if (selectedIds.length === 0) {
       toast.error('Selecione ao menos uma transação para importar.')
@@ -47,8 +37,8 @@ export default function ImportsPreviewPage() {
     )
   }
 
-  const selectedCount  = transactions.filter(t => t.isSelected).length
-  const duplicateCount = transactions.filter(t => t.isDuplicate).length
+  const duplicateCount = preview?.transactions.filter(t => t.isDuplicate).length ?? 0
+  const hasTransactions = !isLoading && (preview?.transactions.length ?? 0) > 0
 
   return (
     <div className="space-y-6">
@@ -81,10 +71,10 @@ export default function ImportsPreviewPage() {
           </div>
         </div>
 
-        {!isLoading && transactions.length > 0 && (
+        {hasTransactions && (
           <button
             onClick={handleConfirm}
-            disabled={isPending || selectedCount === 0}
+            disabled={isPending}
             className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
             onMouseEnter={e => {
@@ -94,7 +84,7 @@ export default function ImportsPreviewPage() {
           >
             {isPending
               ? <><Loader2 size={15} className="animate-spin" /> A importar...</>
-              : <><CheckCircle size={15} /> Confirmar ({selectedCount})</>
+              : <><CheckCircle size={15} /> Confirmar</>
             }
           </button>
         )}
@@ -142,16 +132,16 @@ export default function ImportsPreviewPage() {
       )}
 
       {/* Tabela */}
-      {!isLoading && transactions.length > 0 && (
+      {hasTransactions && (
         <ImportPreviewTable
-          transactions={transactions}
+          ref={tableRef}
+          transactions={preview!.transactions}
           categories={categories}
-          onChange={setTransactions}
         />
       )}
 
       {/* Estado vazio */}
-      {!isLoading && transactions.length === 0 && (
+      {!isLoading && !hasTransactions && (
         <div className="flex flex-col items-center justify-center py-20 space-y-3">
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center"
