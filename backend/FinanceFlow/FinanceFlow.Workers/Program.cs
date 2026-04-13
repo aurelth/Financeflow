@@ -30,6 +30,7 @@ builder.Services.AddSingleton<BudgetAlertService>();
 builder.Services.AddSingleton<ReportGeneratorService>();
 builder.Services.AddSingleton<NotificationDispatchService>();
 builder.Services.AddSingleton<NotificationDeduplicationService>();
+builder.Services.AddSingleton<BankImportProcessingService>();
 
 // Quartz
 builder.Services.AddQuartz(q =>
@@ -81,6 +82,16 @@ builder.Services.AddQuartz(q =>
         .WithIdentity("TransactionDueAlertJob-trigger")
         .WithSimpleSchedule(s => s
             .WithIntervalInHours(1)
+            .RepeatForever()));
+
+    // BankImportConsumerJob
+    var bankImportJobKey = new JobKey("BankImportConsumerJob");
+    q.AddJob<BankImportConsumerJob>(opts => opts.WithIdentity(bankImportJobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(bankImportJobKey)
+        .WithIdentity("BankImportConsumerJob-trigger")
+        .WithSimpleSchedule(s => s
+            .WithIntervalInSeconds(10)
             .RepeatForever()));
 });
 
