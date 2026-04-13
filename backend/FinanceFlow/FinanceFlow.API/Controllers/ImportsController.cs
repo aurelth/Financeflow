@@ -18,7 +18,7 @@ public class ImportsController(IMediator mediator) : BaseController(mediator)
     [ProducesResponseType(typeof(BankImportDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UploadOFX(
-        IFormFile file,
+        IFormFile? file,
         CancellationToken cancellationToken)
     {
         if (file is null || file.Length == 0)

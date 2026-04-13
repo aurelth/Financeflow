@@ -106,27 +106,28 @@ public class UploadOFXCommandHandler(
 
     private static Guid? SuggestCategory(string description, List<Category> categories)
     {
-        var descLower = description.ToLowerInvariant()
-            .Normalize(NormalizationForm.FormD);
-
-        // Remove acentos para comparação
-        var normalized = new string(descLower
-            .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c)
-                        != System.Globalization.UnicodeCategory.NonSpacingMark)
-            .ToArray());
+        var normalized = RemoveAccents(description.ToLowerInvariant());
 
         foreach (var (keyword, terms) in KeywordMap)
         {
             if (terms.Any(term => normalized.Contains(term)))
             {
-                // Tenta encontrar categoria padrão com nome similar
                 var match = categories.FirstOrDefault(c =>
-                    c.Name.ToLowerInvariant().Contains(keyword));
+                    RemoveAccents(c.Name.ToLowerInvariant()).Contains(keyword));
                 if (match is not null)
                     return match.Id;
             }
         }
 
         return null;
+    }
+   
+    private static string RemoveAccents(string text)
+    {
+        var normalized = text.Normalize(NormalizationForm.FormD);
+        return new string(normalized
+            .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c)
+                        != System.Globalization.UnicodeCategory.NonSpacingMark)
+            .ToArray());
     }
 }
