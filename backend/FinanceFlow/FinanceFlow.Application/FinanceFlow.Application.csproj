@@ -29,7 +29,6 @@
     <Folder Include="DTOs\Dashboard\" />
     <Folder Include="DTOs\Settings\" />
     <Folder Include="DTOs\Notifications\" />
-    <Folder Include="DTOs\Reports\" />
     <Folder Include="DTOs\Transactions\" />
     <Folder Include="UseCases\Auth\Queries\" />
   </ItemGroup>
