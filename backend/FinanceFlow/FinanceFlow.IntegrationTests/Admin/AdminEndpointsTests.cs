@@ -21,7 +21,7 @@ public class AdminEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
     }
@@ -38,7 +38,7 @@ public class AdminEndpointsTests(FinanceFlowWebApplicationFactory factory)
                 Currency: "BRL",
                 Timezone: "America/Sao_Paulo"));
 
-        var user = await response.Content.ReadFromJsonAsync<UserProfileDto>();
+        var user = await response.Content.ReadAsJsonAsync<UserProfileDto>();
         return user!.Id;
     }
 
@@ -57,7 +57,7 @@ public class AdminEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<AdminUserListDto>();
+        var result = await response.Content.ReadAsJsonAsync<AdminUserListDto>();
         result.Should().NotBeNull();
         result!.Total.Should().BeGreaterThan(0);
     }
@@ -74,7 +74,7 @@ public class AdminEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         var login = await client.PostAsJsonAsync("/api/auth/login",
             new LoginRequestDto("admin.getusers.common@teste.com", "Teste@123"));
-        var auth = await login.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await login.Content.ReadAsJsonAsync<AuthResponseDto>();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
 
@@ -124,7 +124,7 @@ public class AdminEndpointsTests(FinanceFlowWebApplicationFactory factory)
         await AuthenticateAsAdminAsync(client);
 
         var usersResponse = await client.GetAsync("/api/admin/users");
-        var users = await usersResponse.Content.ReadFromJsonAsync<AdminUserListDto>();
+        var users = await usersResponse.Content.ReadAsJsonAsync<AdminUserListDto>();
         var admin = users!.Users.First(u => u.Role == "Admin");
 
         // Act
@@ -209,7 +209,7 @@ public class AdminEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<AdminCategoryDto>>();
+            .ReadAsJsonAsync<IEnumerable<AdminCategoryDto>>();
         result.Should().NotBeNull();
         result!.Should().HaveCountGreaterThan(0);
     }
@@ -235,7 +235,7 @@ public class AdminEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await response.Content.ReadFromJsonAsync<AdminCategoryDto>();
+        var result = await response.Content.ReadAsJsonAsync<AdminCategoryDto>();
         result!.Name.Should().Be("Categoria Admin Teste");
     }
 
@@ -254,7 +254,7 @@ public class AdminEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<AdminMetricsDto>();
+        var result = await response.Content.ReadAsJsonAsync<AdminMetricsDto>();
         result.Should().NotBeNull();
         result!.TotalUsers.Should().BeGreaterThan(0);
         result.DefaultCategories.Should().BeGreaterThan(0);
@@ -273,7 +273,7 @@ public class AdminEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
 
         // Decodifica o JWT sem validar a assinatura
         var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();

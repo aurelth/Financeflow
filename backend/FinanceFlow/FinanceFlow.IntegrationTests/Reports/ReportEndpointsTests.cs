@@ -35,7 +35,7 @@ public class ReportEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
 
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
@@ -62,7 +62,7 @@ public class ReportEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<ReportDto>>();
+            .ReadAsJsonAsync<IEnumerable<ReportDto>>();
         result.Should().NotBeNull();
     }
 
@@ -88,7 +88,7 @@ public class ReportEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await response.Content.ReadFromJsonAsync<ReportDto>();
+        var result = await response.Content.ReadAsJsonAsync<ReportDto>();
         result.Should().NotBeNull();
         result!.Status.Should().Be(ReportStatus.Pending);
         result.Month.Should().Be(3);
@@ -130,7 +130,7 @@ public class ReportEndpointsTests(FinanceFlowWebApplicationFactory factory)
         var requestResponse = await client.PostAsJsonAsync("/api/reports/request",
             new CreateReportRequestDto(Month: 3, Year: 2026));
 
-        var report = await requestResponse.Content.ReadFromJsonAsync<ReportDto>();
+        var report = await requestResponse.Content.ReadAsJsonAsync<ReportDto>();
 
         // Tenta baixar — deve retornar 422 pois ainda está Pending
         var response = await client.GetAsync($"/api/reports/{report!.Id}/download");
@@ -167,7 +167,7 @@ public class ReportEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Cria relatório
         var requestResponse = await client.PostAsJsonAsync("/api/reports/request",
             new CreateReportRequestDto(Month: 3, Year: 2026));
-        var report = await requestResponse.Content.ReadFromJsonAsync<ReportDto>();
+        var report = await requestResponse.Content.ReadAsJsonAsync<ReportDto>();
 
         // Deleta
         var response = await client.DeleteAsync($"/api/reports/{report!.Id}");
@@ -188,7 +188,7 @@ public class ReportEndpointsTests(FinanceFlowWebApplicationFactory factory)
             new CreateReportRequestDto(Month: 1, Year: 2020));
 
         requestResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        var report = await requestResponse.Content.ReadFromJsonAsync<ReportDto>();
+        var report = await requestResponse.Content.ReadAsJsonAsync<ReportDto>();
 
         // Atualiza para Completed via endpoint interno
         await client.PutAsJsonAsync($"/api/reports/{report!.Id}/status",
@@ -211,7 +211,7 @@ public class ReportEndpointsTests(FinanceFlowWebApplicationFactory factory)
         var requestResponse = await client.PostAsJsonAsync("/api/reports/request",
             new CreateReportRequestDto(Month: 1, Year: 2021));
 
-        var report = await requestResponse.Content.ReadFromJsonAsync<ReportDto>();
+        var report = await requestResponse.Content.ReadAsJsonAsync<ReportDto>();
 
         // Atualiza para Completed
         await client.PutAsJsonAsync($"/api/reports/{report!.Id}/status",

@@ -141,5 +141,5 @@ public class FinanceFlowWebApplicationFactory
         });
 
         builder.UseEnvironment("Testing");
-    }
+    }    
 }

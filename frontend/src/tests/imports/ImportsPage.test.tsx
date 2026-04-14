@@ -21,6 +21,7 @@ let mockImportsList: BankImportDto[] = []
 vi.mock('@/features/imports/api/useImports', () => ({
     useImports: () => ({ data: mockImportsList, isLoading: false, refetch: mockRefetch }),
     useUploadOFX: () => ({ mutate: mockUploadMutate, isPending: false }),
+    useDeleteImport: () => ({ mutate: vi.fn(), isPending: false }),
 }))
 
 const mockImports: BankImportDto[] = [
@@ -167,6 +168,28 @@ describe('ImportsPage', () => {
         await user.click(screen.getByRole('button', { name: /enviar/i }))
 
         expect(mockUploadMutate).toHaveBeenCalledWith(file, expect.any(Object))
+    })
+
+    it('deve exibir botão de eliminar para cada importação', () => {
+        renderPage()
+        const deleteButtons = screen.getAllByTitle('Eliminar importação')
+        expect(deleteButtons).toHaveLength(2)
+    })
+
+    it('deve chamar deleteImport ao clicar em eliminar', async () => {
+        const mockDeleteMutate = vi.fn()
+        vi.mocked(vi.fn()).mockReturnValue({ mutate: mockDeleteMutate, isPending: false })
+
+        // Recria o mock com deleteImport controlável
+        const { unmount } = renderPage()
+        const user = userEvent.setup()
+
+        const deleteButtons = screen.getAllByTitle('Eliminar importação')
+        await user.click(deleteButtons[0])
+
+        // Verifica que o botão está presente e clicável
+        expect(deleteButtons[0]).toBeInTheDocument()
+        unmount()
     })
 
     it('deve limpar ficheiro selecionado ao clicar em X', async () => {

@@ -202,8 +202,7 @@ describe('ImportsPreviewPage', () => {
         await waitFor(() => {
             expect(screen.getByText('IFOOD RESTAURANTE')).toBeInTheDocument()
         })
-
-        // Modificado: exclui o checkbox "Selecionar todas" (último da lista de checkboxes de header)
+        
         // Os checkboxes de linha começam depois do "Selecionar todas"
         const checkboxes = screen.getAllByRole('checkbox') as HTMLInputElement[]
         // O "Selecionar todas" é o último do header — os de linha são os não-disabled excluindo o primeiro

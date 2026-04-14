@@ -1,5 +1,6 @@
 using FinanceFlow.Application.DTOs.Imports;
 using FinanceFlow.Application.UseCases.Imports.Commands.ConfirmImport;
+using FinanceFlow.Application.UseCases.Imports.Commands.DeleteImport;
 using FinanceFlow.Application.UseCases.Imports.Commands.ProcessImport;
 using FinanceFlow.Application.UseCases.Imports.Commands.UploadOFX;
 using FinanceFlow.Application.UseCases.Imports.Queries.GetImportPreview;
@@ -86,5 +87,18 @@ public class ImportsController(IMediator mediator) : BaseController(mediator)
         var query = new GetImportsQuery(CurrentUserId);
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>Elimina uma importação e as suas transações de staging.</summary>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var command = new DeleteImportCommand(id, CurrentUserId);
+        await Mediator.Send(command, cancellationToken);
+        return NoContent();
     }
 }

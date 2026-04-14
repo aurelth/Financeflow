@@ -55,4 +55,23 @@ public class BankImportRepository(FinanceFlowDbContext context) : IBankImportRep
                 t.ImportHash == hash &&
                 t.DeletedAt == null,
                 cancellationToken);
+
+    public async Task DeleteAsync(
+        Guid id,
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var bankImport = await context.BankImports
+            .Include(b => b.Transactions)
+            .FirstOrDefaultAsync(b =>
+                b.Id == id &&
+                b.UserId == userId,
+                cancellationToken);
+
+        if (bankImport is null)
+            return;
+
+        context.BankImports.Remove(bankImport);
+        await context.SaveChangesAsync(cancellationToken);
+    }
 }

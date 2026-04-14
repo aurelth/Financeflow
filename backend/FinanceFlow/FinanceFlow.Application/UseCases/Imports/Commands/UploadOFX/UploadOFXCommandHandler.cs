@@ -54,11 +54,18 @@ public class UploadOFXCommandHandler(
         // Mapeia as transações extraídas
         foreach (var t in parseResult.Transactions)
         {
+            Console.WriteLine($"FitId: {t.FitId} | Type: '{t.Type}' | Amount: {t.Amount}");
             var hash = ComputeHash(t.Date, t.Amount, t.Description, t.Type);
-            var type = t.Amount >= 0 ? TransactionType.Income : TransactionType.Expense;
+
+            // Usa o TRNTYPE do OFX para determinar o tipo, com fallback para o valor
+            var type = t.Type.Equals("CREDIT", StringComparison.OrdinalIgnoreCase)
+                ? TransactionType.Income
+                : t.Type.Equals("DEBIT", StringComparison.OrdinalIgnoreCase)
+                    ? TransactionType.Expense
+                    : t.Amount >= 0 ? TransactionType.Income : TransactionType.Expense;
 
             // Categorização automática por palavras-chave
-            var suggestedCategoryId = SuggestCategory(t.Description, categoryList);
+            var suggestedCategoryId = SuggestCategory(t.Description, categoryList, type);
 
             bankImport.Transactions.Add(new BankImportTransaction
             {
@@ -104,7 +111,8 @@ public class UploadOFXCommandHandler(
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
-    private static Guid? SuggestCategory(string description, List<Category> categories)
+    // Recebe o tipo para filtrar categorias do tipo correto
+    private static Guid? SuggestCategory(string description, List<Category> categories, TransactionType type)
     {
         var normalized = RemoveAccents(description.ToLowerInvariant());
 
@@ -112,7 +120,9 @@ public class UploadOFXCommandHandler(
         {
             if (terms.Any(term => normalized.Contains(term)))
             {
+                // Filtra apenas categorias do mesmo tipo da transação
                 var match = categories.FirstOrDefault(c =>
+                    c.Type == type &&
                     RemoveAccents(c.Name.ToLowerInvariant()).Contains(keyword));
                 if (match is not null)
                     return match.Id;
@@ -121,7 +131,7 @@ public class UploadOFXCommandHandler(
 
         return null;
     }
-   
+
     private static string RemoveAccents(string text)
     {
         var normalized = text.Normalize(NormalizationForm.FormD);

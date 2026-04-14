@@ -37,9 +37,16 @@ public class ProcessImportCommandHandler(
             }
         }
 
+        // Remove automaticamente as BankImportTransactions duplicadas
+        var duplicateTransactions = bankImport.Transactions
+            .Where(t => t.IsDuplicate == true)
+            .ToList();
+
+        foreach (var t in duplicateTransactions)
+            bankImport.Transactions.Remove(t);
+
         bankImport.Duplicates = duplicates;
         bankImport.Status = BankImportStatus.Completed;
-
         await bankImportRepository.UpdateAsync(bankImport, cancellationToken);
     }
 }

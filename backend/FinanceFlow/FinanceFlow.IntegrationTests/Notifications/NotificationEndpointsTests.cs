@@ -28,7 +28,7 @@ public class NotificationEndpointsTests(FinanceFlowWebApplicationFactory factory
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
 
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
@@ -81,7 +81,7 @@ public class NotificationEndpointsTests(FinanceFlowWebApplicationFactory factory
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<NotificationDto>>();
+            .ReadAsJsonAsync<IEnumerable<NotificationDto>>();
         result.Should().NotBeNull();
     }
 
@@ -102,7 +102,7 @@ public class NotificationEndpointsTests(FinanceFlowWebApplicationFactory factory
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<NotificationDto>>();
+            .ReadAsJsonAsync<IEnumerable<NotificationDto>>();
         result.Should().HaveCount(c => c >= 2);
     }
 
@@ -161,7 +161,7 @@ public class NotificationEndpointsTests(FinanceFlowWebApplicationFactory factory
         // Assert — apenas uma deve ter sido persistida
         var response = await client.GetAsync("/api/notifications");
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<NotificationDto>>();
+            .ReadAsJsonAsync<IEnumerable<NotificationDto>>();
 
         result!.Count(n => n.Type == "TransactionDueTomorrow").Should().Be(1);
     }
@@ -215,7 +215,7 @@ public class NotificationEndpointsTests(FinanceFlowWebApplicationFactory factory
         // Assert
         var getResponse = await client.GetAsync("/api/notifications");
         var result = await getResponse.Content
-            .ReadFromJsonAsync<IEnumerable<NotificationDto>>();
+            .ReadAsJsonAsync<IEnumerable<NotificationDto>>();
 
         result.Should().OnlyContain(n => n.IsRead == true);
     }

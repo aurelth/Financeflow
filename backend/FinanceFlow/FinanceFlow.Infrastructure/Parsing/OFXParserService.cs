@@ -8,9 +8,14 @@ public class OFXParserService : IOFXParserService
 {
     public OFXParseResult Parse(Stream stream)
     {
-        // Lê o stream como string pois OFXSharp aceita string ou FileStream
         using var reader = new StreamReader(stream);
         var ofxContent = reader.ReadToEnd();
+   
+        ofxContent = ofxContent
+            .Replace("ENCODING:UTF-8", "ENCODING:USASCII")
+            .Replace("ENCODING:UTF8", "ENCODING:USASCII")
+            .Replace("ENCODING:UNICODE", "ENCODING:USASCII")
+            .Replace("CHARSET:NONE", "CHARSET:1252");
 
         var parser = new OFXDocumentParser();
         var document = parser.Import(ofxContent);

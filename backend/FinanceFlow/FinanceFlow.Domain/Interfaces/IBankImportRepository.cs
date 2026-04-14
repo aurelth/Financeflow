@@ -9,4 +9,5 @@ public interface IBankImportRepository
     Task AddAsync(BankImport bankImport, CancellationToken cancellationToken = default);
     Task UpdateAsync(BankImport bankImport, CancellationToken cancellationToken = default);
     Task<bool> HashExistsAsync(Guid userId, string hash, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid id, Guid userId, CancellationToken cancellationToken = default);
 }

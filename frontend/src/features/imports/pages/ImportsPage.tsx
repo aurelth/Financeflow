@@ -1,19 +1,27 @@
 import { useState } from 'react'
-import { Upload, FileText, CheckCircle, XCircle, Clock, Loader2, RefreshCw } from 'lucide-react'
-import { useImports, useUploadOFX } from '../api/useImports'
+import { Upload, FileText, CheckCircle, XCircle, Clock, Loader2, RefreshCw, Trash2 } from 'lucide-react'
+import { useImports, useUploadOFX, useDeleteImport } from '../api/useImports'
 import OFXUploadZone from '../components/OFXUploadZone'
 import type { BankImportDto, BankImportStatus } from '../types/imports.types'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 
 function StatusBadge({ status }: { status: BankImportStatus }) {
-  const map: Record<BankImportStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-    Pending:    { label: 'Pendente',      color: '#facc15', bg: 'rgba(250,204,21,0.1)',   icon: <Clock size={12} /> },
-    Processing: { label: 'A processar',   color: '#60a5fa', bg: 'rgba(96,165,250,0.1)',   icon: <Loader2 size={12} className="animate-spin" /> },
-    Completed:  { label: 'Concluído',     color: '#34d399', bg: 'rgba(52,211,153,0.1)',   icon: <CheckCircle size={12} /> },
-    Failed:     { label: 'Erro',          color: '#f87171', bg: 'rgba(248,113,113,0.1)',  icon: <XCircle size={12} /> },
+  const map: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+    'Pending':    { label: 'Pendente',    color: '#facc15', bg: 'rgba(250,204,21,0.1)',  icon: <Clock size={12} /> },
+    'Processing': { label: 'A processar', color: '#60a5fa', bg: 'rgba(96,165,250,0.1)',  icon: <Loader2 size={12} className="animate-spin" /> },
+    'Completed':  { label: 'Concluído',   color: '#34d399', bg: 'rgba(52,211,153,0.1)',  icon: <CheckCircle size={12} /> },
+    'Failed':     { label: 'Erro',        color: '#f87171', bg: 'rgba(248,113,113,0.1)', icon: <XCircle size={12} /> },
+    '1':          { label: 'Pendente',    color: '#facc15', bg: 'rgba(250,204,21,0.1)',  icon: <Clock size={12} /> },
+    '2':          { label: 'A processar', color: '#60a5fa', bg: 'rgba(96,165,250,0.1)',  icon: <Loader2 size={12} className="animate-spin" /> },
+    '3':          { label: 'Concluído',   color: '#34d399', bg: 'rgba(52,211,153,0.1)',  icon: <CheckCircle size={12} /> },
+    '4':          { label: 'Erro',        color: '#f87171', bg: 'rgba(248,113,113,0.1)', icon: <XCircle size={12} /> },
   }
-  const { label, color, bg, icon } = map[status]
+
+  const entry = map[String(status)]
+  if (!entry) return null
+
+  const { label, color, bg, icon } = entry
   return (
     <span
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
@@ -24,10 +32,21 @@ function StatusBadge({ status }: { status: BankImportStatus }) {
   )
 }
 
-function ImportHistoryRow({ item, onPreview }: { item: BankImportDto; onPreview: (id: string) => void }) {
+interface ImportHistoryRowProps {
+  item: BankImportDto
+  onPreview: (id: string) => void
+  onDelete: (id: string) => void
+  isDeleting: boolean
+}
+
+function ImportHistoryRow({ item, onPreview, onDelete, isDeleting }: ImportHistoryRowProps) {
   const date = new Date(`${item.createdAt}Z`).toLocaleDateString('pt-PT', {
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
   })
+
+  const statusStr  = String(item.status)
+  const isCompleted = statusStr === 'Completed' || statusStr === '3'
+  const isPending   = statusStr === 'Pending'   || statusStr === '1'
 
   return (
     <div
@@ -51,8 +70,8 @@ function ImportHistoryRow({ item, onPreview }: { item: BankImportDto; onPreview:
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        {item.status === 'Completed' && (
+      <div className="flex items-center gap-3">
+        {isCompleted && (
           <div className="text-right hidden sm:block">
             <p className="text-xs" style={{ color: 'var(--ff-text-muted)' }}>
               <span style={{ color: '#34d399' }}>{item.imported} importadas</span>
@@ -61,8 +80,10 @@ function ImportHistoryRow({ item, onPreview }: { item: BankImportDto; onPreview:
             </p>
           </div>
         )}
+
         <StatusBadge status={item.status} />
-        {(item.status === 'Completed' || item.status === 'Pending') && (
+
+        {(isCompleted || isPending) && (
           <button
             onClick={() => onPreview(item.id)}
             className="h-8 px-3 rounded-xl text-xs font-medium transition-colors"
@@ -73,16 +94,40 @@ function ImportHistoryRow({ item, onPreview }: { item: BankImportDto; onPreview:
             Ver preview
           </button>
         )}
+
+        {/* Botão de eliminar */}
+        <button
+          onClick={() => onDelete(item.id)}
+          disabled={isDeleting}
+          title="Eliminar importação"
+          className="p-2 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ color: 'var(--ff-text-muted)' }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = '#f87171'
+            e.currentTarget.style.background = 'rgba(248,113,113,0.1)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = 'var(--ff-text-muted)'
+            e.currentTarget.style.background = 'transparent'
+          }}
+        >
+          {isDeleting
+            ? <Loader2 size={15} className="animate-spin" />
+            : <Trash2 size={15} />
+          }
+        </button>
       </div>
     </div>
   )
 }
 
 export default function ImportsPage() {
-  const navigate                = useNavigate()
+  const navigate                                    = useNavigate()
   const { data: imports = [], isLoading, refetch } = useImports()
   const { mutate: upload, isPending }              = useUploadOFX()
+  const { mutate: deleteImport, isPending: isDeleting } = useDeleteImport()
   const [uploading, setUploading]                  = useState(false)
+  const [deletingId, setDeletingId]                = useState<string | null>(null)
 
   function handleFileSelect(file: File) {
     setUploading(true)
@@ -95,6 +140,21 @@ export default function ImportsPage() {
       onError: () => {
         setUploading(false)
         toast.error('Erro ao enviar o ficheiro. Verifique se é um OFX válido.')
+      },
+    })
+  }
+
+  // Handler de eliminar
+  function handleDelete(id: string) {
+    setDeletingId(id)
+    deleteImport(id, {
+      onSuccess: () => {
+        setDeletingId(null)
+        toast.success('Importação eliminada com sucesso.')
+      },
+      onError: () => {
+        setDeletingId(null)
+        toast.error('Erro ao eliminar a importação.')
       },
     })
   }
@@ -179,6 +239,8 @@ export default function ImportsPage() {
                 key={item.id}
                 item={item}
                 onPreview={id => navigate(`/imports/${id}/preview`)}
+                onDelete={handleDelete}
+                isDeleting={isDeleting && deletingId === item.id}
               />
             ))}
           </div>

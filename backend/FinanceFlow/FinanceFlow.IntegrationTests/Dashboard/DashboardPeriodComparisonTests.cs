@@ -27,7 +27,7 @@ public class DashboardPeriodComparisonTests(FinanceFlowWebApplicationFactory fac
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
 
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
@@ -53,7 +53,7 @@ public class DashboardPeriodComparisonTests(FinanceFlowWebApplicationFactory fac
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<PeriodComparisonDto>();
+        var result = await response.Content.ReadAsJsonAsync<PeriodComparisonDto>();
         result.Should().NotBeNull();
         result!.Periods.Should().HaveCount(2);
     }
@@ -104,7 +104,7 @@ public class DashboardPeriodComparisonTests(FinanceFlowWebApplicationFactory fac
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<PeriodComparisonDto>();
+        var result = await response.Content.ReadAsJsonAsync<PeriodComparisonDto>();
         result!.Periods.Should().HaveCount(3);
     }
 
@@ -119,7 +119,7 @@ public class DashboardPeriodComparisonTests(FinanceFlowWebApplicationFactory fac
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<PeriodComparisonDto>();
+        var result = await response.Content.ReadAsJsonAsync<PeriodComparisonDto>();
         result!.CategoryComparisons.Should().BeEmpty();
     }
 }

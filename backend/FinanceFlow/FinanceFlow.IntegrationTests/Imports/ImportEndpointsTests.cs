@@ -29,7 +29,7 @@ public class ImportEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
     }
@@ -161,7 +161,7 @@ public class ImportEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<BankImportDto>>();
+            .ReadAsJsonAsync<IEnumerable<BankImportDto>>();
         result.Should().BeEmpty();
     }
 
@@ -174,6 +174,26 @@ public class ImportEndpointsTests(FinanceFlowWebApplicationFactory factory)
         await AuthenticateAsync(client, "import.preview.notfound@teste.com");
 
         var response = await client.GetAsync($"/api/imports/{Guid.NewGuid()}/preview");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    // DELETE /api/imports/{id}
+
+    [Fact]
+    public async Task Delete_DeveRetornar401_QuandoSemToken()
+    {
+        var client = CreateClient();
+        var response = await client.DeleteAsync($"/api/imports/{Guid.NewGuid()}");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Delete_DeveRetornar404_QuandoImportacaoNaoExiste()
+    {
+        var client = CreateClient();
+        await AuthenticateAsync(client, "import.delete.notfound@teste.com");
+
+        var response = await client.DeleteAsync($"/api/imports/{Guid.NewGuid()}");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 

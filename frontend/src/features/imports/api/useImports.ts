@@ -78,3 +78,17 @@ export function useConfirmImport(id: string) {
     },
   })
 }
+
+export function useDeleteImport() {
+  const queryClient = useQueryClient()
+  return useMutation<void, Error, string>({
+    mutationFn: async (id: string) => {
+      await axios.delete(`${API_URL}/api/imports/${id}`, {
+        headers: getAuthHeaders(),
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['imports'] })
+    },
+  })
+}

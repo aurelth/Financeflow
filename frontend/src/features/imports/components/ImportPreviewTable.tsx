@@ -52,6 +52,7 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
 
     return (
       <div className="space-y-3">
+
         {/* Resumo */}
         <div className="flex items-center justify-between px-1">
           <p className="text-xs" style={{ color: 'var(--ff-text-muted)' }}>
@@ -76,6 +77,7 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
 
         {/* Tabela */}
         <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--ff-border)' }}>
+
           {/* Header */}
           <div
             className="grid gap-4 px-4 py-2.5 text-xs font-medium"
@@ -99,6 +101,11 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
                 day: '2-digit', month: '2-digit', year: 'numeric',
               })
 
+              // Filtra categorias do mesmo tipo da transação
+              const filteredCategories = categories.filter(
+                c => c.type === (t.type === 'Expense' ? 2 : 1)
+              )
+
               return (
                 <div
                   key={t.id}
@@ -113,6 +120,7 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
                     opacity: t.isDuplicate ? 0.6 : 1,
                   }}
                 >
+                  {/* Checkbox */}
                   <input
                     type="checkbox"
                     checked={t.isSelected}
@@ -122,6 +130,7 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
                     style={{ accentColor: 'var(--ff-emerald)' }}
                   />
 
+                  {/* Descrição */}
                   <div className="flex items-center gap-2 min-w-0">
                     {t.type === 'Expense'
                       ? <ArrowDownCircle size={15} style={{ color: '#f87171', flexShrink: 0 }} />
@@ -145,10 +154,12 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
                     )}
                   </div>
 
+                  {/* Data */}
                   <span className="text-sm" style={{ color: 'var(--ff-text-muted)' }}>
                     {date}
                   </span>
 
+                  {/* Categoria */}
                   <select
                     value={t.suggestedCategoryId ?? ''}
                     disabled={t.isDuplicate}
@@ -161,14 +172,20 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
                     }}
                   >
                     <option value="">Sem categoria</option>
-                    {categories
-                      .filter(c => c.type === (t.type === 'Expense' ? 2 : 1))
-                      .map(c => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))
-                    }
+                    {filteredCategories.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                    {/* Aviso quando não há categorias do tipo correto */}
+                    {filteredCategories.length === 0 && (
+                      <option value="" disabled>
+                        {t.type === 'Expense'
+                          ? 'Crie categorias de despesa'
+                          : 'Crie categorias de receita'}
+                      </option>
+                    )}
                   </select>
 
+                  {/* Valor */}
                   <span
                     className="text-sm font-medium text-right"
                     style={{ color: t.type === 'Expense' ? '#f87171' : '#34d399' }}

@@ -17,7 +17,10 @@ public class GetImportPreviewQueryHandler(
             request.ImportId, request.UserId, cancellationToken)
             ?? throw new NotFoundException("BankImport", request.ImportId);
 
-        var transactions = bankImport.Transactions.Select(t => new BankImportTransactionDto(
+        var transactions = bankImport.Transactions
+            .OrderBy(t => t.Date.Date)
+            .ThenBy(t => t.Date)
+            .Select(t => new BankImportTransactionDto(
             Id: t.Id,
             ExternalId: t.ExternalId,
             Date: t.Date,

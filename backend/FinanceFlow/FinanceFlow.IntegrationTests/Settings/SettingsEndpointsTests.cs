@@ -27,7 +27,7 @@ public class SettingsEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
     }
@@ -47,7 +47,7 @@ public class SettingsEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<NotificationPreferencesDto>();
+        var result = await response.Content.ReadAsJsonAsync<NotificationPreferencesDto>();
         result.Should().NotBeNull();
         result!.BudgetWarningEnabled.Should().BeTrue();
         result.BudgetCriticalEnabled.Should().BeTrue();
@@ -110,7 +110,7 @@ public class SettingsEndpointsTests(FinanceFlowWebApplicationFactory factory)
         var response = await client.GetAsync("/api/settings/notifications");
 
         // Assert
-        var result = await response.Content.ReadFromJsonAsync<NotificationPreferencesDto>();
+        var result = await response.Content.ReadAsJsonAsync<NotificationPreferencesDto>();
         result!.BudgetWarningEnabled.Should().BeFalse();
         result.BudgetCriticalEnabled.Should().BeFalse();
         result.TransactionDueTomorrowEnabled.Should().BeFalse();

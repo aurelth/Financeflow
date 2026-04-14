@@ -134,6 +134,7 @@ public class UploadOFXCommandHandlerTests
             Id = Guid.NewGuid(),
             Name = "Alimentação",
             IsDefault = true,
+            Type = TransactionType.Expense,
         };
 
         var transactions = new List<OFXTransaction>
@@ -210,6 +211,60 @@ public class UploadOFXCommandHandlerTests
         await CreateHandler().Handle(command, default);
 
         // Assert
+        _bankImportRepository.Verify(r =>
+            r.AddAsync(It.Is<BankImport>(b =>
+                b.Transactions.First().Type == TransactionType.Income),
+            default), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_DeveDefinirTipoExpense_QuandoTRNTYPEEhDEBIT()
+    {
+        // Arrange
+        var transactions = new List<OFXTransaction>
+    {
+        new("FIT001", DateTime.UtcNow, -100.00m, "COMPRA", "DEBIT"),
+    };
+
+        _ofxParserService
+            .Setup(s => s.Parse(It.IsAny<Stream>()))
+            .Returns(new OFXParseResult("123", "001", DateTime.UtcNow, DateTime.UtcNow, transactions));
+
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([]);
+
+        var command = new UploadOFXCommand(Guid.NewGuid(), new MemoryStream(), "extrato.ofx");
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert — TRNTYPE=DEBIT deve resultar em Expense independentemente do valor
+        _bankImportRepository.Verify(r =>
+            r.AddAsync(It.Is<BankImport>(b =>
+                b.Transactions.First().Type == TransactionType.Expense),
+            default), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_DeveDefinirTipoIncome_QuandoTRNTYPEEhCREDIT()
+    {
+        // Arrange
+        var transactions = new List<OFXTransaction>
+    {
+        new("FIT001", DateTime.UtcNow, 5000.00m, "SALARIO", "CREDIT"),
+    };
+
+        _ofxParserService
+            .Setup(s => s.Parse(It.IsAny<Stream>()))
+            .Returns(new OFXParseResult("123", "001", DateTime.UtcNow, DateTime.UtcNow, transactions));
+
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([]);
+
+        var command = new UploadOFXCommand(Guid.NewGuid(), new MemoryStream(), "extrato.ofx");
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert — TRNTYPE=CREDIT deve resultar em Income independentemente do valor
         _bankImportRepository.Verify(r =>
             r.AddAsync(It.Is<BankImport>(b =>
                 b.Transactions.First().Type == TransactionType.Income),

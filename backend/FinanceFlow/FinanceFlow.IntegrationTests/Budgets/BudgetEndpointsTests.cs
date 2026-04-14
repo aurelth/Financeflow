@@ -34,7 +34,7 @@ public class BudgetEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
 
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
@@ -42,7 +42,7 @@ public class BudgetEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
     private static async Task<CategoryDto?> CreateCategoryAsync(HttpClient client) =>
         await (await client.PostAsJsonAsync("/api/categories", ValidCategoryRequest))
-            .Content.ReadFromJsonAsync<CategoryDto>();
+            .Content.ReadAsJsonAsync<CategoryDto>();
 
     private static async Task<BudgetDto?> CreateBudgetAsync(
         HttpClient client,
@@ -54,7 +54,7 @@ public class BudgetEndpointsTests(FinanceFlowWebApplicationFactory factory)
             Month: month,
             Year: year,
             LimitAmount: 500.00m)))
-            .Content.ReadFromJsonAsync<BudgetDto>();
+            .Content.ReadAsJsonAsync<BudgetDto>();
 
     // GET /api/budgets
 
@@ -80,7 +80,7 @@ public class BudgetEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<BudgetDto>>();
+            .ReadAsJsonAsync<IEnumerable<BudgetDto>>();
         result.Should().NotBeNull();
     }
 
@@ -101,7 +101,7 @@ public class BudgetEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<BudgetDto>>();
+            .ReadAsJsonAsync<IEnumerable<BudgetDto>>();
         result.Should().HaveCount(1);
         result!.First().LimitAmount.Should().Be(500.00m);
     }
@@ -122,7 +122,7 @@ public class BudgetEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<BudgetSummaryDto>>();
+            .ReadAsJsonAsync<IEnumerable<BudgetSummaryDto>>();
         result.Should().NotBeNull();
     }
 
@@ -157,7 +157,7 @@ public class BudgetEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<BudgetSummaryDto>>();
+            .ReadAsJsonAsync<IEnumerable<BudgetSummaryDto>>();
 
         var summary = result!.First();
         summary.SpentAmount.Should().Be(250.00m);
@@ -188,7 +188,7 @@ public class BudgetEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await response.Content.ReadFromJsonAsync<BudgetDto>();
+        var result = await response.Content.ReadAsJsonAsync<BudgetDto>();
         result.Should().NotBeNull();
         result!.LimitAmount.Should().Be(1000.00m);
         result.CategoryId.Should().Be(category.Id);
@@ -260,7 +260,7 @@ public class BudgetEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<BudgetDto>();
+        var result = await response.Content.ReadAsJsonAsync<BudgetDto>();
         result.Should().NotBeNull();
         result!.LimitAmount.Should().Be(1500.00m);
     }
@@ -331,7 +331,7 @@ public class BudgetEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         var getResponse = await client.GetAsync("/api/budgets?month=3&year=2026");
         var result = await getResponse.Content
-            .ReadFromJsonAsync<IEnumerable<BudgetDto>>();
+            .ReadAsJsonAsync<IEnumerable<BudgetDto>>();
         result.Should().NotContain(b => b.Id == budget.Id);
     }
 }
