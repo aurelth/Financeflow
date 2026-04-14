@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/authStore'
+import { Upload } from 'lucide-react'
 
 const navItems = [
   { to: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard'   },
@@ -21,6 +22,7 @@ const navItems = [
   { to: '/comparison',   icon: GitCompare,      label: 'Comparativo' },
   { to: '/reports',      icon: BarChart3,       label: 'Relatórios'  },
   { to: '/exports',      icon: FileText,        label: 'Exportar'    },
+  { to: '/imports', icon: Upload, label: 'Importar OFX' },
 ]
 
 const navLinkStyle = ({ isActive }: { isActive: boolean }) =>

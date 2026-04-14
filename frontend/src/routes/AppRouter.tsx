@@ -19,6 +19,8 @@ import SettingsPage        from '@/features/settings/pages/SettingsPage'
 import AdminDashboardPage  from '@/features/admin/pages/AdminDashboardPage'
 import AdminUsersPage      from '@/features/admin/pages/AdminUsersPage'
 import AdminCategoriesPage from '@/features/admin/pages/AdminCategoriesPage'
+import ImportsPage from '@/features/imports/pages/ImportsPage'
+import ImportsPreviewPage from '@/features/imports/pages/ImportsPreviewPage'
 
 const Placeholder = ({ title }: { title: string }) => (
   <div className="flex items-center justify-center h-full">
@@ -47,15 +49,17 @@ export default function AppRouter() {
         {/* Rotas privadas */}
         <Route element={<PrivateRoute />}>
           <Route element={<AppLayout />}>
-            <Route path="/dashboard"    element={<DashboardPage />} />
-            <Route path="/transactions" element={<TransactionsPage />} />
-            <Route path="/categories"   element={<CategoriesPage />} />
-            <Route path="/budgets"      element={<BudgetsPage />} />
-            <Route path="/comparison"   element={<ComparisonPage />} />
-            <Route path="/reports"      element={<Placeholder title="Relatórios" />} />
-            <Route path="/exports"      element={<ExportsPage />} />
-            <Route path="/profile"      element={<ProfilePage />} />
-            <Route path="/settings"     element={<SettingsPage />} />
+            <Route path="/dashboard"            element={<DashboardPage />} />
+            <Route path="/transactions"         element={<TransactionsPage />} />
+            <Route path="/categories"           element={<CategoriesPage />} />
+            <Route path="/budgets"              element={<BudgetsPage />} />
+            <Route path="/comparison"           element={<ComparisonPage />} />
+            <Route path="/reports"              element={<Placeholder title="Relatórios" />} />
+            <Route path="/exports"              element={<ExportsPage />} />
+            <Route path="/imports"              element={<ImportsPage />} />
+            <Route path="/imports/:id/preview"  element={<ImportsPreviewPage key={window.location.pathname} />} />
+            <Route path="/profile"              element={<ProfilePage />} />
+            <Route path="/settings"             element={<SettingsPage />} />
 
             {/* Rotas Admin dentro do AppLayout */}
             <Route element={<AdminRoute />}>

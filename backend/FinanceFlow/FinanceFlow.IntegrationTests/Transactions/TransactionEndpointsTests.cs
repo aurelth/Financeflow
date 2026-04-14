@@ -42,7 +42,7 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
 
         _client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
@@ -104,7 +104,7 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
+            .ReadAsJsonAsync<PagedResultDto<TransactionDto>>();
         result.Should().NotBeNull();
         result!.Items.Should().NotBeNull();
     }
@@ -126,7 +126,7 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
+            .ReadAsJsonAsync<PagedResultDto<TransactionDto>>();
         result!.Items.Should().OnlyContain(t => t.Amount >= 100);
     }
 
@@ -147,7 +147,7 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<TransactionDto>();
+        var result = await response.Content.ReadAsJsonAsync<TransactionDto>();
         result.Should().NotBeNull();
         result!.Id.Should().Be(transaction.Id);
         result.Amount.Should().Be(99.90m);
@@ -194,7 +194,7 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await response.Content.ReadFromJsonAsync<TransactionDto>();
+        var result = await response.Content.ReadAsJsonAsync<TransactionDto>();
         result.Should().NotBeNull();
         result!.Amount.Should().Be(75.00m);
         result.CategoryId.Should().Be(category.Id);
@@ -283,7 +283,7 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<TransactionDto>();
+        var result = await response.Content.ReadAsJsonAsync<TransactionDto>();
         result.Should().NotBeNull();
         result!.Amount.Should().Be(200.00m);
         result.Description.Should().Be("Atualizado");
@@ -396,7 +396,7 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         // Verifica que o anexo foi guardado
         var updated = await _client.GetAsync($"/api/transactions/{transaction.Id}");
-        var updatedTx = await updated.Content.ReadFromJsonAsync<TransactionDto>();
+        var updatedTx = await updated.Content.ReadAsJsonAsync<TransactionDto>();
         updatedTx!.AttachmentPath.Should().NotBeNullOrEmpty();
 
         // Act
@@ -469,7 +469,7 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Verifica que o anexo foi removido
         var getResponse = await _client.GetAsync(
             $"/api/transactions/{transaction.Id}");
-        var result = await getResponse.Content.ReadFromJsonAsync<TransactionDto>();
+        var result = await getResponse.Content.ReadAsJsonAsync<TransactionDto>();
         result!.AttachmentPath.Should().BeNull();
     }
 
@@ -517,7 +517,7 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         // Verifica que o nome original foi preservado na transação
         var getResponse = await _client.GetAsync($"/api/transactions/{transaction.Id}");
-        var updated = await getResponse.Content.ReadFromJsonAsync<TransactionDto>();
+        var updated = await getResponse.Content.ReadAsJsonAsync<TransactionDto>();
         updated!.AttachmentName.Should().Be("meu_comprovante.jpg");
     }
 
@@ -525,7 +525,7 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
     private async Task<CategoryDto?> CreateCategoryAsync() =>
         await (await _client.PostAsJsonAsync("/api/categories", ValidCategoryRequest))
-            .Content.ReadFromJsonAsync<CategoryDto>();
+            .Content.ReadAsJsonAsync<CategoryDto>();
 
     private async Task<TransactionDto?> CreateTransactionAsync(
         Guid categoryId,
@@ -544,6 +544,6 @@ public class TransactionEndpointsTests(FinanceFlowWebApplicationFactory factory)
             tags: []);
 
         var response = await _client.PostAsync("/api/transactions", form);
-        return await response.Content.ReadFromJsonAsync<TransactionDto>();
+        return await response.Content.ReadAsJsonAsync<TransactionDto>();
     }
 }

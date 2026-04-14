@@ -27,7 +27,7 @@ public class DashboardEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
 
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
@@ -53,7 +53,7 @@ public class DashboardEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<DashboardSummaryDto>();
+        var result = await response.Content.ReadAsJsonAsync<DashboardSummaryDto>();
         result.Should().NotBeNull();
         result!.Month.Should().Be(3);
         result.Year.Should().Be(2026);
@@ -66,7 +66,7 @@ public class DashboardEndpointsTests(FinanceFlowWebApplicationFactory factory)
         await AuthenticateAsync(client, "summary.zero.dashboard@teste.com");
 
         var response = await client.GetAsync("/api/dashboard/summary?month=3&year=2026");
-        var result = await response.Content.ReadFromJsonAsync<DashboardSummaryDto>();
+        var result = await response.Content.ReadAsJsonAsync<DashboardSummaryDto>();
 
         result!.TotalIncome.Should().Be(0);
         result.TotalExpenses.Should().Be(0);
@@ -95,7 +95,7 @@ public class DashboardEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<BalanceEvolutionDto>>();
+            .ReadAsJsonAsync<IEnumerable<BalanceEvolutionDto>>();
         result.Should().NotBeNull();
     }
 
@@ -120,7 +120,7 @@ public class DashboardEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<ExpensesByCategoryDto>>();
+            .ReadAsJsonAsync<IEnumerable<ExpensesByCategoryDto>>();
         result.Should().NotBeNull();
     }
 
@@ -132,7 +132,7 @@ public class DashboardEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         var response = await client.GetAsync("/api/dashboard/expenses-by-category?month=3&year=2026");
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<ExpensesByCategoryDto>>();
+            .ReadAsJsonAsync<IEnumerable<ExpensesByCategoryDto>>();
 
         result.Should().BeEmpty();
     }
@@ -158,7 +158,7 @@ public class DashboardEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<WeeklyComparisonDto>>();
+            .ReadAsJsonAsync<IEnumerable<WeeklyComparisonDto>>();
 
         result.Should().NotBeNull();
         result.Should().HaveCount(4);

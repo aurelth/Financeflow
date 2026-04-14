@@ -43,7 +43,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
 
         _client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
@@ -74,7 +74,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<CategoryDto>>();
+            .ReadAsJsonAsync<IEnumerable<CategoryDto>>();
         result.Should().NotBeNull();
         // Deve conter ao menos as categorias padrão do sistema
         result.Should().NotBeEmpty();
@@ -96,7 +96,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<CategoryDto>();
+        var result = await response.Content.ReadAsJsonAsync<CategoryDto>();
         result.Should().NotBeNull();
         result!.Id.Should().Be(created.Id);
         result.Name.Should().Be(ValidCategoryRequest.Name);
@@ -131,7 +131,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await response.Content.ReadFromJsonAsync<CategoryDto>();
+        var result = await response.Content.ReadAsJsonAsync<CategoryDto>();
         result.Should().NotBeNull();
         result!.Name.Should().Be(ValidCategoryRequest.Name);
         result.Icon.Should().Be(ValidCategoryRequest.Icon);
@@ -199,7 +199,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<CategoryDto>();
+        var result = await response.Content.ReadAsJsonAsync<CategoryDto>();
         result.Should().NotBeNull();
         result!.Name.Should().Be("Lazer Atualizado");
         result.Icon.Should().Be("🎯");
@@ -235,7 +235,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Busca uma categoria padrão do sistema
         var categoriesResponse = await _client.GetAsync("/api/categories");
         var categories = await categoriesResponse.Content
-            .ReadFromJsonAsync<IEnumerable<CategoryDto>>();
+            .ReadAsJsonAsync<IEnumerable<CategoryDto>>();
 
         var defaultCategory = categories!.First(c => c.IsDefault);
 
@@ -293,7 +293,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         var categoriesResponse = await _client.GetAsync("/api/categories");
         var categories = await categoriesResponse.Content
-            .ReadFromJsonAsync<IEnumerable<CategoryDto>>();
+            .ReadAsJsonAsync<IEnumerable<CategoryDto>>();
 
         var defaultCategory = categories!.First(c => c.IsDefault);
 
@@ -323,7 +323,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<SubcategoryDto>>();
+            .ReadAsJsonAsync<IEnumerable<SubcategoryDto>>();
         result.Should().NotBeNull();
     }
 
@@ -360,7 +360,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await response.Content.ReadFromJsonAsync<SubcategoryDto>();
+        var result = await response.Content.ReadAsJsonAsync<SubcategoryDto>();
         result.Should().NotBeNull();
         result!.Name.Should().Be("Restaurante");
         result.IsActive.Should().BeTrue();
@@ -394,7 +394,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         var categoriesResponse = await _client.GetAsync("/api/categories");
         var categories = await categoriesResponse.Content
-            .ReadFromJsonAsync<IEnumerable<CategoryDto>>();
+            .ReadAsJsonAsync<IEnumerable<CategoryDto>>();
 
         var defaultCategory = categories!.First(c => c.IsDefault);
         var request = new CreateSubcategoryRequestDto(Name: "Qualquer");
@@ -427,7 +427,7 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<SubcategoryDto>();
+        var result = await response.Content.ReadAsJsonAsync<SubcategoryDto>();
         result.Should().NotBeNull();
         result!.Name.Should().Be("Mercado");
     }
@@ -488,12 +488,12 @@ public class CategoryEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
     private async Task<CategoryDto?> CreateCategoryAsync() =>
         await (await _client.PostAsJsonAsync("/api/categories", ValidCategoryRequest))
-            .Content.ReadFromJsonAsync<CategoryDto>();
+            .Content.ReadAsJsonAsync<CategoryDto>();
 
     private async Task<SubcategoryDto?> CreateSubcategoryAsync(
         Guid categoryId, string name) =>
         await (await _client.PostAsJsonAsync(
             $"/api/categories/{categoryId}/subcategories",
             new CreateSubcategoryRequestDto(Name: name)))
-            .Content.ReadFromJsonAsync<SubcategoryDto>();
+            .Content.ReadAsJsonAsync<SubcategoryDto>();
 }

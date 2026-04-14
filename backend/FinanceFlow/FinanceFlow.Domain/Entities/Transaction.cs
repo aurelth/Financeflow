@@ -13,6 +13,7 @@ public class Transaction : BaseEntity
     public string? AttachmentPath { get; set; }
     public string? AttachmentName { get; set; }
     public string Tags { get; set; } = string.Empty; // JSON serializado
+    public string? ImportHash { get; set; }
 
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;

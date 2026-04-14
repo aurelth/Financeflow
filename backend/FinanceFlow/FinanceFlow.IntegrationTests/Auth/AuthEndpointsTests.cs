@@ -28,7 +28,7 @@ public class AuthEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await response.Content.ReadFromJsonAsync<UserProfileDto>();
+        var result = await response.Content.ReadAsJsonAsync<UserProfileDto>();
         result.Should().NotBeNull();
         result!.Email.Should().Be("integration@teste.com");
     }
@@ -61,7 +61,7 @@ public class AuthEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var result = await response.Content.ReadAsJsonAsync<AuthResponseDto>();
         result.Should().NotBeNull();
         result!.AccessToken.Should().NotBeNullOrEmpty();
         result.TokenType.Should().Be("Bearer");
@@ -92,7 +92,7 @@ public class AuthEndpointsTests(FinanceFlowWebApplicationFactory factory)
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login",
             new LoginRequestDto("profile@teste.com", "Teste@123"));
 
-        var authResult = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var authResult = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
 
         _client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue(
@@ -102,7 +102,7 @@ public class AuthEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var profile = await response.Content.ReadFromJsonAsync<UserProfileDto>();
+        var profile = await response.Content.ReadAsJsonAsync<UserProfileDto>();
         profile.Should().NotBeNull();
         profile!.Email.Should().Be("profile@teste.com");
     }

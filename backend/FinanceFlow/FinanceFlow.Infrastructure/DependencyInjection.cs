@@ -4,6 +4,7 @@ using FinanceFlow.Infrastructure.Auth;
 using FinanceFlow.Infrastructure.Caching;
 using FinanceFlow.Infrastructure.Email;
 using FinanceFlow.Infrastructure.Messaging;
+using FinanceFlow.Infrastructure.Parsing;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using FinanceFlow.Infrastructure.Persistence.Repositories;
 using FinanceFlow.Infrastructure.Storage;
@@ -42,7 +43,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<INotificationPreferencesRepository, NotificationPreferencesRepository>();
-
+        services.AddScoped<IBankImportRepository, BankImportRepository>();
 
         // Caching
         services.AddScoped<ICacheService, RedisCacheService>();
@@ -60,6 +61,9 @@ public static class DependencyInjection
 
         // Messaging
         services.AddSingleton<IEventPublisher, KafkaEventPublisher>();
+
+        // Adicionado: Parser OFX
+        services.AddScoped<IOFXParserService, OFXParserService>();
 
         return services;
     }

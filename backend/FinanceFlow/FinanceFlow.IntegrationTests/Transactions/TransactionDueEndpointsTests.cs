@@ -28,7 +28,7 @@ public class TransactionDueEndpointsTests(FinanceFlowWebApplicationFactory facto
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
 
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
@@ -40,7 +40,7 @@ public class TransactionDueEndpointsTests(FinanceFlowWebApplicationFactory facto
             Icon: "💰",
             Color: "#f59e0b",
             Type: TransactionType.Expense)))
-            .Content.ReadFromJsonAsync<CategoryDto>();
+            .Content.ReadAsJsonAsync<CategoryDto>();
 
     private static async Task CreateScheduledTransactionAsync(
         HttpClient client,
@@ -88,7 +88,7 @@ public class TransactionDueEndpointsTests(FinanceFlowWebApplicationFactory facto
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<DueTransactionDto>>();
+            .ReadAsJsonAsync<IEnumerable<DueTransactionDto>>();
         result.Should().NotBeNull();
     }
 
@@ -112,7 +112,7 @@ public class TransactionDueEndpointsTests(FinanceFlowWebApplicationFactory facto
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<DueTransactionDto>>();
+            .ReadAsJsonAsync<IEnumerable<DueTransactionDto>>();
         result.Should().HaveCount(c => c >= 1);
     }
 
@@ -131,7 +131,7 @@ public class TransactionDueEndpointsTests(FinanceFlowWebApplicationFactory facto
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadFromJsonAsync<IEnumerable<DueTransactionDto>>();
+            .ReadAsJsonAsync<IEnumerable<DueTransactionDto>>();
         result.Should().BeEmpty();
     }
 }

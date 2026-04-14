@@ -22,6 +22,125 @@ namespace FinanceFlow.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.BankImport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Duplicates")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("Errors")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("Imported")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("TotalRecords")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("BankImports", (string)null);
+                });
+
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.BankImportTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("BankImportId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Hash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsDuplicate")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSelected")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("SuggestedCategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("TransactionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SuggestedCategoryId");
+
+                    b.HasIndex("TransactionId");
+
+                    b.HasIndex("BankImportId", "Hash");
+
+                    b.ToTable("BankImportTransactions", (string)null);
+                });
+
             modelBuilder.Entity("FinanceFlow.Domain.Entities.Budget", b =>
                 {
                     b.Property<Guid>("Id")
@@ -308,6 +427,9 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("ImportHash")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsRecurring")
                         .HasColumnType("bit");
 
@@ -469,6 +591,42 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.ToTable("UserNotificationPreferences", (string)null);
                 });
 
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.BankImport", b =>
+                {
+                    b.HasOne("FinanceFlow.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.BankImportTransaction", b =>
+                {
+                    b.HasOne("FinanceFlow.Domain.Entities.BankImport", "BankImport")
+                        .WithMany("Transactions")
+                        .HasForeignKey("BankImportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FinanceFlow.Domain.Entities.Category", "SuggestedCategory")
+                        .WithMany()
+                        .HasForeignKey("SuggestedCategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("FinanceFlow.Domain.Entities.Transaction", "Transaction")
+                        .WithMany()
+                        .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("BankImport");
+
+                    b.Navigation("SuggestedCategory");
+
+                    b.Navigation("Transaction");
+                });
+
             modelBuilder.Entity("FinanceFlow.Domain.Entities.Budget", b =>
                 {
                     b.HasOne("FinanceFlow.Domain.Entities.Category", "Category")
@@ -577,6 +735,11 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.BankImport", b =>
+                {
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("FinanceFlow.Domain.Entities.Category", b =>

@@ -30,7 +30,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
 
         loginResponse.EnsureSuccessStatusCode();
 
-        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var auth = await loginResponse.Content.ReadAsJsonAsync<AuthResponseDto>();
 
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
@@ -44,7 +44,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
             Icon: "🔁",
             Color: "#6366f1",
             Type: TransactionType.Expense)))
-            .Content.ReadFromJsonAsync<CategoryDto>();
+            .Content.ReadAsJsonAsync<CategoryDto>();
 
     // Cria segunda categoria para testar propagação de categoria
     private static async Task<CategoryDto?> CreateSecondCategoryAsync(HttpClient client) =>
@@ -53,7 +53,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
             Icon: "💡",
             Color: "#f59e0b",
             Type: TransactionType.Expense)))
-            .Content.ReadFromJsonAsync<CategoryDto>();
+            .Content.ReadAsJsonAsync<CategoryDto>();
 
     private static MultipartFormDataContent BuildRecurringTransactionForm(
         Guid categoryId,
@@ -92,7 +92,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var listResponse = await client.GetAsync("/api/transactions?PageSize=50");
-        var list = await listResponse.Content.ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
+        var list = await listResponse.Content.ReadAsJsonAsync<PagedResultDto<TransactionDto>>();
 
         list!.Items.Should().HaveCount(3);
         list.Items.Should().ContainSingle(t => t.Status == TransactionStatus.Paid);
@@ -118,7 +118,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var listResponse = await client.GetAsync("/api/transactions?PageSize=50");
-        var list = await listResponse.Content.ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
+        var list = await listResponse.Content.ReadAsJsonAsync<PagedResultDto<TransactionDto>>();
 
         list!.Items.Should().HaveCount(1);
         list.Items.First().RecurrenceGroupId.Should().BeNull();
@@ -138,7 +138,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         var createResponse = await client.PostAsync("/api/transactions",
             BuildRecurringTransactionForm(category!.Id, date));
 
-        var created = await createResponse.Content.ReadFromJsonAsync<TransactionDto>();
+        var created = await createResponse.Content.ReadAsJsonAsync<TransactionDto>();
 
         var updateRequest = new UpdateTransactionRequestDto(
             Amount: 999.00m,
@@ -161,7 +161,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var listResponse = await client.GetAsync("/api/transactions?PageSize=50");
-        var list = await listResponse.Content.ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
+        var list = await listResponse.Content.ReadAsJsonAsync<PagedResultDto<TransactionDto>>();
 
         // Valida Amount, Description e CategoryId na propagação
         list!.Items.Should().OnlyContain(t =>
@@ -181,7 +181,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         var createResponse = await client.PostAsync("/api/transactions",
             BuildRecurringTransactionForm(category!.Id, date));
 
-        var created = await createResponse.Content.ReadFromJsonAsync<TransactionDto>();
+        var created = await createResponse.Content.ReadAsJsonAsync<TransactionDto>();
 
         var updateRequest = new UpdateTransactionRequestDto(
             Amount: 777.00m,
@@ -201,7 +201,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
 
         // Assert — apenas a transação editada deve ter o novo valor
         var listResponse = await client.GetAsync("/api/transactions?PageSize=50");
-        var list = await listResponse.Content.ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
+        var list = await listResponse.Content.ReadAsJsonAsync<PagedResultDto<TransactionDto>>();
 
         list!.Items.Count(t => t.Amount == 777.00m).Should().Be(1);
         list.Items.Count(t => t.Amount == 100.00m).Should().Be(2);
@@ -218,7 +218,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         var createResponse = await client.PostAsync("/api/transactions",
             BuildRecurringTransactionForm(category!.Id, date));
 
-        var created = await createResponse.Content.ReadFromJsonAsync<TransactionDto>();
+        var created = await createResponse.Content.ReadAsJsonAsync<TransactionDto>();
 
         var updateRequest = new UpdateTransactionRequestDto(
             Amount: 100.00m,
@@ -238,7 +238,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
 
         // Assert — apenas a atual deve ter status Pending, futuras continuam Scheduled
         var listResponse = await client.GetAsync("/api/transactions?PageSize=50");
-        var list = await listResponse.Content.ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
+        var list = await listResponse.Content.ReadAsJsonAsync<PagedResultDto<TransactionDto>>();
 
         list!.Items.Count(t => t.Status == TransactionStatus.Pending).Should().Be(1);
         list.Items.Count(t => t.Status == TransactionStatus.Scheduled).Should().Be(2);
@@ -257,7 +257,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         var createResponse = await client.PostAsync("/api/transactions",
             BuildRecurringTransactionForm(category!.Id, date));
 
-        var created = await createResponse.Content.ReadFromJsonAsync<TransactionDto>();
+        var created = await createResponse.Content.ReadAsJsonAsync<TransactionDto>();
 
         // Act
         var deleteResponse = await client.DeleteAsync(
@@ -267,7 +267,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var listResponse = await client.GetAsync("/api/transactions?PageSize=50");
-        var list = await listResponse.Content.ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
+        var list = await listResponse.Content.ReadAsJsonAsync<PagedResultDto<TransactionDto>>();
 
         list!.Items.Should().HaveCount(2);
     }
@@ -283,7 +283,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         var createResponse = await client.PostAsync("/api/transactions",
             BuildRecurringTransactionForm(category!.Id, date));
 
-        var created = await createResponse.Content.ReadFromJsonAsync<TransactionDto>();
+        var created = await createResponse.Content.ReadAsJsonAsync<TransactionDto>();
 
         // Act
         var deleteResponse = await client.DeleteAsync(
@@ -293,7 +293,7 @@ public class RecurringTransactionEndpointsTests(FinanceFlowWebApplicationFactory
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var listResponse = await client.GetAsync("/api/transactions?PageSize=50");
-        var list = await listResponse.Content.ReadFromJsonAsync<PagedResultDto<TransactionDto>>();
+        var list = await listResponse.Content.ReadAsJsonAsync<PagedResultDto<TransactionDto>>();
 
         list!.Items.Should().BeEmpty();
     }
