@@ -21,15 +21,7 @@ import AdminUsersPage      from '@/features/admin/pages/AdminUsersPage'
 import AdminCategoriesPage from '@/features/admin/pages/AdminCategoriesPage'
 import ImportsPage from '@/features/imports/pages/ImportsPage'
 import ImportsPreviewPage from '@/features/imports/pages/ImportsPreviewPage'
-
-const Placeholder = ({ title }: { title: string }) => (
-  <div className="flex items-center justify-center h-full">
-    <div className="text-center">
-      <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
-      <p className="text-slate-400">Em desenvolvimento... ♻️</p>
-    </div>
-  </div>
-)
+import ReportsPage from '@/features/reports/pages/ReportsPage'
 
 export default function AppRouter() {
   return (
@@ -54,7 +46,7 @@ export default function AppRouter() {
             <Route path="/categories"           element={<CategoriesPage />} />
             <Route path="/budgets"              element={<BudgetsPage />} />
             <Route path="/comparison"           element={<ComparisonPage />} />
-            <Route path="/reports"              element={<Placeholder title="Relatórios" />} />
+            <Route path="/reports"              element={<ReportsPage />} />
             <Route path="/exports"              element={<ExportsPage />} />
             <Route path="/imports"              element={<ImportsPage />} />
             <Route path="/imports/:id/preview"  element={<ImportsPreviewPage key={window.location.pathname} />} />
