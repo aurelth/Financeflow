@@ -8,6 +8,7 @@ public record UserProfileDto(
     string Gender,
     string Currency,
     string Timezone,
+    string Language,
     DateTime CreatedAt,
      string Role
 );

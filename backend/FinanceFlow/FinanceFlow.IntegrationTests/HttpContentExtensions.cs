@@ -5,7 +5,7 @@ namespace FinanceFlow.IntegrationTests;
 
 public static class HttpContentExtensions
 {
-    // Adicionado: opções de JSON com suporte a enums como string (igual à API)
+    // Opções de JSON com suporte a enums como string (igual à API)
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         Converters = { new JsonStringEnumConverter() },

@@ -14,5 +14,10 @@ public class UpdateUserProfileCommandValidator
         RuleFor(x => x.Timezone)
             .NotEmpty().WithMessage("O fuso horário é obrigatório.")
             .MaximumLength(50).WithMessage("O fuso horário deve ter no máximo 50 caracteres.");
+
+        RuleFor(x => x.Language)
+            .NotEmpty().WithMessage("O idioma é obrigatório.")
+            .Must(lang => new[] { "pt-BR", "en-US", "es-ES", "fr-FR" }.Contains(lang?.Trim()))
+            .WithMessage("Idioma não suportado. Use: pt-BR, en-US, es-ES ou fr-FR.");
     }
 }

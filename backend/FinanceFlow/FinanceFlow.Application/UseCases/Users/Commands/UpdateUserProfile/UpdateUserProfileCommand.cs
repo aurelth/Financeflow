@@ -6,5 +6,6 @@ namespace FinanceFlow.Application.UseCases.Users.Commands.UpdateUserProfile;
 public record UpdateUserProfileCommand(
     Guid UserId,    
     string Currency,
-    string Timezone
+    string Timezone,
+    string Language
 ) : IRequest<UserProfileDto>;

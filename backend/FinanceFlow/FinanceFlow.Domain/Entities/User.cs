@@ -11,6 +11,7 @@ public class User : BaseEntity
     public Gender Gender { get; set; }
     public string Currency { get; set; } = "BRL";
     public string Timezone { get; set; } = "America/Sao_Paulo";
+    public string Language { get; set; } = "pt-BR";
     public UserRole Role { get; set; } = UserRole.User;
 
     // Navegação

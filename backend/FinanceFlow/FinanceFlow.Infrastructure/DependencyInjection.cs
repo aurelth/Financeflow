@@ -3,6 +3,7 @@ using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.Infrastructure.Auth;
 using FinanceFlow.Infrastructure.Caching;
 using FinanceFlow.Infrastructure.Email;
+using FinanceFlow.Infrastructure.Localization;
 using FinanceFlow.Infrastructure.Messaging;
 using FinanceFlow.Infrastructure.Parsing;
 using FinanceFlow.Infrastructure.Persistence.Context;
@@ -62,8 +63,11 @@ public static class DependencyInjection
         // Messaging
         services.AddSingleton<IEventPublisher, KafkaEventPublisher>();
 
-        // Adicionado: Parser OFX
+        // Parser OFX
         services.AddScoped<IOFXParserService, OFXParserService>();
+
+        // Language
+        services.AddScoped<ILanguageService, LanguageService>();
 
         return services;
     }
