@@ -26,24 +26,24 @@
     --radius: 0.75rem;
 
     /* Tokens semânticos FinanceFlow */
-    --ff-bg-base:     #0a0a0a;
-    --ff-bg-card:     #111111;
-    --ff-bg-elevated: #1a1a1a;
-    --ff-border:      #222222;
+    --ff-bg-base:       #0a0a0a;
+    --ff-bg-card:       #111111;
+    --ff-bg-elevated:   #1a1a1a;
+    --ff-border:        #222222;
     --ff-border-subtle: #1a1a1a;
 
-    --ff-emerald:         #10b981;
-    --ff-emerald-hover:   #059669;
-    --ff-emerald-subtle:  #064e3b;
-    --ff-emerald-text:    #d1fae5;
+    --ff-emerald:        #10b981;
+    --ff-emerald-hover:  #059669;
+    --ff-emerald-subtle: #064e3b;
+    --ff-emerald-text:   #d1fae5;
 
     --ff-text-primary:   #ffffff;
     --ff-text-secondary: #a1a1aa;
     --ff-text-muted:     #52525b;
 
-    --ff-income:   #10b981;
-    --ff-expense:  #f43f5e;
-    --ff-pending:  #f59e0b;
+    --ff-income:    #10b981;
+    --ff-expense:   #f43f5e;
+    --ff-pending:   #f59e0b;
     --ff-scheduled: #6366f1;
   }
 
@@ -79,4 +79,84 @@
     background-color: var(--ff-bg-base);
     color: var(--ff-text-primary);
   }
+}
+
+/* ── driver.js — tema FinanceFlow ─────────────────────────────────────────── */
+.ff-driver-popover {
+  background:    var(--ff-bg-card) !important;
+  border:        1px solid var(--ff-border) !important;
+  border-radius: 16px !important;
+  padding:       20px !important;
+  box-shadow:    0 25px 50px rgba(0, 0, 0, 0.5) !important;
+  min-width:     280px !important;
+  max-width:     340px !important;
+}
+
+.ff-driver-popover .driver-popover-title {
+  color:         var(--ff-text-primary) !important;
+  font-size:     15px !important;
+  font-weight:   600 !important;
+  margin-bottom: 6px !important;
+}
+
+.ff-driver-popover .driver-popover-description {
+  color:       var(--ff-text-muted) !important;
+  font-size:   13px !important;
+  line-height: 1.5 !important;
+}
+
+.ff-driver-popover .driver-popover-footer {
+  margin-top:      16px !important;
+  display:         flex !important;
+  align-items:     center !important;
+  justify-content: space-between !important;
+  gap:             8px !important;
+}
+
+.ff-driver-popover .driver-popover-progress-text {
+  color:     var(--ff-text-muted) !important;
+  font-size: 11px !important;
+}
+
+.ff-driver-popover .driver-popover-prev-btn,
+.ff-driver-popover .driver-popover-next-btn,
+.ff-driver-popover .driver-popover-done-btn {
+  background:    var(--ff-emerald) !important;
+  color:         var(--ff-emerald-subtle) !important;
+  border:        none !important;
+  border-radius: 8px !important;
+  padding:       6px 14px !important;
+  font-size:     13px !important;
+  font-weight:   500 !important;
+  cursor:        pointer !important;
+  transition:    background 0.15s !important;
+}
+
+.ff-driver-popover .driver-popover-prev-btn {
+  background: var(--ff-bg-elevated) !important;
+  color:      var(--ff-text-secondary) !important;
+}
+
+.ff-driver-popover .driver-popover-prev-btn:hover {
+  background: var(--ff-border) !important;
+}
+
+.ff-driver-popover .driver-popover-next-btn:hover,
+.ff-driver-popover .driver-popover-done-btn:hover {
+  background: var(--ff-emerald-hover) !important;
+}
+
+.ff-driver-popover .driver-popover-close-btn {
+  color:     var(--ff-text-muted) !important;
+  font-size: 16px !important;
+  top:       12px !important;
+  right:     12px !important;
+}
+
+.ff-driver-popover .driver-popover-close-btn:hover {
+  color: var(--ff-text-primary) !important;
+}
+
+.driver-overlay {
+  background: rgba(0, 0, 0, 0.6) !important;
 }
