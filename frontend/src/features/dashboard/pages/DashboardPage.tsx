@@ -1,23 +1,27 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ChevronLeft, ChevronRight,
   TrendingUp, TrendingDown, Wallet, CalendarClock,
   Loader2,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   useDashboardSummary,
   useBalanceEvolution,
   useExpensesByCategory,
   useWeeklyComparison,
 } from '../api/useDashboard'
-import { useBudgetSummary } from '@/features/budgets/api/useBudgets'
-import { useTransactions } from '@/features/transactions/api/useTransactions'
-import LineChartCard from '../components/LineChartCard'
-import PieChartCard from '../components/PieChartCard'
-import BarChartCard from '../components/BarChartCard'
-import RecentTransactionsWidget from '../components/RecentTransactionsWidget'
-import TopBudgetsWidget from '../components/TopBudgetsWidget'
-import PdfExportButton from '@/features/reports/components/PdfExportButton'
+import { useBudgetSummary }             from '@/features/budgets/api/useBudgets'
+import { useTransactions }              from '@/features/transactions/api/useTransactions'
+import LineChartCard                    from '../components/LineChartCard'
+import PieChartCard                     from '../components/PieChartCard'
+import BarChartCard                     from '../components/BarChartCard'
+import RecentTransactionsWidget         from '../components/RecentTransactionsWidget'
+import TopBudgetsWidget                 from '../components/TopBudgetsWidget'
+import PdfExportButton                  from '@/features/reports/components/PdfExportButton'
+import { useOnboarding }                from '@/hooks/useOnboarding'
+import { createDriver }                 from '@/lib/driver'
+import { getTourSteps }                 from '@/features/onboarding/steps/tourSteps'
 
 function getCurrentPeriod() {
   const now = new Date()
@@ -32,7 +36,6 @@ interface SummaryCardProps {
   subtitle?: string
 }
 
-// Usa tokens CSS da nova paleta
 function SummaryCard({ title, value, icon, iconBg, subtitle }: SummaryCardProps) {
   return (
     <div
@@ -61,7 +64,9 @@ function SummaryCard({ title, value, icon, iconBg, subtitle }: SummaryCardProps)
 }
 
 export default function DashboardPage() {
+  const { t }             = useTranslation('onboarding')
   const [period, setPeriod] = useState(getCurrentPeriod)
+  const { startIfFirstVisit, markAsSeen } = useOnboarding()
 
   const monthLabel = new Date(period.year, period.month - 1).toLocaleString('pt-BR', {
     month: 'long',
@@ -71,8 +76,8 @@ export default function DashboardPage() {
   const dateFrom = new Date(period.year, period.month - 1, 1).toISOString().split('T')[0]
   const dateTo   = new Date(period.year, period.month, 0).toISOString().split('T')[0]
 
-  const { data: summary,               isLoading: l1 } = useDashboardSummary(period)
-  const { data: balanceEvolution = [], isLoading: l2 } = useBalanceEvolution(period)
+  const { data: summary,                 isLoading: l1 } = useDashboardSummary(period)
+  const { data: balanceEvolution = [],   isLoading: l2 } = useBalanceEvolution(period)
   const { data: expensesByCategory = [], isLoading: l3 } = useExpensesByCategory(period)
   const { data: weeklyComparison = [],   isLoading: l4 } = useWeeklyComparison(period)
   const { data: budgetSummaries = [],    isLoading: l5 } = useBudgetSummary(period)
@@ -81,7 +86,32 @@ export default function DashboardPage() {
   })
 
   const isLoading = l1 || l2 || l3 || l4 || l5 || l6
-  const recentTx  = transactionsData?.items ?? []
+
+  // Inicia o tour no primeiro acesso após o carregamento
+  useEffect(() => {
+    if (isLoading) return
+
+    const shouldStart = !localStorage.getItem('onboarding_seen')
+    if (!shouldStart) return
+
+    // Aguarda o DOM estar pronto antes de iniciar o tour
+    const timeout = setTimeout(() => {
+      const driverObj = createDriver()
+      driverObj.setSteps(getTourSteps(t))
+      driverObj.setConfig({
+        onDestroyStarted: () => {
+          markAsSeen()
+          driverObj.destroy()
+        },
+      })
+      driverObj.drive()
+      startIfFirstVisit()
+    }, 500)
+
+    return () => clearTimeout(timeout)
+  }, [isLoading])
+
+  const recentTx = transactionsData?.items ?? []
 
   function handlePrevMonth() {
     setPeriod(p => {
@@ -123,12 +153,12 @@ export default function DashboardPage() {
           className="p-1.5 rounded-lg transition-all"
           style={{ color: 'var(--ff-text-muted)' }}
           onMouseEnter={e => {
-            e.currentTarget.style.color = 'var(--ff-text-primary)'
-            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+            e.currentTarget.style.color       = 'var(--ff-text-primary)'
+            e.currentTarget.style.background  = 'var(--ff-bg-elevated)'
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.color = 'var(--ff-text-muted)'
-            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color       = 'var(--ff-text-muted)'
+            e.currentTarget.style.background  = 'transparent'
           }}
         >
           <ChevronLeft size={18} />
@@ -141,19 +171,19 @@ export default function DashboardPage() {
           className="p-1.5 rounded-lg transition-all"
           style={{ color: 'var(--ff-text-muted)' }}
           onMouseEnter={e => {
-            e.currentTarget.style.color = 'var(--ff-text-primary)'
-            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+            e.currentTarget.style.color       = 'var(--ff-text-primary)'
+            e.currentTarget.style.background  = 'var(--ff-bg-elevated)'
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.color = 'var(--ff-text-muted)'
-            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color       = 'var(--ff-text-muted)'
+            e.currentTarget.style.background  = 'transparent'
           }}
         >
           <ChevronRight size={18} />
         </button>
       </div>
 
-      {/* Loading — spinner verde */}
+      {/* Loading */}
       {isLoading && (
         <div className="flex items-center justify-center py-20">
           <Loader2 size={24} className="animate-spin" style={{ color: 'var(--ff-emerald)' }} />
