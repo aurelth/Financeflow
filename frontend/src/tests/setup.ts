@@ -85,3 +85,25 @@ vi.mock('react-i18next', () => ({
   Trans: ({ children }: { children: React.ReactNode }) => children,
   initReactI18next: { type: '3rdParty', init: vi.fn() },
 }))
+
+// Mock do driver.js
+vi.mock('driver.js', () => ({
+  driver: vi.fn(() => ({
+    setSteps:    vi.fn(),
+    setConfig:   vi.fn(),
+    drive:       vi.fn(),
+    destroy:     vi.fn(),
+    moveNext:    vi.fn(),
+    movePrevious: vi.fn(),
+  })),
+}))
+
+// Mock do lib/driver
+vi.mock('@/lib/driver', () => ({
+  createDriver: vi.fn(() => ({
+    setSteps:    vi.fn(),
+    setConfig:   vi.fn(),
+    drive:       vi.fn(),
+    destroy:     vi.fn(),
+  })),
+}))
