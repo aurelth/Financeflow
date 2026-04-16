@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { Link } from 'react-router-dom'
 import { Eye, EyeOff, Loader2, Sparkles } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useRegister } from '../api/useAuth'
 
 const isValidCpf = (cpf: string): boolean => {
@@ -51,6 +52,7 @@ const inputStyle: React.CSSProperties = {
 const selectStyle: React.CSSProperties = { ...inputStyle, cursor: 'pointer' }
 
 export default function RegisterPage() {
+  const { t }                            = useTranslation('auth')
   const [showPassword, setShowPassword]  = useState(false)
   const [showConfirm,  setShowConfirm]   = useState(false)
   const { mutate: register_, isPending } = useRegister()
@@ -75,19 +77,18 @@ export default function RegisterPage() {
           <Sparkles style={{ color: 'var(--ff-emerald)' }} size={26} />
         </div>
         <h1 className="text-2xl font-bold" style={{ color: 'var(--ff-text-primary)' }}>
-          Criar sua conta
+          {t('register.title')}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--ff-text-muted)' }}>
-          Comece a controlar suas finanças hoje
+          {t('register.subtitle')}
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-        {/* Nome: htmlFor + id */}
         <div className="space-y-1.5">
           <label htmlFor="name" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
-            Nome completo
+            {t('register.name')}
           </label>
           <input
             id="name"
@@ -101,10 +102,9 @@ export default function RegisterPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          {/* CPF: htmlFor + id */}
           <div className="space-y-1.5">
             <label htmlFor="cpf" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
-              CPF
+              {t('register.cpf')}
             </label>
             <input
               id="cpf"
@@ -118,10 +118,9 @@ export default function RegisterPage() {
             {errors.cpf && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.cpf.message}</p>}
           </div>
 
-          {/* Gênero: htmlFor + id */}
           <div className="space-y-1.5">
             <label htmlFor="gender" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
-              Gênero
+              {t('register.gender')}
             </label>
             <select
               id="gender"
@@ -131,17 +130,16 @@ export default function RegisterPage() {
               onBlur={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
             >
               <option value="" style={{ background: '#111' }}>Selecione</option>
-              <option value="Male" style={{ background: '#111' }}>Masculino</option>
-              <option value="Female" style={{ background: '#111' }}>Feminino</option>
+              <option value="Male"   style={{ background: '#111' }}>{t('register.genderMale')}</option>
+              <option value="Female" style={{ background: '#111' }}>{t('register.genderFemale')}</option>
             </select>
             {errors.gender && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.gender.message}</p>}
           </div>
         </div>
 
-        {/* Email: htmlFor + id */}
         <div className="space-y-1.5">
           <label htmlFor="email" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
-            Email
+            {t('register.email')}
           </label>
           <input
             id="email"
@@ -155,10 +153,9 @@ export default function RegisterPage() {
           {errors.email && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.email.message}</p>}
         </div>
 
-        {/* Senha: htmlFor + id */}
         <div className="space-y-1.5">
           <label htmlFor="password" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
-            Senha
+            {t('register.password')}
           </label>
           <div className="relative">
             <input
@@ -182,10 +179,9 @@ export default function RegisterPage() {
           {errors.password && <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>{errors.password.message}</p>}
         </div>
 
-        {/* Confirmar senha: htmlFor + id */}
         <div className="space-y-1.5">
           <label htmlFor="confirmPassword" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
-            Confirmar senha
+            {t('register.password')}
           </label>
           <div className="relative">
             <input
@@ -217,14 +213,17 @@ export default function RegisterPage() {
           onMouseEnter={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald-hover)' }}
           onMouseLeave={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald)' }}
         >
-          {isPending ? <><Loader2 size={16} className="animate-spin" />Criando conta...</> : 'Criar conta'}
+          {isPending
+            ? <><Loader2 size={16} className="animate-spin" />{t('common:actions.loading')}</>
+            : t('register.submit')
+          }
         </button>
       </form>
 
       <p className="text-center text-sm mt-6" style={{ color: 'var(--ff-text-muted)' }}>
-        Já tem uma conta?{' '}
+        {t('register.hasAccount')}{' '}
         <Link to="/login" className="font-medium transition-colors" style={{ color: 'var(--ff-emerald)' }}>
-          Entrar
+          {t('register.login')}
         </Link>
       </p>
     </div>

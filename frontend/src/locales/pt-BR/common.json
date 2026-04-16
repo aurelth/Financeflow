@@ -16,7 +16,8 @@
     "update": "Atualizar",
     "loading": "Carregando...",
     "yes": "Sim",
-    "no": "Não"
+    "no": "Não",
+    "logout": "Sair"
   },
   "messages": {
     "success": "Operação realizada com sucesso.",

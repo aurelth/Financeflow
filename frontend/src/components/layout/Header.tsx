@@ -10,9 +10,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import NotificationDropdown from '@/features/notifications/components/NotificationDropdown'
 
 export default function Header() {
+  const { t }              = useTranslation('common')
   const { user }           = useAuthStore()
   const { mutate: logout } = useLogout()
   const navigate           = useNavigate()
@@ -47,7 +49,7 @@ export default function Header() {
             >
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0"
-                style={{ // Avatar verde esmeralda
+                style={{
                   background: 'var(--ff-emerald-subtle)',
                   color:      'var(--ff-emerald)',
                 }}
@@ -70,12 +72,12 @@ export default function Header() {
             align="end"
             className="w-52"
             style={{
-              background:   'var(--ff-bg-card)',
-              border:       '1px solid var(--ff-border)',
+              background: 'var(--ff-bg-card)',
+              border:     '1px solid var(--ff-border)',
             }}
           >
             <DropdownMenuLabel style={{ color: 'var(--ff-text-muted)', fontSize: 11 }}>
-              Minha Conta
+              {t('nav.profile')}
             </DropdownMenuLabel>
             <DropdownMenuSeparator style={{ background: 'var(--ff-border)' }} />
             <DropdownMenuItem
@@ -84,7 +86,7 @@ export default function Header() {
               style={{ color: 'var(--ff-text-secondary)' }}
             >
               <User size={14} className="mr-2" />
-              Perfil
+              {t('nav.profile')}
             </DropdownMenuItem>
             <DropdownMenuSeparator style={{ background: 'var(--ff-border)' }} />
             <DropdownMenuItem
@@ -93,7 +95,7 @@ export default function Header() {
               style={{ color: 'var(--ff-expense)' }}
             >
               <LogOut size={14} className="mr-2" />
-              Sair
+              {t('actions.logout', 'Sair')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
