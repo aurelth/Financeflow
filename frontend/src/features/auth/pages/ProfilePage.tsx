@@ -8,6 +8,7 @@ import { useUserProfile, useUpdateProfile, useChangePassword } from '../api/useA
 const preferencesSchema = z.object({
   currency: z.string().min(1).max(10),
   timezone: z.string().min(1).max(50),
+  language: z.string().min(1), // Adicionado
 })
 
 const passwordSchema = z.object({
@@ -24,7 +25,7 @@ const passwordSchema = z.object({
 })
 
 type PreferencesForm = z.infer<typeof preferencesSchema>
-type PasswordForm = z.infer<typeof passwordSchema>
+type PasswordForm    = z.infer<typeof passwordSchema>
 
 const CURRENCIES = [
   { value: 'BRL', label: 'Real Brasileiro (BRL)' },
@@ -34,44 +35,52 @@ const CURRENCIES = [
 ]
 
 const TIMEZONES = [
-  { value: 'America/Sao_Paulo', label: 'Brasília (GMT-3)' },
-  { value: 'America/Manaus', label: 'Manaus (GMT-4)' },
-  { value: 'America/Belem', label: 'Belém (GMT-3)' },
-  { value: 'America/Fortaleza', label: 'Fortaleza (GMT-3)' },
-  { value: 'America/Recife', label: 'Recife (GMT-3)' },
-  { value: 'America/New_York', label: 'Nova York (GMT-5)' },
-  { value: 'America/Chicago', label: 'Chicago (GMT-6)' },
-  { value: 'America/Los_Angeles', label: 'Los Angeles (GMT-8)' },
-  { value: 'Europe/London', label: 'Londres (GMT+0)' },
-  { value: 'Europe/Paris', label: 'Paris (GMT+1)' },
+  { value: 'America/Sao_Paulo',  label: 'Brasília (GMT-3)'    },
+  { value: 'America/Manaus',     label: 'Manaus (GMT-4)'      },
+  { value: 'America/Belem',      label: 'Belém (GMT-3)'       },
+  { value: 'America/Fortaleza',  label: 'Fortaleza (GMT-3)'   },
+  { value: 'America/Recife',     label: 'Recife (GMT-3)'      },
+  { value: 'America/New_York',   label: 'Nova York (GMT-5)'   },
+  { value: 'America/Chicago',    label: 'Chicago (GMT-6)'     },
+  { value: 'America/Los_Angeles',label: 'Los Angeles (GMT-8)' },
+  { value: 'Europe/London',      label: 'Londres (GMT+0)'     },
+  { value: 'Europe/Paris',       label: 'Paris (GMT+1)'       },
+]
+
+// Idiomas suportados
+const LANGUAGES = [
+  { value: 'pt-BR', label: 'Português (Brasil)' },
+  { value: 'en-US', label: 'English (US)'        },
+  { value: 'es-ES', label: 'Español'             },
+  { value: 'fr-FR', label: 'Français'            },
 ]
 
 const inputStyle: React.CSSProperties = {
-  width: '100%',
-  background: 'var(--ff-bg-elevated)',
-  border: '1px solid var(--ff-border)',
+  width:        '100%',
+  background:   'var(--ff-bg-elevated)',
+  border:       '1px solid var(--ff-border)',
   borderRadius: '10px',
-  padding: '9px 14px',
-  color: 'var(--ff-text-primary)',
-  fontSize: '14px',
-  outline: 'none',
-  transition: 'border-color 0.15s',
+  padding:      '9px 14px',
+  color:        'var(--ff-text-primary)',
+  fontSize:     '14px',
+  outline:      'none',
+  transition:   'border-color 0.15s',
 }
 
 const readonlyStyle: React.CSSProperties = {
   ...inputStyle,
   cursor: 'default',
-  color: 'var(--ff-text-secondary)',
+  color:  'var(--ff-text-secondary)',
 }
 
 const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: '11px',
-  fontWeight: 500,
+  display:       'block',
+  fontSize:      '11px',
+  fontWeight:    500,
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
-  color: 'var(--ff-text-muted)',
-  marginBottom: '4px',
+  color:         'var(--ff-text-muted)',
+  marginBottom:  '4px',
 }
 
 function onHoverEnterBtnEmerald(e: React.MouseEvent<HTMLButtonElement>) {
@@ -99,14 +108,19 @@ export default function ProfilePage() {
   const { mutate: changePassword, isPending: isChanging } = useChangePassword()
 
   const [showCurrent, setShowCurrent] = useState(false)
-  const [showNew, setShowNew] = useState(false)
+  const [showNew,     setShowNew]     = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
   const prefForm = useForm<PreferencesForm>({ resolver: zodResolver(preferencesSchema) })
   const passForm = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) })
 
+  // Incluir language no reset
   useEffect(() => {
-    if (profile) prefForm.reset({ currency: profile.currency, timezone: profile.timezone })
+    if (profile) prefForm.reset({
+      currency: profile.currency,
+      timezone: profile.timezone,
+      language: profile.language ?? 'pt-BR', // Adicionado
+    })
   }, [profile])
 
   const genderLabel = (g: string) =>
@@ -170,8 +184,8 @@ export default function ProfilePage() {
 
         <p className="text-xs mt-4" style={{ color: 'var(--ff-text-muted)' }}>
           Para alterar seu nome, envie um email para{' '}
-
-          <a href="mailto:suporte@financeflow.com"
+          
+            <a href="mailto:suporte@financeflow.com"
             className="transition-opacity hover:opacity-75"
             style={{ color: 'var(--ff-emerald)' }}
           >
@@ -191,9 +205,9 @@ export default function ProfilePage() {
         </div>
 
         <form onSubmit={prefForm.handleSubmit(d => updateProfile(d))} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          {/* grid-cols-2 → grid-cols-3 para acomodar idioma */}
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
-              {/* htmlFor + id */}
               <label htmlFor="currency" style={labelStyle}>Moeda</label>
               <select
                 id="currency"
@@ -216,7 +230,6 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-1">
-              {/* htmlFor + id */}
               <label htmlFor="timezone" style={labelStyle}>Fuso horário</label>
               <select
                 id="timezone"
@@ -234,6 +247,29 @@ export default function ProfilePage() {
               {prefErrors.timezone && (
                 <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>
                   {prefErrors.timezone?.message}
+                </p>
+              )}
+            </div>
+
+            {/* Seletor de idioma */}
+            <div className="space-y-1">
+              <label htmlFor="language" style={labelStyle}>Idioma</label>
+              <select
+                id="language"
+                {...prefForm.register('language')}
+                style={inputStyle}
+                onFocus={onFocusEmerald}
+                onBlur={onBlurBorder}
+              >
+                {LANGUAGES.map(l => (
+                  <option key={l.value} value={l.value} style={{ background: '#111' }}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+              {prefErrors.language && (
+                <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>
+                  {prefErrors.language?.message}
                 </p>
               )}
             </div>
@@ -270,9 +306,7 @@ export default function ProfilePage() {
           )}
           className="space-y-4"
         >
-          {/* Senha atual */}
           <div className="space-y-1">
-            {/* htmlFor + id */}
             <label htmlFor="currentPassword" style={labelStyle}>Senha atual</label>
             <div className="relative">
               <input
@@ -303,10 +337,8 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {/* Nova senha + Confirmar */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              {/* htmlFor + id */}
               <label htmlFor="newPassword" style={labelStyle}>Nova senha</label>
               <div className="relative">
                 <input
@@ -338,7 +370,6 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-1">
-              {/* htmlFor + id */}
               <label htmlFor="confirmPassword" style={labelStyle}>Confirmar senha</label>
               <div className="relative">
                 <input
