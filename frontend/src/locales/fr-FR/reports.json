@@ -1,0 +1,12 @@
+{
+  "page": { "title": "Rapports", "subtitle": "Analysez vos finances en détail" },
+  "tabs": { "cashFlow": "Flux de trésorerie", "annual": "Bilan annuel", "byCategory": "Par catégorie", "byTag": "Par étiquette", "projections": "Projections" },
+  "filters": { "from": "Du", "to": "Au", "groupBy": "Regrouper par", "day": "Jour", "month": "Mois", "all": "Tous", "income": "Revenus", "expenses": "Dépenses" },
+  "cashFlow": { "title": "Flux de trésorerie", "subtitle": "Revenus et dépenses par période", "totalIncome": "Total revenus", "totalExpenses": "Total dépenses", "netBalance": "Solde net" },
+  "annual": { "title": "Bilan annuel", "subtitle": "Revenus et dépenses mensuels", "averageMonthly": "Moyenne mensuelle" },
+  "byCategory": { "title": "Répartition par catégorie", "subtitle": "Top 10 catégories sur la période", "totalExpenses": "Total dépenses", "totalIncome": "Total revenus" },
+  "byTag": { "title": "Répartition par étiquette", "subtitle": "Top 15 étiquettes sur la période", "total": "Total par étiquettes" },
+  "projections": { "title": "Historique + Projection", "subtitle": "Barres pleines = historique réel · Barres pointillées = projection", "monthsAnalysed": "Mois analysés", "monthsProjected": "Mois projetés", "avgIncome": "Moy. revenus historiques", "avgExpenses": "Moy. dépenses historiques", "note": "Les projections sont calculées avec une régression linéaire pondérée combinée à un ajustement saisonnier.", "projected": "proj." },
+  "exports": { "title": "Exportations", "subtitle": "Exportez vos données financières", "request": "Demander un rapport", "download": "Télécharger", "delete": "Supprimer", "status": { "pending": "En attente", "processing": "En cours", "completed": "Terminé", "failed": "Échoué" }, "empty": "Aucun rapport trouvé" },
+  "columns": { "period": "Période", "income": "Revenus", "expenses": "Dépenses", "balance": "Solde", "cumulative": "Cumulé", "month": "Mois", "category": "Catégorie", "value": "Valeur", "percentage": "%", "transactions": "Transactions", "tag": "Étiquette" }
+}

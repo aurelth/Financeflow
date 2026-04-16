@@ -1,0 +1,41 @@
+{
+  "actions": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "confirm": "Confirmar",
+    "back": "Volver",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar",
+    "close": "Cerrar",
+    "add": "Añadir",
+    "update": "Actualizar",
+    "loading": "Cargando...",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "messages": {
+    "success": "Operación realizada con éxito.",
+    "error": "Ocurrió un error. Inténtelo de nuevo.",
+    "notFound": "No encontrado.",
+    "unauthorized": "No autorizado.",
+    "empty": "No se encontraron elementos."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "transactions": "Transacciones",
+    "categories": "Categorías",
+    "budgets": "Presupuestos",
+    "reports": "Informes",
+    "exports": "Exportaciones",
+    "imports": "Importar OFX",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "admin": "Administración",
+    "comparison": "Comparativa"
+  }
+}

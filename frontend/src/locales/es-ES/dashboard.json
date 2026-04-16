@@ -1,0 +1,7 @@
+{
+  "page": { "title": "Dashboard", "subtitle": "Resumen de tus finanzas" },
+  "summary": { "income": "Ingresos", "expenses": "Gastos", "balance": "Saldo", "projectedBalance": "Saldo proyectado", "projectedSubtitle": "Incluye transacciones programadas" },
+  "charts": { "balanceEvolution": "Evolución del saldo", "expensesByCategory": "Gastos por categoría", "weeklyComparison": "Comparación semanal", "noExpenses": "Sin gastos en este período" },
+  "widgets": { "recentTransactions": "Últimas transacciones", "topBudgets": "Top presupuestos", "noTransactions": "Sin transacciones recientes", "noBudgets": "Sin presupuestos activos", "viewAll": "Ver todas" },
+  "comparison": { "title": "Comparativa histórica", "subtitle": "Compara hasta 3 períodos", "periods": "Períodos seleccionados", "addPeriod": "Añadir período", "removePeriod": "Eliminar período", "evolutionChart": "Evolución entre períodos", "categoryChart": "Gastos por categoría", "detailTable": "Desglose por categoría", "noData": "Selecciona al menos un período para comparar" }
+}

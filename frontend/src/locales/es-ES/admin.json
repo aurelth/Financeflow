@@ -1,0 +1,7 @@
+{
+  "page": { "title": "Administración", "subtitle": "Gestiona usuarios y categorías del sistema" },
+  "users": { "title": "Usuarios", "subtitle": "Gestiona los usuarios de la plataforma", "name": "Nombre", "email": "Email", "role": "Función", "status": "Estado", "actions": "Acciones", "promote": "Promover a Admin", "demote": "Quitar Admin", "activate": "Activar", "deactivate": "Desactivar", "confirmPromote": "¿Estás seguro de que deseas promover a este usuario?", "confirmDeactivate": "¿Estás seguro de que deseas desactivar a este usuario?" },
+  "categories": { "title": "Categorías del sistema", "subtitle": "Gestiona las categorías predeterminadas de la plataforma", "add": "Nueva categoría", "edit": "Editar categoría", "delete": "Eliminar categoría" },
+  "roles": { "admin": "Administrador", "user": "Usuario" },
+  "stats": { "totalUsers": "Total de usuarios", "activeUsers": "Usuarios activos", "totalCategories": "Total de categorías" }
+}

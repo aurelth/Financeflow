@@ -1,0 +1,83 @@
+{
+  "page": {
+    "title": "Relatórios",
+    "subtitle": "Analise as suas finanças em detalhe"
+  },
+  "tabs": {
+    "cashFlow": "Fluxo de Caixa",
+    "annual": "Resumo Anual",
+    "byCategory": "Por Categoria",
+    "byTag": "Por Tag",
+    "projections": "Projecções"
+  },
+  "filters": {
+    "from": "De",
+    "to": "Até",
+    "groupBy": "Agrupar por",
+    "day": "Dia",
+    "month": "Mês",
+    "all": "Todos",
+    "income": "Receitas",
+    "expenses": "Despesas"
+  },
+  "cashFlow": {
+    "title": "Fluxo de Caixa",
+    "subtitle": "Receitas e despesas por período com saldo acumulado",
+    "totalIncome": "Total Receitas",
+    "totalExpenses": "Total Despesas",
+    "netBalance": "Saldo Líquido"
+  },
+  "annual": {
+    "title": "Resumo Anual",
+    "subtitle": "Receitas e despesas mensais com saldo acumulado",
+    "averageMonthly": "Média Mensal"
+  },
+  "byCategory": {
+    "title": "Distribuição por Categoria",
+    "subtitle": "Top 10 categorias no período",
+    "totalExpenses": "Total Despesas",
+    "totalIncome": "Total Receitas"
+  },
+  "byTag": {
+    "title": "Distribuição por Tag",
+    "subtitle": "Top 15 tags no período",
+    "total": "Total por Tags"
+  },
+  "projections": {
+    "title": "Histórico + Projecção",
+    "subtitle": "Barras sólidas = histórico real · Barras tracejadas = projecção",
+    "monthsAnalysed": "Meses analisados",
+    "monthsProjected": "Meses projectados",
+    "avgIncome": "Média rec. histórica",
+    "avgExpenses": "Média desp. histórica",
+    "note": "As projecções são calculadas com regressão linear ponderada combinada com ajuste sazonal.",
+    "projected": "proj."
+  },
+  "exports": {
+    "title": "Exportações",
+    "subtitle": "Exporte os seus dados financeiros",
+    "request": "Solicitar relatório",
+    "download": "Baixar",
+    "delete": "Eliminar",
+    "status": {
+      "pending": "Pendente",
+      "processing": "Processando",
+      "completed": "Concluído",
+      "failed": "Falhou"
+    },
+    "empty": "Nenhum relatório encontrado"
+  },
+  "columns": {
+    "period": "Período",
+    "income": "Receitas",
+    "expenses": "Despesas",
+    "balance": "Saldo",
+    "cumulative": "Acumulado",
+    "month": "Mês",
+    "category": "Categoria",
+    "value": "Valor",
+    "percentage": "%",
+    "transactions": "Transações",
+    "tag": "Tag"
+  }
+}

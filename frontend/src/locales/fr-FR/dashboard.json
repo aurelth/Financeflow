@@ -1,0 +1,7 @@
+{
+  "page": { "title": "Tableau de bord", "subtitle": "Vue d'ensemble de vos finances" },
+  "summary": { "income": "Revenus", "expenses": "Dépenses", "balance": "Solde", "projectedBalance": "Solde projeté", "projectedSubtitle": "Inclut les transactions planifiées" },
+  "charts": { "balanceEvolution": "Évolution du solde", "expensesByCategory": "Dépenses par catégorie", "weeklyComparison": "Comparaison hebdomadaire", "noExpenses": "Aucune dépense sur cette période" },
+  "widgets": { "recentTransactions": "Dernières transactions", "topBudgets": "Top budgets", "noTransactions": "Aucune transaction récente", "noBudgets": "Aucun budget actif", "viewAll": "Voir tout" },
+  "comparison": { "title": "Comparaison historique", "subtitle": "Comparez jusqu'à 3 périodes", "periods": "Périodes sélectionnées", "addPeriod": "Ajouter une période", "removePeriod": "Supprimer la période", "evolutionChart": "Évolution entre les périodes", "categoryChart": "Dépenses par catégorie", "detailTable": "Détail par catégorie", "noData": "Sélectionnez au moins une période pour comparer" }
+}

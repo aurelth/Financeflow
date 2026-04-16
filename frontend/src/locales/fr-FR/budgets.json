@@ -1,0 +1,8 @@
+{
+  "page": { "title": "Budgets", "subtitle": "Contrôlez vos dépenses par catégorie" },
+  "fields": { "category": "Catégorie", "limit": "Limite", "spent": "Dépensé", "remaining": "Restant", "period": "Période" },
+  "actions": { "add": "Nouveau budget", "edit": "Modifier le budget", "delete": "Supprimer le budget", "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce budget ?" },
+  "status": { "ok": "Dans les limites", "warning": "Attention", "exceeded": "Limite dépassée" },
+  "empty": "Aucun budget trouvé",
+  "summary": { "total": "Total budgétisé", "spent": "Total dépensé", "remaining": "Total restant" }
+}

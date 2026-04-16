@@ -1,0 +1,37 @@
+{
+  "page": {
+    "title": "Categorias",
+    "subtitle": "Organize suas transações por categoria"
+  },
+  "fields": {
+    "name": "Nome",
+    "icon": "Ícone",
+    "color": "Cor",
+    "type": "Tipo"
+  },
+  "types": {
+    "income": "Receita",
+    "expense": "Despesa"
+  },
+  "actions": {
+    "add": "Nova categoria",
+    "edit": "Editar categoria",
+    "delete": "Eliminar categoria",
+    "deleteConfirm": "Tem certeza que deseja eliminar esta categoria?",
+    "addSubcategory": "Nova subcategoria",
+    "editSubcategory": "Editar subcategoria",
+    "deleteSubcategory": "Eliminar subcategoria"
+  },
+  "labels": {
+    "default": "Padrão",
+    "custom": "Personalizada",
+    "subcategories": "Subcategorias",
+    "noSubcategories": "Nenhuma subcategoria"
+  },
+  "empty": "Nenhuma categoria encontrada",
+  "filters": {
+    "all": "Todas",
+    "income": "Receitas",
+    "expenses": "Despesas"
+  }
+}

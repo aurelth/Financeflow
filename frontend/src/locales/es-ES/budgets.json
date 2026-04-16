@@ -1,0 +1,8 @@
+{
+  "page": { "title": "Presupuestos", "subtitle": "Controla tus gastos por categoría" },
+  "fields": { "category": "Categoría", "limit": "Límite", "spent": "Gastado", "remaining": "Restante", "period": "Período" },
+  "actions": { "add": "Nuevo presupuesto", "edit": "Editar presupuesto", "delete": "Eliminar presupuesto", "deleteConfirm": "¿Estás seguro de que deseas eliminar este presupuesto?" },
+  "status": { "ok": "Dentro del límite", "warning": "Atención", "exceeded": "Límite superado" },
+  "empty": "No se encontraron presupuestos",
+  "summary": { "total": "Total presupuestado", "spent": "Total gastado", "remaining": "Total restante" }
+}

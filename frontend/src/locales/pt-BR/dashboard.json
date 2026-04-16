@@ -1,0 +1,37 @@
+{
+  "page": {
+    "title": "Dashboard",
+    "subtitle": "Visão geral das suas finanças"
+  },
+  "summary": {
+    "income": "Receitas",
+    "expenses": "Despesas",
+    "balance": "Saldo",
+    "projectedBalance": "Saldo Projetado",
+    "projectedSubtitle": "Inclui transações agendadas"
+  },
+  "charts": {
+    "balanceEvolution": "Evolução do Saldo",
+    "expensesByCategory": "Despesas por Categoria",
+    "weeklyComparison": "Comparação Semanal",
+    "noExpenses": "Nenhuma despesa no período"
+  },
+  "widgets": {
+    "recentTransactions": "Últimas Transações",
+    "topBudgets": "Top Orçamentos",
+    "noTransactions": "Nenhuma transação recente",
+    "noBudgets": "Nenhum orçamento ativo",
+    "viewAll": "Ver todas"
+  },
+  "comparison": {
+    "title": "Comparativo Histórico",
+    "subtitle": "Compare até 3 períodos e analise a evolução das suas finanças",
+    "periods": "Períodos selecionados",
+    "addPeriod": "Adicionar período",
+    "removePeriod": "Remover período",
+    "evolutionChart": "Evolução entre Períodos",
+    "categoryChart": "Despesas por Categoria",
+    "detailTable": "Detalhamento por Categoria",
+    "noData": "Selecione pelo menos um período para comparar"
+  }
+}

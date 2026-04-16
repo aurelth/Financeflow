@@ -1,0 +1,10 @@
+{
+  "page": { "title": "Settings", "subtitle": "Customise your experience" },
+  "sections": { "language": "Language", "currency": "Currency", "timezone": "Timezone", "notifications": "Notifications", "appearance": "Appearance" },
+  "language": {
+    "label": "System language", "subtitle": "Choose the language for texts and formatting",
+    "ptBR": "Português (Brasil)", "enUS": "English (US)", "esES": "Español", "frFR": "Français"
+  },
+  "notifications": { "email": "Email notifications", "push": "Push notifications", "dueDates": "Due date alerts" },
+  "actions": { "save": "Save settings", "saved": "Settings saved" }
+}

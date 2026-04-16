@@ -1,0 +1,30 @@
+{
+  "page": {
+    "title": "Configurações",
+    "subtitle": "Personalize a sua experiência"
+  },
+  "sections": {
+    "language": "Idioma",
+    "currency": "Moeda",
+    "timezone": "Fuso horário",
+    "notifications": "Notificações",
+    "appearance": "Aparência"
+  },
+  "language": {
+    "label": "Idioma do sistema",
+    "subtitle": "Escolha o idioma para textos e formatação",
+    "ptBR": "Português (Brasil)",
+    "enUS": "English (US)",
+    "esES": "Español",
+    "frFR": "Français"
+  },
+  "notifications": {
+    "email": "Notificações por email",
+    "push": "Notificações push",
+    "dueDates": "Alertas de vencimento"
+  },
+  "actions": {
+    "save": "Guardar configurações",
+    "saved": "Configurações guardadas"
+  }
+}

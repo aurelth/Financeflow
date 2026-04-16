@@ -1,0 +1,7 @@
+{
+  "page": { "title": "Administration", "subtitle": "Gérez les utilisateurs et les catégories système" },
+  "users": { "title": "Utilisateurs", "subtitle": "Gérez les utilisateurs de la plateforme", "name": "Nom", "email": "Email", "role": "Rôle", "status": "Statut", "actions": "Actions", "promote": "Promouvoir en Admin", "demote": "Retirer Admin", "activate": "Activer", "deactivate": "Désactiver", "confirmPromote": "Êtes-vous sûr de vouloir promouvoir cet utilisateur ?", "confirmDeactivate": "Êtes-vous sûr de vouloir désactiver cet utilisateur ?" },
+  "categories": { "title": "Catégories système", "subtitle": "Gérez les catégories par défaut de la plateforme", "add": "Nouvelle catégorie", "edit": "Modifier la catégorie", "delete": "Supprimer la catégorie" },
+  "roles": { "admin": "Administrateur", "user": "Utilisateur" },
+  "stats": { "totalUsers": "Total utilisateurs", "activeUsers": "Utilisateurs actifs", "totalCategories": "Total catégories" }
+}

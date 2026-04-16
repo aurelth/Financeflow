@@ -1,0 +1,45 @@
+{
+  "page": {
+    "title": "Importar OFX",
+    "subtitle": "Importe extratos bancários no formato OFX"
+  },
+  "upload": {
+    "drag": "Arraste o ficheiro OFX aqui",
+    "or": "ou",
+    "browse": "selecione um ficheiro",
+    "onlyOFX": "Apenas ficheiros .ofx são suportados.",
+    "send": "Enviar",
+    "selected": "Ficheiro selecionado"
+  },
+  "history": {
+    "title": "Histórico de importações",
+    "empty": "Nenhuma importação encontrada",
+    "transactions": "transações",
+    "imported": "importadas",
+    "duplicates": "duplicadas",
+    "errors": "erros"
+  },
+  "status": {
+    "pending": "Pendente",
+    "processing": "Processando",
+    "completed": "Concluído",
+    "failed": "Falhou"
+  },
+  "actions": {
+    "preview": "Ver preview",
+    "delete": "Eliminar importação",
+    "confirm": "Confirmar",
+    "deleteConfirm": "Tem certeza que deseja eliminar esta importação?"
+  },
+  "preview": {
+    "title": "Preview da importação",
+    "selected": "transações selecionadas",
+    "selectAll": "Selecionar todas",
+    "description": "Descrição",
+    "date": "Data",
+    "category": "Categoria",
+    "value": "Valor",
+    "duplicate": "Duplicado",
+    "noCategory": "Sem categoria"
+  }
+}

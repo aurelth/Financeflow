@@ -1,0 +1,13 @@
+{
+  "page": { "title": "Administration", "subtitle": "Manage users and system categories" },
+  "users": {
+    "title": "Users", "subtitle": "Manage platform users",
+    "name": "Name", "email": "Email", "role": "Role", "status": "Status", "actions": "Actions",
+    "promote": "Promote to Admin", "demote": "Remove Admin", "activate": "Activate", "deactivate": "Deactivate",
+    "confirmPromote": "Are you sure you want to promote this user?",
+    "confirmDeactivate": "Are you sure you want to deactivate this user?"
+  },
+  "categories": { "title": "System Categories", "subtitle": "Manage default platform categories", "add": "New category", "edit": "Edit category", "delete": "Delete category" },
+  "roles": { "admin": "Administrator", "user": "User" },
+  "stats": { "totalUsers": "Total users", "activeUsers": "Active users", "totalCategories": "Total categories" }
+}
