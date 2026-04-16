@@ -1,0 +1,28 @@
+{
+  "welcome": {
+    "title": "👋 Bienvenue sur FinanceFlow !",
+    "description": "Faisons un tour rapide des fonctionnalités principales. Vous pouvez ignorer à tout moment."
+  },
+  "dashboard": {
+    "title": "📊 Tableau de bord",
+    "description": "Ici vous avez une vue d'ensemble de vos finances — revenus, dépenses, solde et graphiques du mois."
+  },
+  "transactions": {
+    "title": "💸 Transactions",
+    "description": "Enregistrez tous vos revenus et dépenses. Vous pouvez filtrer, rechercher et joindre des reçus."
+  },
+  "categories": {
+    "title": "🏷️ Catégories",
+    "description": "Organisez les transactions par catégorie. Créez des catégories personnalisées avec icône et couleur."
+  },
+  "budgets": {
+    "title": "🎯 Budgets",
+    "description": "Définissez des limites de dépenses par catégorie et recevez des alertes quand vous approchez de la limite."
+  },
+  "actions": {
+    "next": "Suivant →",
+    "prev": "← Précédent",
+    "done": "Commencer ✓",
+    "skip": "Passer le tour"
+  }
+}

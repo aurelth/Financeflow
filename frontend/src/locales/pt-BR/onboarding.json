@@ -1,0 +1,28 @@
+{
+  "welcome": {
+    "title": "👋 Bem-vindo ao FinanceFlow!",
+    "description": "Vamos fazer um tour rápido pelas principais funcionalidades. Pode saltar a qualquer momento."
+  },
+  "dashboard": {
+    "title": "📊 Dashboard",
+    "description": "Aqui tens uma visão geral das tuas finanças — receitas, despesas, saldo e gráficos do mês actual."
+  },
+  "transactions": {
+    "title": "💸 Transações",
+    "description": "Regista todas as tuas receitas e despesas. Podes filtrar, pesquisar e anexar comprovantes."
+  },
+  "categories": {
+    "title": "🏷️ Categorias",
+    "description": "Organiza as transações por categoria. Cria categorias personalizadas com ícone e cor."
+  },
+  "budgets": {
+    "title": "🎯 Orçamentos",
+    "description": "Define limites de gastos por categoria e recebe alertas quando estiveres a aproximar-te do limite."
+  },
+  "actions": {
+    "next": "Próximo →",
+    "prev": "← Anterior",
+    "done": "Começar ✓",
+    "skip": "Saltar tour"
+  }
+}
