@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { Link } from 'react-router-dom'
 import { Eye, EyeOff, Loader2, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next' // Adicionado
+import { useTranslation } from 'react-i18next'
 import { useLogin } from '../api/useAuth'
 
 // Schema com mensagens i18n resolvidas fora do componente
@@ -22,7 +22,7 @@ const inputStyle: React.CSSProperties = {
 }
 
 export default function LoginPage() {
-  const { t }                           = useTranslation('auth') // Adicionado
+  const { t }                           = useTranslation('auth')
   const [showPassword, setShowPassword] = useState(false)
   const { mutate: login, isPending }    = useLogin()
 
