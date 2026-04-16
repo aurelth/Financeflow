@@ -5,8 +5,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import SettingsPage from '@/features/settings/pages/SettingsPage'
 
-const mockUpdatePrefs = vi.fn()
-const mockLogoutAll   = vi.fn()
+const mockUpdatePrefs  = vi.fn()
+const mockLogoutAll    = vi.fn()
+const mockUpdateProfile = vi.fn()
 
 const mockPrefs = {
   budgetWarningEnabled:          true,
@@ -34,6 +35,41 @@ vi.mock('@/features/settings/api/useSettings', () => ({
   }),
 }))
 
+// Mock do useUpdateProfile
+vi.mock('@/features/auth/api/useAuth', () => ({
+  useUpdateProfile: () => ({
+    mutate:    mockUpdateProfile,
+    isPending: false,
+  }),
+}))
+
+// Mock do authStore
+vi.mock('@/store/authStore', () => ({
+  useAuthStore: (selector: any) => selector({
+    user: {
+      id:       '123',
+      name:     'Aurel Teste',
+      email:    'aurel@teste.com',
+      currency: 'BRL',
+      timezone: 'America/Sao_Paulo',
+      language: 'en-US',
+      role:     'User',
+    },
+  }),
+}))
+
+// Mock do i18n
+vi.mock('@/lib/i18n', () => ({
+  default: { changeLanguage: vi.fn(), language: 'en-US' },
+  SUPPORTED_LANGUAGES: ['pt-BR', 'en-US', 'es-ES', 'fr-FR'],
+  LANGUAGE_LABELS: {
+    'pt-BR': 'Português (Brasil)',
+    'en-US': 'English (US)',
+    'es-ES': 'Español',
+    'fr-FR': 'Français',
+  },
+}))
+
 const renderPage = () => {
   const qc = new QueryClient()
   return render(
@@ -50,14 +86,15 @@ describe('SettingsPage', () => {
 
   it('deve renderizar o título da página', () => {
     renderPage()
-    expect(screen.getByText('Configurações')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
   })
 
-  it('deve renderizar as secções principais', () => {
+  it('deve renderizar a secção de idioma', () => {
     renderPage()
-    expect(screen.getByText('Notificações')).toBeInTheDocument()
-    expect(screen.getByText('Sessão')).toBeInTheDocument()
-    expect(screen.getByText('Zona de perigo')).toBeInTheDocument()
+    expect(screen.getByText('Português (Brasil)')).toBeInTheDocument()
+    expect(screen.getByText('English (US)')).toBeInTheDocument()
+    expect(screen.getByText('Español')).toBeInTheDocument()
+    expect(screen.getByText('Français')).toBeInTheDocument()
   })
 
   it('deve renderizar os 4 toggles de notificação', () => {
@@ -66,6 +103,13 @@ describe('SettingsPage', () => {
     expect(screen.getByText('Limite de orçamento atingido (100%)')).toBeInTheDocument()
     expect(screen.getByText('Transação vence amanhã')).toBeInTheDocument()
     expect(screen.getByText('Transação vence em 3 dias')).toBeInTheDocument()
+  })
+
+  it('deve marcar o idioma activo com ✓', () => {
+    renderPage()
+    // en-US está activo no mock
+    const checkmark = screen.getByText('✓')
+    expect(checkmark).toBeInTheDocument()
   })
 
   it('deve chamar updatePrefs ao clicar num toggle', async () => {
@@ -101,5 +145,19 @@ describe('SettingsPage', () => {
     await user.click(screen.getByRole('button', { name: /excluir conta/i }))
 
     expect(screen.getByText(/esta ação é permanente/i)).toBeInTheDocument()
+  })
+
+  it('deve chamar updateProfile ao seleccionar idioma', async () => {
+    renderPage()
+    const user = userEvent.setup()
+
+    const ptButton = screen.getByRole('button', { name: /português/i })
+    await user.click(ptButton)
+
+    await waitFor(() => {
+      expect(mockUpdateProfile).toHaveBeenCalledWith(
+        expect.objectContaining({ language: 'pt-BR' })
+      )
+    })
   })
 })

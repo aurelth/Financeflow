@@ -8,6 +8,38 @@ import ProfilePage from '@/features/auth/pages/ProfilePage'
 const mockUpdateProfile  = vi.fn()
 const mockChangePassword = vi.fn()
 
+// Mock do react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const keys: Record<string, string> = {
+        'profile.title':           'Perfil',
+        'profile.subtitle':        'Gerencie suas informações e preferências',
+        'profile.identity':        'Dados pessoais',
+        'profile.preferences':     'Preferências',
+        'profile.security':        'Alterar senha',
+        'profile.name':            'Nome completo',
+        'profile.email':           'Email',
+        'profile.cpf':             'CPF',
+        'profile.gender':          'Gênero',
+        'profile.currency':        'Moeda',
+        'profile.timezone':        'Fuso horário',
+        'profile.language':        'Idioma',
+        'profile.currentPassword': 'Senha atual',
+        'profile.newPassword':     'Nova senha',
+        'profile.confirmPassword': 'Confirmar senha',
+        'profile.savePreferences': 'Salvar preferências',
+        'profile.changePassword':  'Alterar senha',
+        'register.genderMale':     'Masculino',
+        'register.genderFemale':   'Feminino',
+        'common:actions.loading':  'Carregando...',
+      }
+      return keys[key] ?? key
+    },
+    i18n: { changeLanguage: vi.fn() },
+  }),
+}))
+
 const mockProfile = {
   id:        '123',
   name:      'Aurel Teste',
@@ -16,7 +48,9 @@ const mockProfile = {
   gender:    'Male',
   currency:  'BRL',
   timezone:  'America/Sao_Paulo',
+  language:  'pt-BR',
   createdAt: '2026-01-01T00:00:00Z',
+  role:      'User',
 }
 
 vi.mock('@/features/auth/api/useAuth', () => ({
@@ -65,6 +99,7 @@ describe('ProfilePage', () => {
     renderPage()
     expect(screen.getByLabelText(/moeda/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/fuso horário/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/idioma/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /salvar preferências/i })).toBeInTheDocument()
   })
 
@@ -86,6 +121,7 @@ describe('ProfilePage', () => {
       expect(mockUpdateProfile).toHaveBeenCalledWith({
         currency: 'BRL',
         timezone: 'America/Sao_Paulo',
+        language: 'pt-BR',
       })
     })
   })
@@ -125,5 +161,20 @@ describe('ProfilePage', () => {
         expect.any(Object)
       )
     })
+  })
+
+  // Testes de idioma
+  it('deve renderizar o seletor de idioma com 4 opções', () => {
+    renderPage()
+    const languageSelect = screen.getByLabelText(/idioma/i)
+    expect(languageSelect).toBeInTheDocument()
+    const options = languageSelect.querySelectorAll('option')
+    expect(options).toHaveLength(4)
+  })
+
+  it('deve ter pt-BR como idioma pré-seleccionado', () => {
+    renderPage()
+    const languageSelect = screen.getByLabelText(/idioma/i) as HTMLSelectElement
+    expect(languageSelect.value).toBe('pt-BR')
   })
 })
