@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Bell, LogOut, Trash2, Loader2, TriangleAlert, Globe } from 'lucide-react'
+import { Bell, LogOut, Trash2, Loader2, TriangleAlert, Globe, PlayCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import i18n, { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '@/lib/i18n'
 import { useAuthStore } from '@/store/authStore'
 import { useUpdateProfile } from '@/features/auth/api/useAuth'
+import { useOnboarding } from '@/hooks/useOnboarding'
+import { createDriver }  from '@/lib/driver'
+import { getTourSteps }  from '@/features/onboarding/steps/tourSteps'
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
@@ -55,12 +59,15 @@ export default function SettingsPage() {
   const logoutAll                          = useLogoutAll()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
- // Idioma e moeda do perfil
   const user                               = useAuthStore(s => s.user)
   const { mutate: updateProfile, isPending: isSavingLang } = useUpdateProfile()
   const [selectedLanguage, setSelectedLanguage] = useState(
     user?.language ?? i18n.language ?? 'en-US'
   )
+
+ 
+  const navigate          = useNavigate()
+  const { resetTour }     = useOnboarding()
 
   const [budgetWarning,  setBudgetWarning]  = useState(true)
   const [budgetCritical, setBudgetCritical] = useState(true)
@@ -76,7 +83,6 @@ export default function SettingsPage() {
     }
   }, [prefs])
 
- // Sincroniza idioma com o perfil ao carregar
   useEffect(() => {
     if (user?.language) setSelectedLanguage(user.language)
   }, [user?.language])
@@ -95,7 +101,6 @@ export default function SettingsPage() {
     })
   }
 
- // Aplica idioma imediatamente e persiste no perfil + localStorage
   function handleLanguageChange(lang: string) {
     setSelectedLanguage(lang)
     i18n.changeLanguage(lang)
@@ -107,6 +112,20 @@ export default function SettingsPage() {
         language: lang,
       })
     }
+  }
+
+  // Navega para o dashboard e inicia o tour
+  function handleResetTour() {
+    resetTour()
+    navigate('/dashboard')
+    setTimeout(() => {
+      const driverObj = createDriver()
+      driverObj.setSteps(getTourSteps(t))
+      driverObj.setConfig({
+        onDestroyStarted: () => driverObj.destroy(),
+      })
+      driverObj.drive()
+    }, 600)
   }
 
   const currentPrefs = {
@@ -136,7 +155,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Seletor de idioma */}
+      {/* Idioma */}
       <div
         className="rounded-2xl p-6"
         style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
@@ -230,6 +249,39 @@ export default function SettingsPage() {
             />
           </div>
         </div>
+      </div>
+
+      {/* Tutorial */}
+      <div
+        className="rounded-2xl p-6"
+        style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <PlayCircle size={16} style={{ color: 'var(--ff-emerald)' }} />
+          <h2 className="font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
+            Tutorial
+          </h2>
+        </div>
+        <p className="text-xs mb-5" style={{ color: 'var(--ff-text-muted)' }}>
+          Rever o tour de introdução ao FinanceFlow
+        </p>
+
+        <button
+          onClick={handleResetTour}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
+          style={{ border: '1px solid var(--ff-border)', color: 'var(--ff-text-secondary)' }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+            e.currentTarget.style.color      = 'var(--ff-text-primary)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color      = 'var(--ff-text-secondary)'
+          }}
+        >
+          <PlayCircle size={15} />
+          Ver tutorial
+        </button>
       </div>
 
       {/* Sessão */}
