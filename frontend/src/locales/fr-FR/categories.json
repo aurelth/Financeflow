@@ -1,0 +1,9 @@
+{
+  "page": { "title": "Catégories", "subtitle": "Organisez vos transactions par catégorie" },
+  "fields": { "name": "Nom", "icon": "Icône", "color": "Couleur", "type": "Type" },
+  "types": { "income": "Revenu", "expense": "Dépense" },
+  "actions": { "add": "Nouvelle catégorie", "edit": "Modifier la catégorie", "delete": "Supprimer la catégorie", "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette catégorie ?", "addSubcategory": "Nouvelle sous-catégorie", "editSubcategory": "Modifier la sous-catégorie", "deleteSubcategory": "Supprimer la sous-catégorie" },
+  "labels": { "default": "Par défaut", "custom": "Personnalisée", "subcategories": "Sous-catégories", "noSubcategories": "Aucune sous-catégorie" },
+  "empty": "Aucune catégorie trouvée",
+  "filters": { "all": "Toutes", "income": "Revenus", "expenses": "Dépenses" }
+}

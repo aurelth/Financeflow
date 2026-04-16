@@ -1,0 +1,8 @@
+{
+  "page": { "title": "Importer OFX", "subtitle": "Importez des relevés bancaires au format OFX" },
+  "upload": { "drag": "Faites glisser le fichier OFX ici", "or": "ou", "browse": "sélectionnez un fichier", "onlyOFX": "Seuls les fichiers .ofx sont pris en charge.", "send": "Envoyer", "selected": "Fichier sélectionné" },
+  "history": { "title": "Historique des importations", "empty": "Aucune importation trouvée", "transactions": "transactions", "imported": "importées", "duplicates": "doublons", "errors": "erreurs" },
+  "status": { "pending": "En attente", "processing": "En cours", "completed": "Terminé", "failed": "Échoué" },
+  "actions": { "preview": "Voir l'aperçu", "delete": "Supprimer l'importation", "confirm": "Confirmer", "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette importation ?" },
+  "preview": { "title": "Aperçu de l'importation", "selected": "transactions sélectionnées", "selectAll": "Tout sélectionner", "description": "Description", "date": "Date", "category": "Catégorie", "value": "Valeur", "duplicate": "Doublon", "noCategory": "Sans catégorie" }
+}

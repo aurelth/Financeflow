@@ -1,0 +1,9 @@
+{
+  "page": { "title": "Categorías", "subtitle": "Organiza tus transacciones por categoría" },
+  "fields": { "name": "Nombre", "icon": "Icono", "color": "Color", "type": "Tipo" },
+  "types": { "income": "Ingreso", "expense": "Gasto" },
+  "actions": { "add": "Nueva categoría", "edit": "Editar categoría", "delete": "Eliminar categoría", "deleteConfirm": "¿Estás seguro de que deseas eliminar esta categoría?", "addSubcategory": "Nueva subcategoría", "editSubcategory": "Editar subcategoría", "deleteSubcategory": "Eliminar subcategoría" },
+  "labels": { "default": "Predeterminada", "custom": "Personalizada", "subcategories": "Subcategorías", "noSubcategories": "Sin subcategorías" },
+  "empty": "No se encontraron categorías",
+  "filters": { "all": "Todas", "income": "Ingresos", "expenses": "Gastos" }
+}

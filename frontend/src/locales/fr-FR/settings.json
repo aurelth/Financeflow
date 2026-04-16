@@ -1,0 +1,7 @@
+{
+  "page": { "title": "Paramètres", "subtitle": "Personnalisez votre expérience" },
+  "sections": { "language": "Langue", "currency": "Devise", "timezone": "Fuseau horaire", "notifications": "Notifications", "appearance": "Apparence" },
+  "language": { "label": "Langue du système", "subtitle": "Choisissez la langue pour les textes et le formatage", "ptBR": "Português (Brasil)", "enUS": "English (US)", "esES": "Español", "frFR": "Français" },
+  "notifications": { "email": "Notifications par email", "push": "Notifications push", "dueDates": "Alertes d'échéance" },
+  "actions": { "save": "Enregistrer les paramètres", "saved": "Paramètres enregistrés" }
+}

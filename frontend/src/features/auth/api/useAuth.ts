@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
 import { useAuthStore } from '@/store/authStore'
+import i18n from '@/lib/i18n'
 import type {
   AuthResponse,
   ChangePasswordRequest,
@@ -14,7 +15,6 @@ import type {
   UserProfile,
 } from '../types/auth.types'
 
-// Utilitário para extrair mensagem de erro da API
 const getApiError = (err: any, fallback: string): string => {
   const errors = err?.response?.data?.errors
   if (errors) return Object.values(errors).flat().join(' ')
@@ -31,7 +31,7 @@ export const useRegister = () => {
     onSuccess: () => {
       toast.success('Conta criada com sucesso! Faça login para continuar.')
       navigate('/login')
-    },    
+    },
     onError: (err: any) => {
       toast.error(getApiError(err, 'Erro ao criar conta. Tente novamente.'))
     },
@@ -48,9 +48,14 @@ export const useLogin = () => {
       api.post<AuthResponse>('/api/auth/login', data).then(r => r.data),
     onSuccess: data => {
       setUser(data.user, data.accessToken)
+      // Aplica idioma do perfil com prioridade máxima
+      if (data.user.language) {
+        i18n.changeLanguage(data.user.language)
+        localStorage.setItem('ff_language', data.user.language)
+      }
       toast.success(`Bem-vindo, ${data.user.name}!`)
       navigate('/dashboard')
-    },    
+    },
     onError: (err: any) => {
       toast.error(getApiError(err, 'Email ou senha incorreto.'))
     },
@@ -95,9 +100,14 @@ export const useUpdateProfile = () => {
       api.put<UserProfile>('/api/users/profile', data).then(r => r.data),
     onSuccess: data => {
       updateUser(data)
+      // Aplica idioma actualizado imediatamente
+      if (data.language) {
+        i18n.changeLanguage(data.language)
+        localStorage.setItem('ff_language', data.language)
+      }
       qc.invalidateQueries({ queryKey: ['user', 'profile'] })
       toast.success('Perfil atualizado com sucesso!')
-    },    
+    },
     onError: (err: any) => {
       toast.error(getApiError(err, 'Erro ao atualizar perfil. Tente novamente.'))
     },
@@ -124,7 +134,7 @@ export const useForgotPassword = () =>
       api.post('/api/auth/forgot-password', data),
     onSuccess: () => {
       toast.success('Se o email existir, receberá um link em breve.')
-    },    
+    },
     onError: (err: any) => {
       toast.error(getApiError(err, 'Erro ao processar solicitação. Tente novamente.'))
     },
@@ -140,7 +150,7 @@ export const useResetPassword = () => {
     onSuccess: () => {
       toast.success('Senha redefinida com sucesso! Faça login para continuar.')
       navigate('/login')
-    },  
+    },
     onError: (err: any) => {
       toast.error(getApiError(err, 'Token inválido ou expirado.'))
     },

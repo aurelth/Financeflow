@@ -1,0 +1,51 @@
+{
+  "page": {
+    "title": "Transações",
+    "subtitle": "Gerencie suas receitas e despesas"
+  },
+  "fields": {
+    "description": "Descrição",
+    "amount": "Valor",
+    "date": "Data",
+    "type": "Tipo",
+    "status": "Status",
+    "category": "Categoria",
+    "subcategory": "Subcategoria",
+    "tags": "Tags",
+    "attachment": "Anexo",
+    "recurring": "Recorrente"
+  },
+  "types": {
+    "income": "Receita",
+    "expense": "Despesa"
+  },
+  "status": {
+    "paid": "Pago",
+    "scheduled": "Agendado",
+    "pending": "Pendente"
+  },
+  "recurrence": {
+    "none": "Sem recorrência",
+    "monthly": "Mensal"
+  },
+  "actions": {
+    "add": "Nova transação",
+    "edit": "Editar transação",
+    "delete": "Eliminar transação",
+    "deleteConfirm": "Tem certeza que deseja eliminar esta transação?",
+    "deleteFuture": "Eliminar esta e futuras",
+    "editFuture": "Atualizar esta e futuras"
+  },
+  "filters": {
+    "all": "Todos",
+    "income": "Receitas",
+    "expenses": "Despesas",
+    "search": "Pesquisar transações..."
+  },
+  "empty": "Nenhuma transação encontrada",
+  "attachment": {
+    "view": "Visualizar",
+    "download": "Baixar",
+    "remove": "Remover"
+  }
+}

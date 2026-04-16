@@ -10,6 +10,7 @@ const mockUser: UserProfile = {
   gender:    'Male',
   currency:  'BRL',
   timezone:  'America/Sao_Paulo',
+  language:  'pt-BR',
   createdAt: '2026-01-01T00:00:00Z',
   role:      'User',
 }
@@ -34,7 +35,6 @@ describe('authStore', () => {
 
   it('deve autenticar o utilizador ao chamar setUser', () => {
     useAuthStore.getState().setUser(mockUser, 'access_token_123')
-
     const { user, isAuthenticated } = useAuthStore.getState()
     expect(user).toEqual(mockUser)
     expect(isAuthenticated).toBe(true)
@@ -43,10 +43,8 @@ describe('authStore', () => {
 
   it('deve atualizar o perfil ao chamar updateUser', () => {
     useAuthStore.getState().setUser(mockUser, 'token')
-
     const updatedUser = { ...mockUser, name: 'Aurel Atualizado' }
     useAuthStore.getState().updateUser(updatedUser)
-
     const { user } = useAuthStore.getState()
     expect(user?.name).toBe('Aurel Atualizado')
   })
@@ -54,17 +52,14 @@ describe('authStore', () => {
   it('deve desautenticar ao chamar logout', () => {
     useAuthStore.getState().setUser(mockUser, 'token')
     useAuthStore.getState().logout()
-
     const { user, isAuthenticated } = useAuthStore.getState()
     expect(user).toBeNull()
     expect(isAuthenticated).toBe(false)
     expect(sessionStorage.getItem('accessToken')).toBeNull()
   })
 
-  // Persistência do usuário no sessionStorage
   it('deve persistir o usuário no sessionStorage ao chamar setUser', () => {
     useAuthStore.getState().setUser(mockUser, 'token')
-
     const stored = sessionStorage.getItem('user')
     expect(stored).not.toBeNull()
     expect(JSON.parse(stored!)).toEqual(mockUser)
@@ -72,10 +67,8 @@ describe('authStore', () => {
 
   it('deve atualizar o usuário no sessionStorage ao chamar updateUser', () => {
     useAuthStore.getState().setUser(mockUser, 'token')
-
     const updatedUser = { ...mockUser, name: 'Aurel Atualizado' }
     useAuthStore.getState().updateUser(updatedUser)
-
     const stored = sessionStorage.getItem('user')
     expect(JSON.parse(stored!).name).toBe('Aurel Atualizado')
   })
@@ -83,14 +76,11 @@ describe('authStore', () => {
   it('deve remover o usuário do sessionStorage ao chamar logout', () => {
     useAuthStore.getState().setUser(mockUser, 'token')
     useAuthStore.getState().logout()
-
     expect(sessionStorage.getItem('user')).toBeNull()
   })
 
-  // Teste da role no sessionStorage
   it('deve persistir a role Admin no sessionStorage', () => {
     useAuthStore.getState().setUser(mockAdmin, 'admin-token')
-
     const stored = JSON.parse(sessionStorage.getItem('user')!)
     expect(stored.role).toBe('Admin')
   })

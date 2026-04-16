@@ -1,0 +1,27 @@
+{
+  "page": { "title": "Reports", "subtitle": "Analyse your finances in detail" },
+  "tabs": { "cashFlow": "Cash Flow", "annual": "Annual Summary", "byCategory": "By Category", "byTag": "By Tag", "projections": "Projections" },
+  "filters": { "from": "From", "to": "To", "groupBy": "Group by", "day": "Day", "month": "Month", "all": "All", "income": "Income", "expenses": "Expenses" },
+  "cashFlow": { "title": "Cash Flow", "subtitle": "Income and expenses by period with cumulative balance", "totalIncome": "Total Income", "totalExpenses": "Total Expenses", "netBalance": "Net Balance" },
+  "annual": { "title": "Annual Summary", "subtitle": "Monthly income and expenses with cumulative balance", "averageMonthly": "Monthly Average" },
+  "byCategory": { "title": "Distribution by Category", "subtitle": "Top 10 categories in the period", "totalExpenses": "Total Expenses", "totalIncome": "Total Income" },
+  "byTag": { "title": "Distribution by Tag", "subtitle": "Top 15 tags in the period", "total": "Total by Tags" },
+  "projections": {
+    "title": "History + Projection", "subtitle": "Solid bars = real history · Dashed bars = projection",
+    "monthsAnalysed": "Months analysed", "monthsProjected": "Months projected",
+    "avgIncome": "Avg. historical income", "avgExpenses": "Avg. historical expenses",
+    "note": "Projections are calculated using weighted linear regression combined with seasonal adjustment.",
+    "projected": "proj."
+  },
+  "exports": {
+    "title": "Exports", "subtitle": "Export your financial data", "request": "Request report",
+    "download": "Download", "delete": "Delete",
+    "status": { "pending": "Pending", "processing": "Processing", "completed": "Completed", "failed": "Failed" },
+    "empty": "No reports found"
+  },
+  "columns": {
+    "period": "Period", "income": "Income", "expenses": "Expenses", "balance": "Balance",
+    "cumulative": "Cumulative", "month": "Month", "category": "Category", "value": "Value",
+    "percentage": "%", "transactions": "Transactions", "tag": "Tag"
+  }
+}

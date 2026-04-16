@@ -1,0 +1,30 @@
+{
+  "page": {
+    "title": "Orçamentos",
+    "subtitle": "Controle seus gastos por categoria"
+  },
+  "fields": {
+    "category": "Categoria",
+    "limit": "Limite",
+    "spent": "Gasto",
+    "remaining": "Restante",
+    "period": "Período"
+  },
+  "actions": {
+    "add": "Novo orçamento",
+    "edit": "Editar orçamento",
+    "delete": "Eliminar orçamento",
+    "deleteConfirm": "Tem certeza que deseja eliminar este orçamento?"
+  },
+  "status": {
+    "ok": "Dentro do limite",
+    "warning": "Atenção",
+    "exceeded": "Limite excedido"
+  },
+  "empty": "Nenhum orçamento encontrado",
+  "summary": {
+    "total": "Total orçado",
+    "spent": "Total gasto",
+    "remaining": "Total restante"
+  }
+}

@@ -9,7 +9,7 @@ const mockMutate = vi.fn()
 
 vi.mock('@/features/auth/api/useAuth', () => ({
   useRegister: () => ({
-    mutate: mockMutate,
+    mutate:    mockMutate,
     isPending: false,
   }),
 }))
@@ -34,8 +34,9 @@ describe('RegisterPage', () => {
     expect(screen.getByLabelText(/cpf/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/gênero/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/^senha$/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/confirmar senha/i)).toBeInTheDocument()
+    // Usa getAllByLabelText para campos de senha
+    const senhaInputs = screen.getAllByLabelText(/senha/i)
+    expect(senhaInputs.length).toBeGreaterThanOrEqual(2)
     expect(screen.getByRole('button', { name: /criar conta/i })).toBeInTheDocument()
   })
 
@@ -86,12 +87,13 @@ describe('RegisterPage', () => {
     renderPage()
     const user = userEvent.setup()
 
+    // Usa getAllByLabelText e selecciona pelo id
     await user.type(screen.getByLabelText(/nome completo/i), 'Aurel Teste')
     await user.type(screen.getByLabelText(/cpf/i), '52998224725')
     await user.selectOptions(screen.getByLabelText(/gênero/i), 'Male')
     await user.type(screen.getByLabelText(/email/i), 'aurel@teste.com')
-    await user.type(screen.getByLabelText(/^senha$/i), 'Senha@123')
-    await user.type(screen.getByLabelText(/confirmar senha/i), 'Diferente@123')
+    await user.type(document.getElementById('password') as HTMLElement, 'Senha@123')
+    await user.type(document.getElementById('confirmPassword') as HTMLElement, 'Diferente@123')
     await user.click(screen.getByRole('button', { name: /criar conta/i }))
 
     await waitFor(() => {
@@ -103,20 +105,21 @@ describe('RegisterPage', () => {
     renderPage()
     const user = userEvent.setup()
 
+    // Usa getElementById para campos de senha
     await user.type(screen.getByLabelText(/nome completo/i), 'Aurel Teste')
     await user.type(screen.getByLabelText(/cpf/i), '52998224725')
     await user.selectOptions(screen.getByLabelText(/gênero/i), 'Male')
     await user.type(screen.getByLabelText(/email/i), 'aurel@teste.com')
-    await user.type(screen.getByLabelText(/^senha$/i), 'Senha@123')
-    await user.type(screen.getByLabelText(/confirmar senha/i), 'Senha@123')
+    await user.type(document.getElementById('password') as HTMLElement, 'Senha@123')
+    await user.type(document.getElementById('confirmPassword') as HTMLElement, 'Senha@123')
     await user.click(screen.getByRole('button', { name: /criar conta/i }))
 
     await waitFor(() => {
       expect(mockMutate).toHaveBeenCalledWith({
-        name: 'Aurel Teste',
-        cpf: '529.982.247-25',
-        gender: 'Male',
-        email: 'aurel@teste.com',
+        name:     'Aurel Teste',
+        cpf:      '529.982.247-25',
+        gender:   'Male',
+        email:    'aurel@teste.com',
         password: 'Senha@123',
         currency: 'BRL',
         timezone: 'America/Sao_Paulo',

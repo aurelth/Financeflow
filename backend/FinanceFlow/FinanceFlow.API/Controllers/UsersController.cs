@@ -37,7 +37,8 @@ public class UsersController(
         var command = new UpdateUserProfileCommand(
             CurrentUserId,
             request.Currency,
-            request.Timezone);
+            request.Timezone,
+            request.Language);
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
     }

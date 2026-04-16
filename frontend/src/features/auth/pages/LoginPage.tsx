@@ -4,8 +4,10 @@ import { z } from 'zod'
 import { Link } from 'react-router-dom'
 import { Eye, EyeOff, Loader2, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLogin } from '../api/useAuth'
 
+// Schema com mensagens i18n resolvidas fora do componente
 const schema = z.object({
   email:    z.string().email('Email inválido'),
   password: z.string().min(1, 'Senha obrigatória'),
@@ -20,6 +22,7 @@ const inputStyle: React.CSSProperties = {
 }
 
 export default function LoginPage() {
+  const { t }                           = useTranslation('auth')
   const [showPassword, setShowPassword] = useState(false)
   const { mutate: login, isPending }    = useLogin()
 
@@ -40,18 +43,17 @@ export default function LoginPage() {
           <TrendingUp style={{ color: 'var(--ff-emerald)' }} size={26} />
         </div>
         <h1 className="text-2xl font-bold" style={{ color: 'var(--ff-text-primary)' }}>
-          Bem-vindo de volta
+          {t('login.title')}
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--ff-text-muted)' }}>
-          Entre na sua conta para continuar
+          {t('login.subtitle')}
         </p>
       </div>
 
       <form onSubmit={handleSubmit(d => login(d))} className="space-y-5">
         <div className="space-y-1.5">
-          {/* htmlFor + id para acessibilidade */}
           <label htmlFor="email" className="block text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
-            Email
+            {t('login.email')}
           </label>
           <input
             id="email"
@@ -68,16 +70,15 @@ export default function LoginPage() {
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            {/* htmlFor + id */}
             <label htmlFor="password" className="text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
-              Senha
+              {t('login.password')}
             </label>
             <Link
               to="/forgot-password"
               className="text-xs transition-colors"
               style={{ color: 'var(--ff-emerald)' }}
             >
-              Esqueceu a senha?
+              {t('login.forgotPassword')}
             </Link>
           </div>
           <div className="relative">
@@ -113,14 +114,17 @@ export default function LoginPage() {
           onMouseEnter={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald-hover)' }}
           onMouseLeave={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald)' }}
         >
-          {isPending ? <><Loader2 size={16} className="animate-spin" />Entrando...</> : 'Entrar'}
+          {isPending
+            ? <><Loader2 size={16} className="animate-spin" />{t('common:actions.loading')}</>
+            : t('login.submit')
+          }
         </button>
       </form>
 
       <p className="text-center text-sm mt-6" style={{ color: 'var(--ff-text-muted)' }}>
-        Não tem uma conta?{' '}
+        {t('login.noAccount')}{' '}
         <Link to="/register" className="font-medium transition-colors" style={{ color: 'var(--ff-emerald)' }}>
-          Criar conta
+          {t('login.register')}
         </Link>
       </p>
     </div>

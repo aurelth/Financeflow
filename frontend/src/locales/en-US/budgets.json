@@ -1,0 +1,11 @@
+{
+  "page": { "title": "Budgets", "subtitle": "Control your spending by category" },
+  "fields": { "category": "Category", "limit": "Limit", "spent": "Spent", "remaining": "Remaining", "period": "Period" },
+  "actions": {
+    "add": "New budget", "edit": "Edit budget", "delete": "Delete budget",
+    "deleteConfirm": "Are you sure you want to delete this budget?"
+  },
+  "status": { "ok": "Within limit", "warning": "Warning", "exceeded": "Limit exceeded" },
+  "empty": "No budgets found",
+  "summary": { "total": "Total budgeted", "spent": "Total spent", "remaining": "Total remaining" }
+}

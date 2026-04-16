@@ -1,0 +1,19 @@
+{
+  "page": { "title": "Transactions", "subtitle": "Manage your income and expenses" },
+  "fields": {
+    "description": "Description", "amount": "Amount", "date": "Date",
+    "type": "Type", "status": "Status", "category": "Category",
+    "subcategory": "Subcategory", "tags": "Tags", "attachment": "Attachment", "recurring": "Recurring"
+  },
+  "types": { "income": "Income", "expense": "Expense" },
+  "status": { "paid": "Paid", "scheduled": "Scheduled", "pending": "Pending" },
+  "recurrence": { "none": "No recurrence", "monthly": "Monthly" },
+  "actions": {
+    "add": "New transaction", "edit": "Edit transaction", "delete": "Delete transaction",
+    "deleteConfirm": "Are you sure you want to delete this transaction?",
+    "deleteFuture": "Delete this and future", "editFuture": "Update this and future"
+  },
+  "filters": { "all": "All", "income": "Income", "expenses": "Expenses", "search": "Search transactions..." },
+  "empty": "No transactions found",
+  "attachment": { "view": "View", "download": "Download", "remove": "Remove" }
+}

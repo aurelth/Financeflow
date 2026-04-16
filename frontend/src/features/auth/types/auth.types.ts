@@ -6,6 +6,7 @@ export interface UserProfile {
   gender:    string
   currency:  string
   timezone:  string
+  language:  string
   createdAt: string
   role:      'User' | 'Admin'
 }
@@ -36,6 +37,7 @@ export interface LoginRequest {
 export interface UpdateProfileRequest {
   currency: string
   timezone: string
+  language: string
 }
 
 export interface ChangePasswordRequest {

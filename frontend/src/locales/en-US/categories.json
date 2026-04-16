@@ -1,0 +1,13 @@
+{
+  "page": { "title": "Categories", "subtitle": "Organise your transactions by category" },
+  "fields": { "name": "Name", "icon": "Icon", "color": "Color", "type": "Type" },
+  "types": { "income": "Income", "expense": "Expense" },
+  "actions": {
+    "add": "New category", "edit": "Edit category", "delete": "Delete category",
+    "deleteConfirm": "Are you sure you want to delete this category?",
+    "addSubcategory": "New subcategory", "editSubcategory": "Edit subcategory", "deleteSubcategory": "Delete subcategory"
+  },
+  "labels": { "default": "Default", "custom": "Custom", "subcategories": "Subcategories", "noSubcategories": "No subcategories" },
+  "empty": "No categories found",
+  "filters": { "all": "All", "income": "Income", "expenses": "Expenses" }
+}

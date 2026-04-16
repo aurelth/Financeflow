@@ -1,29 +1,11 @@
 import { NavLink } from 'react-router-dom'
 import {
-  LayoutDashboard,
-  ArrowLeftRight,
-  Tag,
-  PiggyBank,
-  BarChart3,
-  GitCompare,
-  FileText,
-  Settings,
-  ShieldCheck,
+  LayoutDashboard, ArrowLeftRight, Tag, PiggyBank,
+  BarChart3, GitCompare, FileText, Settings, ShieldCheck, Upload,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/authStore'
-import { Upload } from 'lucide-react'
-
-const navItems = [
-  { to: '/dashboard',    icon: LayoutDashboard, label: 'Dashboard'   },
-  { to: '/transactions', icon: ArrowLeftRight,  label: 'Transações'  },
-  { to: '/categories',   icon: Tag,             label: 'Categorias'  },
-  { to: '/budgets',      icon: PiggyBank,       label: 'Orçamentos'  },
-  { to: '/comparison',   icon: GitCompare,      label: 'Comparativo' },
-  { to: '/reports',      icon: BarChart3,       label: 'Relatórios'  },
-  { to: '/exports',      icon: FileText,        label: 'Exportar'    },
-  { to: '/imports', icon: Upload, label: 'Importar OFX' },
-]
+import { useTranslation } from 'react-i18next'
 
 const navLinkStyle = ({ isActive }: { isActive: boolean }) =>
   isActive
@@ -53,8 +35,21 @@ function onNavLeave(e: React.MouseEvent<HTMLAnchorElement>) {
 }
 
 export default function Sidebar() {
+  const { t }   = useTranslation('common')
   const user    = useAuthStore(s => s.user)
   const isAdmin = user?.role === 'Admin'
+
+  // Nav items dinâmicos com traduções
+  const navItems = [
+    { to: '/dashboard',    icon: LayoutDashboard, label: t('nav.dashboard')    },
+    { to: '/transactions', icon: ArrowLeftRight,  label: t('nav.transactions') },
+    { to: '/categories',   icon: Tag,             label: t('nav.categories')   },
+    { to: '/budgets',      icon: PiggyBank,       label: t('nav.budgets')      },
+    { to: '/comparison',   icon: GitCompare,      label: t('nav.comparison')   },
+    { to: '/reports',      icon: BarChart3,       label: t('nav.reports')      },
+    { to: '/exports',      icon: FileText,        label: t('nav.exports')      },
+    { to: '/imports',      icon: Upload,          label: t('nav.imports')      },
+  ]
 
   return (
     <aside
@@ -108,7 +103,7 @@ export default function Sidebar() {
               onMouseLeave={onNavLeave}
             >
               <ShieldCheck size={18} />
-              Painel Admin
+              {t('nav.admin')}
             </NavLink>
           </>
         )}
@@ -136,7 +131,7 @@ export default function Sidebar() {
           }}
         >
           <Settings size={18} />
-          Configurações
+          {t('nav.settings')}
         </NavLink>
       </div>
     </aside>

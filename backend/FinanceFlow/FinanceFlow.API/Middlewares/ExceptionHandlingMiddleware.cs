@@ -1,7 +1,7 @@
-
 using System.Net;
 using System.Text.Json;
 using FinanceFlow.Application.Common.Exceptions;
+using FinanceFlow.Infrastructure.Localization;
 
 namespace FinanceFlow.API.Middlewares;
 
@@ -9,6 +9,8 @@ public class ExceptionHandlingMiddleware(
     RequestDelegate next,
     ILogger<ExceptionHandlingMiddleware> logger)
 {
+    private static readonly HashSet<string> Supported = ["pt-BR", "en-US", "es-ES", "fr-FR"];
+
     public async Task InvokeAsync(HttpContext context)
     {
         try
@@ -26,6 +28,9 @@ public class ExceptionHandlingMiddleware(
     {
         context.Response.ContentType = "application/json";
 
+        // Detecta idioma do header
+        var language = DetectLanguage(context);
+
         if (ex is ValidationException validationEx)
         {
             context.Response.StatusCode = (int)HttpStatusCode.UnprocessableEntity;
@@ -34,7 +39,7 @@ public class ExceptionHandlingMiddleware(
                 status = (int)HttpStatusCode.UnprocessableEntity,
                 message = validationEx.Errors.Count == 0
                     ? validationEx.Message
-                    : "Um ou mais erros de validação ocorreram.",
+                    : Messages.Get(Messages.ValidationError, language),
                 errors = validationEx.Errors,
                 traceId = context.TraceIdentifier,
             });
@@ -44,19 +49,26 @@ public class ExceptionHandlingMiddleware(
         var (statusCode, message) = ex switch
         {
             NotFoundException => (HttpStatusCode.NotFound, ex.Message),
-            UnauthorizedException => (HttpStatusCode.Unauthorized, ex.Message),
-            _ => (HttpStatusCode.InternalServerError, "Ocorreu um erro interno. Tente novamente.")
+            UnauthorizedException => (HttpStatusCode.Unauthorized, Messages.Get(Messages.Unauthorized, language)),
+            _ => (HttpStatusCode.InternalServerError, Messages.Get(Messages.InternalError, language)),
         };
 
         context.Response.StatusCode = (int)statusCode;
-
         var response = JsonSerializer.Serialize(new
         {
             status = (int)statusCode,
             message,
-            traceId = context.TraceIdentifier
+            traceId = context.TraceIdentifier,
         });
-
         return context.Response.WriteAsync(response);
+    }
+
+    // Detecta idioma do header Accept-Language
+    private static string DetectLanguage(HttpContext context)
+    {
+        var header = context.Request.Headers["Accept-Language"].FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(header)) return "en-US";
+        var primary = header.Split(',')[0].Split(';')[0].Trim();
+        return Supported.Contains(primary) ? primary : "en-US";
     }
 }

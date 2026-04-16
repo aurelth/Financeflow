@@ -1,0 +1,12 @@
+{
+  "page": { "title": "Informes", "subtitle": "Analiza tus finanzas en detalle" },
+  "tabs": { "cashFlow": "Flujo de caja", "annual": "Resumen anual", "byCategory": "Por categoría", "byTag": "Por etiqueta", "projections": "Proyecciones" },
+  "filters": { "from": "Desde", "to": "Hasta", "groupBy": "Agrupar por", "day": "Día", "month": "Mes", "all": "Todos", "income": "Ingresos", "expenses": "Gastos" },
+  "cashFlow": { "title": "Flujo de caja", "subtitle": "Ingresos y gastos por período", "totalIncome": "Total ingresos", "totalExpenses": "Total gastos", "netBalance": "Saldo neto" },
+  "annual": { "title": "Resumen anual", "subtitle": "Ingresos y gastos mensuales", "averageMonthly": "Media mensual" },
+  "byCategory": { "title": "Distribución por categoría", "subtitle": "Top 10 categorías en el período", "totalExpenses": "Total gastos", "totalIncome": "Total ingresos" },
+  "byTag": { "title": "Distribución por etiqueta", "subtitle": "Top 15 etiquetas en el período", "total": "Total por etiquetas" },
+  "projections": { "title": "Historial + Proyección", "subtitle": "Barras sólidas = historial real · Barras punteadas = proyección", "monthsAnalysed": "Meses analizados", "monthsProjected": "Meses proyectados", "avgIncome": "Media ingresos histórica", "avgExpenses": "Media gastos histórica", "note": "Las proyecciones se calculan usando regresión lineal ponderada combinada con ajuste estacional.", "projected": "proy." },
+  "exports": { "title": "Exportaciones", "subtitle": "Exporta tus datos financieros", "request": "Solicitar informe", "download": "Descargar", "delete": "Eliminar", "status": { "pending": "Pendiente", "processing": "Procesando", "completed": "Completado", "failed": "Fallido" }, "empty": "No se encontraron informes" },
+  "columns": { "period": "Período", "income": "Ingresos", "expenses": "Gastos", "balance": "Saldo", "cumulative": "Acumulado", "month": "Mes", "category": "Categoría", "value": "Valor", "percentage": "%", "transactions": "Transacciones", "tag": "Etiqueta" }
+}

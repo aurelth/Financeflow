@@ -1,0 +1,34 @@
+{
+  "page": { "title": "Dashboard", "subtitle": "Overview of your finances" },
+  "summary": {
+    "income": "Income",
+    "expenses": "Expenses",
+    "balance": "Balance",
+    "projectedBalance": "Projected Balance",
+    "projectedSubtitle": "Includes scheduled transactions"
+  },
+  "charts": {
+    "balanceEvolution": "Balance Evolution",
+    "expensesByCategory": "Expenses by Category",
+    "weeklyComparison": "Weekly Comparison",
+    "noExpenses": "No expenses in this period"
+  },
+  "widgets": {
+    "recentTransactions": "Recent Transactions",
+    "topBudgets": "Top Budgets",
+    "noTransactions": "No recent transactions",
+    "noBudgets": "No active budgets",
+    "viewAll": "View all"
+  },
+  "comparison": {
+    "title": "Historical Comparison",
+    "subtitle": "Compare up to 3 periods and analyse the evolution of your finances",
+    "periods": "Selected periods",
+    "addPeriod": "Add period",
+    "removePeriod": "Remove period",
+    "evolutionChart": "Evolution between Periods",
+    "categoryChart": "Expenses by Category",
+    "detailTable": "Category Breakdown",
+    "noData": "Select at least one period to compare"
+  }
+}

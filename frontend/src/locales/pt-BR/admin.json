@@ -1,0 +1,37 @@
+{
+  "page": {
+    "title": "Administração",
+    "subtitle": "Gerencie utilizadores e categorias do sistema"
+  },
+  "users": {
+    "title": "Utilizadores",
+    "subtitle": "Gerencie os utilizadores da plataforma",
+    "name": "Nome",
+    "email": "Email",
+    "role": "Função",
+    "status": "Estado",
+    "actions": "Ações",
+    "promote": "Promover a Admin",
+    "demote": "Remover Admin",
+    "activate": "Ativar",
+    "deactivate": "Desativar",
+    "confirmPromote": "Tem certeza que deseja promover este utilizador?",
+    "confirmDeactivate": "Tem certeza que deseja desativar este utilizador?"
+  },
+  "categories": {
+    "title": "Categorias do Sistema",
+    "subtitle": "Gerencie as categorias padrão da plataforma",
+    "add": "Nova categoria",
+    "edit": "Editar categoria",
+    "delete": "Eliminar categoria"
+  },
+  "roles": {
+    "admin": "Administrador",
+    "user": "Utilizador"
+  },
+  "stats": {
+    "totalUsers": "Total de utilizadores",
+    "activeUsers": "Utilizadores ativos",
+    "totalCategories": "Total de categorias"
+  }
+}

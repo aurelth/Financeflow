@@ -1,0 +1,11 @@
+{
+  "page": { "title": "Transactions", "subtitle": "Gérez vos revenus et dépenses" },
+  "fields": { "description": "Description", "amount": "Montant", "date": "Date", "type": "Type", "status": "Statut", "category": "Catégorie", "subcategory": "Sous-catégorie", "tags": "Étiquettes", "attachment": "Pièce jointe", "recurring": "Récurrent" },
+  "types": { "income": "Revenu", "expense": "Dépense" },
+  "status": { "paid": "Payé", "scheduled": "Planifié", "pending": "En attente" },
+  "recurrence": { "none": "Sans récurrence", "monthly": "Mensuel" },
+  "actions": { "add": "Nouvelle transaction", "edit": "Modifier la transaction", "delete": "Supprimer la transaction", "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette transaction ?", "deleteFuture": "Supprimer celle-ci et les suivantes", "editFuture": "Mettre à jour celle-ci et les suivantes" },
+  "filters": { "all": "Tous", "income": "Revenus", "expenses": "Dépenses", "search": "Rechercher des transactions..." },
+  "empty": "Aucune transaction trouvée",
+  "attachment": { "view": "Voir", "download": "Télécharger", "remove": "Supprimer" }
+}

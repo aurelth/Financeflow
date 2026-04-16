@@ -1,0 +1,15 @@
+{
+  "page": { "title": "Import OFX", "subtitle": "Import bank statements in OFX format" },
+  "upload": {
+    "drag": "Drag the OFX file here", "or": "or", "browse": "select a file",
+    "onlyOFX": "Only .ofx files are supported.", "send": "Send", "selected": "Selected file"
+  },
+  "history": { "title": "Import history", "empty": "No imports found", "transactions": "transactions", "imported": "imported", "duplicates": "duplicates", "errors": "errors" },
+  "status": { "pending": "Pending", "processing": "Processing", "completed": "Completed", "failed": "Failed" },
+  "actions": { "preview": "View preview", "delete": "Delete import", "confirm": "Confirm", "deleteConfirm": "Are you sure you want to delete this import?" },
+  "preview": {
+    "title": "Import preview", "selected": "transactions selected", "selectAll": "Select all",
+    "description": "Description", "date": "Date", "category": "Category", "value": "Value",
+    "duplicate": "Duplicate", "noCategory": "No category"
+  }
+}

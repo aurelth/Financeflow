@@ -3,11 +3,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Eye, EyeOff, Loader2, Lock, Settings, User } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useUserProfile, useUpdateProfile, useChangePassword } from '../api/useAuth'
 
 const preferencesSchema = z.object({
   currency: z.string().min(1).max(10),
   timezone: z.string().min(1).max(50),
+  language: z.string().min(1),
 })
 
 const passwordSchema = z.object({
@@ -24,54 +26,61 @@ const passwordSchema = z.object({
 })
 
 type PreferencesForm = z.infer<typeof preferencesSchema>
-type PasswordForm = z.infer<typeof passwordSchema>
+type PasswordForm    = z.infer<typeof passwordSchema>
 
 const CURRENCIES = [
   { value: 'BRL', label: 'Real Brasileiro (BRL)' },
   { value: 'USD', label: 'Dólar Americano (USD)' },
-  { value: 'EUR', label: 'Euro (EUR)' },
+  { value: 'EUR', label: 'Euro (EUR)'             },
   { value: 'GBP', label: 'Libra Esterlina (GBP)' },
 ]
 
 const TIMEZONES = [
-  { value: 'America/Sao_Paulo', label: 'Brasília (GMT-3)' },
-  { value: 'America/Manaus', label: 'Manaus (GMT-4)' },
-  { value: 'America/Belem', label: 'Belém (GMT-3)' },
-  { value: 'America/Fortaleza', label: 'Fortaleza (GMT-3)' },
-  { value: 'America/Recife', label: 'Recife (GMT-3)' },
-  { value: 'America/New_York', label: 'Nova York (GMT-5)' },
-  { value: 'America/Chicago', label: 'Chicago (GMT-6)' },
+  { value: 'America/Sao_Paulo',   label: 'Brasília (GMT-3)'    },
+  { value: 'America/Manaus',      label: 'Manaus (GMT-4)'      },
+  { value: 'America/Belem',       label: 'Belém (GMT-3)'       },
+  { value: 'America/Fortaleza',   label: 'Fortaleza (GMT-3)'   },
+  { value: 'America/Recife',      label: 'Recife (GMT-3)'      },
+  { value: 'America/New_York',    label: 'Nova York (GMT-5)'   },
+  { value: 'America/Chicago',     label: 'Chicago (GMT-6)'     },
   { value: 'America/Los_Angeles', label: 'Los Angeles (GMT-8)' },
-  { value: 'Europe/London', label: 'Londres (GMT+0)' },
-  { value: 'Europe/Paris', label: 'Paris (GMT+1)' },
+  { value: 'Europe/London',       label: 'Londres (GMT+0)'     },
+  { value: 'Europe/Paris',        label: 'Paris (GMT+1)'       },
+]
+
+const LANGUAGES = [
+  { value: 'pt-BR', label: 'Português (Brasil)' },
+  { value: 'en-US', label: 'English (US)'        },
+  { value: 'es-ES', label: 'Español'             },
+  { value: 'fr-FR', label: 'Français'            },
 ]
 
 const inputStyle: React.CSSProperties = {
-  width: '100%',
-  background: 'var(--ff-bg-elevated)',
-  border: '1px solid var(--ff-border)',
+  width:        '100%',
+  background:   'var(--ff-bg-elevated)',
+  border:       '1px solid var(--ff-border)',
   borderRadius: '10px',
-  padding: '9px 14px',
-  color: 'var(--ff-text-primary)',
-  fontSize: '14px',
-  outline: 'none',
-  transition: 'border-color 0.15s',
+  padding:      '9px 14px',
+  color:        'var(--ff-text-primary)',
+  fontSize:     '14px',
+  outline:      'none',
+  transition:   'border-color 0.15s',
 }
 
 const readonlyStyle: React.CSSProperties = {
   ...inputStyle,
   cursor: 'default',
-  color: 'var(--ff-text-secondary)',
+  color:  'var(--ff-text-secondary)',
 }
 
 const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: '11px',
-  fontWeight: 500,
+  display:       'block',
+  fontSize:      '11px',
+  fontWeight:    500,
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
-  color: 'var(--ff-text-muted)',
-  marginBottom: '4px',
+  color:         'var(--ff-text-muted)',
+  marginBottom:  '4px',
 }
 
 function onHoverEnterBtnEmerald(e: React.MouseEvent<HTMLButtonElement>) {
@@ -94,23 +103,28 @@ function onBlurBorder(e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>)
 }
 
 export default function ProfilePage() {
-  const { data: profile, isLoading } = useUserProfile()
+  const { t }                                          = useTranslation('auth')
+  const { data: profile, isLoading }                   = useUserProfile()
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile()
   const { mutate: changePassword, isPending: isChanging } = useChangePassword()
 
   const [showCurrent, setShowCurrent] = useState(false)
-  const [showNew, setShowNew] = useState(false)
+  const [showNew,     setShowNew]     = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
   const prefForm = useForm<PreferencesForm>({ resolver: zodResolver(preferencesSchema) })
   const passForm = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) })
 
   useEffect(() => {
-    if (profile) prefForm.reset({ currency: profile.currency, timezone: profile.timezone })
+    if (profile) prefForm.reset({
+      currency: profile.currency,
+      timezone: profile.timezone,
+      language: profile.language ?? 'pt-BR',
+    })
   }, [profile])
 
   const genderLabel = (g: string) =>
-    g === 'Male' ? 'Masculino' : g === 'Female' ? 'Feminino' : '—'
+    g === 'Male' ? t('register.genderMale') : g === 'Female' ? t('register.genderFemale') : '—'
 
   if (isLoading) {
     return (
@@ -127,9 +141,11 @@ export default function ProfilePage() {
     <div className="max-w-2xl mx-auto space-y-6">
 
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--ff-text-primary)' }}>Perfil</h1>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--ff-text-primary)' }}>
+          {t('profile.title')}
+        </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--ff-text-muted)' }}>
-          Gerencie suas informações e preferências
+          {t('profile.subtitle')}
         </p>
       </div>
 
@@ -141,28 +157,28 @@ export default function ProfilePage() {
         <div className="flex items-center gap-2 mb-5">
           <User size={16} style={{ color: 'var(--ff-emerald)' }} />
           <h2 className="font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
-            Dados pessoais
+            {t('profile.identity')}
           </h2>
         </div>
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label style={labelStyle}>Nome completo</label>
+              <label style={labelStyle}>{t('profile.name')}</label>
               <div style={readonlyStyle}>{profile?.name ?? '—'}</div>
             </div>
             <div className="space-y-1">
-              <label style={labelStyle}>Email</label>
+              <label style={labelStyle}>{t('profile.email')}</label>
               <div style={readonlyStyle}>{profile?.email ?? '—'}</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label style={labelStyle}>CPF</label>
+              <label style={labelStyle}>{t('profile.cpf')}</label>
               <div style={readonlyStyle}>{profile?.cpf || '—'}</div>
             </div>
             <div className="space-y-1">
-              <label style={labelStyle}>Gênero</label>
+              <label style={labelStyle}>{t('profile.gender')}</label>
               <div style={readonlyStyle}>{genderLabel(profile?.gender ?? '')}</div>
             </div>
           </div>
@@ -170,8 +186,8 @@ export default function ProfilePage() {
 
         <p className="text-xs mt-4" style={{ color: 'var(--ff-text-muted)' }}>
           Para alterar seu nome, envie um email para{' '}
-
-          <a href="mailto:suporte@financeflow.com"
+          
+            <a href="mailto:suporte@financeflow.com"
             className="transition-opacity hover:opacity-75"
             style={{ color: 'var(--ff-emerald)' }}
           >
@@ -187,14 +203,15 @@ export default function ProfilePage() {
       >
         <div className="flex items-center gap-2 mb-5">
           <Settings size={16} style={{ color: 'var(--ff-emerald)' }} />
-          <h2 className="font-semibold" style={{ color: 'var(--ff-text-primary)' }}>Preferências</h2>
+          <h2 className="font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
+            {t('profile.preferences')}
+          </h2>
         </div>
 
         <form onSubmit={prefForm.handleSubmit(d => updateProfile(d))} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
-              {/* htmlFor + id */}
-              <label htmlFor="currency" style={labelStyle}>Moeda</label>
+              <label htmlFor="currency" style={labelStyle}>{t('profile.currency')}</label>
               <select
                 id="currency"
                 {...prefForm.register('currency')}
@@ -216,8 +233,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-1">
-              {/* htmlFor + id */}
-              <label htmlFor="timezone" style={labelStyle}>Fuso horário</label>
+              <label htmlFor="timezone" style={labelStyle}>{t('profile.timezone')}</label>
               <select
                 id="timezone"
                 {...prefForm.register('timezone')}
@@ -225,15 +241,37 @@ export default function ProfilePage() {
                 onFocus={onFocusEmerald}
                 onBlur={onBlurBorder}
               >
-                {TIMEZONES.map(t => (
-                  <option key={t.value} value={t.value} style={{ background: '#111' }}>
-                    {t.label}
+                {TIMEZONES.map(tz => (
+                  <option key={tz.value} value={tz.value} style={{ background: '#111' }}>
+                    {tz.label}
                   </option>
                 ))}
               </select>
               {prefErrors.timezone && (
                 <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>
                   {prefErrors.timezone?.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="language" style={labelStyle}>{t('profile.language')}</label>
+              <select
+                id="language"
+                {...prefForm.register('language')}
+                style={inputStyle}
+                onFocus={onFocusEmerald}
+                onBlur={onBlurBorder}
+              >
+                {LANGUAGES.map(l => (
+                  <option key={l.value} value={l.value} style={{ background: '#111' }}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+              {prefErrors.language && (
+                <p className="text-xs" style={{ color: 'var(--ff-expense)' }}>
+                  {prefErrors.language?.message}
                 </p>
               )}
             </div>
@@ -248,7 +286,7 @@ export default function ProfilePage() {
               onMouseEnter={isUpdating ? undefined : onHoverEnterBtnEmerald}
               onMouseLeave={isUpdating ? undefined : onHoverLeaveBtnEmerald}
             >
-              {isUpdating ? 'Salvando...' : 'Salvar preferências'}
+              {isUpdating ? t('common:actions.loading') : t('profile.savePreferences')}
             </button>
           </div>
         </form>
@@ -261,7 +299,9 @@ export default function ProfilePage() {
       >
         <div className="flex items-center gap-2 mb-5">
           <Lock size={16} style={{ color: 'var(--ff-emerald)' }} />
-          <h2 className="font-semibold" style={{ color: 'var(--ff-text-primary)' }}>Alterar senha</h2>
+          <h2 className="font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
+            {t('profile.security')}
+          </h2>
         </div>
 
         <form
@@ -270,10 +310,10 @@ export default function ProfilePage() {
           )}
           className="space-y-4"
         >
-          {/* Senha atual */}
           <div className="space-y-1">
-            {/* htmlFor + id */}
-            <label htmlFor="currentPassword" style={labelStyle}>Senha atual</label>
+            <label htmlFor="currentPassword" style={labelStyle}>
+              {t('profile.currentPassword')}
+            </label>
             <div className="relative">
               <input
                 id="currentPassword"
@@ -303,11 +343,11 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {/* Nova senha + Confirmar */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              {/* htmlFor + id */}
-              <label htmlFor="newPassword" style={labelStyle}>Nova senha</label>
+              <label htmlFor="newPassword" style={labelStyle}>
+                {t('profile.newPassword')}
+              </label>
               <div className="relative">
                 <input
                   id="newPassword"
@@ -338,8 +378,9 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-1">
-              {/* htmlFor + id */}
-              <label htmlFor="confirmPassword" style={labelStyle}>Confirmar senha</label>
+              <label htmlFor="confirmPassword" style={labelStyle}>
+                {t('profile.confirmPassword')}
+              </label>
               <div className="relative">
                 <input
                   id="confirmPassword"
@@ -379,7 +420,7 @@ export default function ProfilePage() {
               onMouseEnter={isChanging ? undefined : onHoverEnterBtnEmerald}
               onMouseLeave={isChanging ? undefined : onHoverLeaveBtnEmerald}
             >
-              {isChanging ? 'Alterando...' : 'Alterar senha'}
+              {isChanging ? t('common:actions.loading') : t('profile.changePassword')}
             </button>
           </div>
         </form>

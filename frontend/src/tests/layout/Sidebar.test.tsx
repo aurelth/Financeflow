@@ -24,12 +24,14 @@ const renderSidebar = (role: 'Admin' | 'User') => {
 describe('Sidebar', () => {
   it('deve exibir o link Painel Admin para usuário Admin', () => {
     renderSidebar('Admin')
-    expect(screen.getByText('Painel Admin')).toBeInTheDocument()
+    // 'Painel Admin' → 'Administração' (via t('nav.admin'))
+    expect(screen.getByText('Administração')).toBeInTheDocument()
   })
 
   it('não deve exibir o link Painel Admin para usuário comum', () => {
     renderSidebar('User')
-    expect(screen.queryByText('Painel Admin')).not.toBeInTheDocument()
+    // 'Painel Admin' → 'Administração'
+    expect(screen.queryByText('Administração')).not.toBeInTheDocument()
   })
 
   it('deve sempre exibir os links de navegação principais', () => {

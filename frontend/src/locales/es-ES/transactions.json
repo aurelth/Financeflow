@@ -1,0 +1,11 @@
+{
+  "page": { "title": "Transacciones", "subtitle": "Gestiona tus ingresos y gastos" },
+  "fields": { "description": "Descripción", "amount": "Importe", "date": "Fecha", "type": "Tipo", "status": "Estado", "category": "Categoría", "subcategory": "Subcategoría", "tags": "Etiquetas", "attachment": "Adjunto", "recurring": "Recurrente" },
+  "types": { "income": "Ingreso", "expense": "Gasto" },
+  "status": { "paid": "Pagado", "scheduled": "Programado", "pending": "Pendiente" },
+  "recurrence": { "none": "Sin recurrencia", "monthly": "Mensual" },
+  "actions": { "add": "Nueva transacción", "edit": "Editar transacción", "delete": "Eliminar transacción", "deleteConfirm": "¿Estás seguro de que deseas eliminar esta transacción?", "deleteFuture": "Eliminar esta y futuras", "editFuture": "Actualizar esta y futuras" },
+  "filters": { "all": "Todos", "income": "Ingresos", "expenses": "Gastos", "search": "Buscar transacciones..." },
+  "empty": "No se encontraron transacciones",
+  "attachment": { "view": "Ver", "download": "Descargar", "remove": "Eliminar" }
+}
