@@ -1,7 +1,8 @@
 import { Outlet } from 'react-router-dom'
-import Sidebar from './Sidebar'
-import Header from './Header'
-import { useReportHub } from '@/features/reports/hooks/useReportHub'
+import Sidebar          from './Sidebar'
+import Header           from './Header'
+import ErrorBoundary    from '@/components/ErrorBoundary'
+import { useReportHub }       from '@/features/reports/hooks/useReportHub'
 import { useNotificationHub } from '@/hooks/useNotificationHub'
 
 export default function AppLayout() {
@@ -13,8 +14,11 @@ export default function AppLayout() {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
+        {/* ErrorBoundary envolve o conteúdo principal */}
         <main className="flex-1 overflow-y-auto p-6" style={{ background: 'var(--ff-bg-base)' }}>
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>
