@@ -1,6 +1,6 @@
-import { ChevronDown, LogOut, User } from 'lucide-react'
-import { useAuthStore } from '@/store/authStore'
-import { useLogout } from '@/features/auth/api/useAuth'
+import { ChevronDown, LogOut, User, Menu } from 'lucide-react'
+import { useAuthStore }    from '@/store/authStore'
+import { useLogout }       from '@/features/auth/api/useAuth'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,8 +9,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useNavigate }     from 'react-router-dom'
+import { useTranslation }  from 'react-i18next'
+import { useSidebarStore } from '@/store/sidebarStore'
 import NotificationDropdown from '@/features/notifications/components/NotificationDropdown'
 
 export default function Header() {
@@ -18,6 +19,7 @@ export default function Header() {
   const { user }           = useAuthStore()
   const { mutate: logout } = useLogout()
   const navigate           = useNavigate()
+  const { toggle }         = useSidebarStore()
 
   const initials = user?.name
     .split(' ')
@@ -28,13 +30,31 @@ export default function Header() {
 
   return (
     <header
-      className="h-16 px-6 flex items-center justify-between"
+      className="h-16 px-4 md:px-6 flex items-center justify-between"
       style={{
         background:   'var(--ff-bg-card)',
         borderBottom: '1px solid var(--ff-border)',
       }}
     >
-      <div />
+      {/* Botão hamburger em mobile */}
+      <button
+        onClick={toggle}
+        className="lg:hidden p-2 rounded-xl transition-colors"
+        style={{ color: 'var(--ff-text-muted)' }}
+        onMouseEnter={e => {
+          e.currentTarget.style.color      = 'var(--ff-text-primary)'
+          e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.color      = 'var(--ff-text-muted)'
+          e.currentTarget.style.background = 'transparent'
+        }}
+      >
+        <Menu size={20} />
+      </button>
+
+      {/* Espaçador desktop */}
+      <div className="hidden lg:block" />
 
       <div className="flex items-center gap-3">
         <NotificationDropdown />

@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { TrendingUp } from 'lucide-react'
 
 export default function AuthLayout() {
   return (
@@ -18,13 +19,13 @@ export default function AuthLayout() {
         />
       </div>
 
-      {/* Logo */}
+      {/* Logo — ícone TrendingUp */}
       <div className="absolute top-8 left-8 flex items-center gap-2">
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center"
           style={{ background: 'var(--ff-emerald)' }}
         >
-          <span style={{ color: 'var(--ff-emerald-subtle)', fontWeight: 700, fontSize: 13 }}>FF</span>
+          <TrendingUp size={15} style={{ color: 'var(--ff-emerald-subtle)' }} />
         </div>
         <span style={{ color: 'var(--ff-text-primary)', fontWeight: 600, fontSize: 17 }}>FinanceFlow</span>
       </div>
