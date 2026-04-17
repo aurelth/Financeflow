@@ -1,9 +1,9 @@
 import '@testing-library/jest-dom'
+import React from 'react'
 import { vi } from 'vitest'
 
-// Dicionário de traduções para testes (pt-BR)
+// Mock global do react-i18next
 const translations: Record<string, string> = {
-  // common
   'actions.save':            'Guardar',
   'actions.cancel':          'Cancelar',
   'actions.delete':          'Eliminar',
@@ -23,7 +23,6 @@ const translations: Record<string, string> = {
   'nav.profile':             'Perfil',
   'nav.admin':               'Administração',
   'nav.comparison':          'Comparativo',
-  // auth
   'login.title':             'Bem-vindo de volta',
   'login.subtitle':          'Entre na sua conta para continuar',
   'login.email':             'Email',
@@ -61,7 +60,6 @@ const translations: Record<string, string> = {
   'profile.confirmPassword': 'Confirmar senha',
   'profile.savePreferences': 'Salvar preferências',
   'profile.changePassword':  'Alterar senha',
-  // settings
   'page.title':              'Configurações',
   'page.subtitle':           'Gerencie as preferências do sistema e da sua conta',
   'sections.language':       'Idioma',
@@ -69,11 +67,9 @@ const translations: Record<string, string> = {
   'language.subtitle':       'Escolha o idioma para textos e formatação',
 }
 
-// Mock global do react-i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
-      // Remove namespace (ex: 'common:actions.save' → 'actions.save')
       const withoutNs = key.includes(':') ? key.split(':')[1] : key
       return translations[withoutNs] ?? withoutNs
     },
@@ -82,18 +78,42 @@ vi.mock('react-i18next', () => ({
       language: 'pt-BR',
     },
   }),
-  Trans: ({ children }: { children: React.ReactNode }) => children,
+  Trans: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   initReactI18next: { type: '3rdParty', init: vi.fn() },
+}))
+
+// Mock do framer-motion com JSX
+vi.mock('framer-motion', () => ({
+  motion: new Proxy({}, {
+    get: (_target, tag: string) => {
+      const Component = ({
+        children,
+        initial:    _i,
+        animate:    _a,
+        exit:       _e,
+        transition: _t,
+        variants:   _v,
+        whileHover: _wh,
+        whileTap:   _wt,
+        ...props
+      }: any) => React.createElement(tag, props, children)
+      Component.displayName = `motion.${tag}`
+      return Component
+    },
+  }),
+  AnimatePresence: ({ children }: any) => <>{children}</>,
+  useAnimation:    () => ({ start: vi.fn() }),
+  useInView:       () => true,
 }))
 
 // Mock do driver.js
 vi.mock('driver.js', () => ({
   driver: vi.fn(() => ({
-    setSteps:    vi.fn(),
-    setConfig:   vi.fn(),
-    drive:       vi.fn(),
-    destroy:     vi.fn(),
-    moveNext:    vi.fn(),
+    setSteps:     vi.fn(),
+    setConfig:    vi.fn(),
+    drive:        vi.fn(),
+    destroy:      vi.fn(),
+    moveNext:     vi.fn(),
     movePrevious: vi.fn(),
   })),
 }))
@@ -101,32 +121,9 @@ vi.mock('driver.js', () => ({
 // Mock do lib/driver
 vi.mock('@/lib/driver', () => ({
   createDriver: vi.fn(() => ({
-    setSteps:    vi.fn(),
-    setConfig:   vi.fn(),
-    drive:       vi.fn(),
-    destroy:     vi.fn(),
+    setSteps:  vi.fn(),
+    setConfig: vi.fn(),
+    drive:     vi.fn(),
+    destroy:   vi.fn(),
   })),
 }))
-
-// Mock do framer-motion
-vi.mock('framer-motion', () => {
-  const createComponent = (tag: string) =>
-    ({ children, ...props }: any) => {      
-      const { initial, animate, exit, transition, variants, whileHover, whileTap, ...rest } = props
-      return Object.assign(document.createElement(tag), rest, { children })
-    }
-
-  return {
-    motion: {
-      div:     createComponent('div'),
-      section: createComponent('section'),
-      ul:      createComponent('ul'),
-      li:      createComponent('li'),
-      span:    createComponent('span'),
-      p:       createComponent('p'),
-    },
-    AnimatePresence: ({ children }: any) => children,
-    useAnimation:    () => ({ start: vi.fn() }),
-    useInView:       () => true,
-  }
-})
