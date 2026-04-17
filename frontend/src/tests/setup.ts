@@ -107,3 +107,26 @@ vi.mock('@/lib/driver', () => ({
     destroy:     vi.fn(),
   })),
 }))
+
+// Adicionado: mock do framer-motion
+vi.mock('framer-motion', () => {
+  const createComponent = (tag: string) =>
+    ({ children, ...props }: any) => {      
+      const { initial, animate, exit, transition, variants, whileHover, whileTap, ...rest } = props
+      return Object.assign(document.createElement(tag), rest, { children })
+    }
+
+  return {
+    motion: {
+      div:     createComponent('div'),
+      section: createComponent('section'),
+      ul:      createComponent('ul'),
+      li:      createComponent('li'),
+      span:    createComponent('span'),
+      p:       createComponent('p'),
+    },
+    AnimatePresence: ({ children }: any) => children,
+    useAnimation:    () => ({ start: vi.fn() }),
+    useInView:       () => true,
+  }
+})
