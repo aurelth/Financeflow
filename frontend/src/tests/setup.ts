@@ -108,7 +108,7 @@ vi.mock('@/lib/driver', () => ({
   })),
 }))
 
-// Adicionado: mock do framer-motion
+// Mock do framer-motion
 vi.mock('framer-motion', () => {
   const createComponent = (tag: string) =>
     ({ children, ...props }: any) => {      
