@@ -11,11 +11,11 @@ export default function AppLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--ff-bg-base)' }}>
+      {/* Sidebar — desktop sempre visível, mobile via drawer (gerido internamente) */}
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0"> {/* min-w-0 */}
         <Header />
-        {/* ErrorBoundary envolve o conteúdo principal */}
-        <main className="flex-1 overflow-y-auto p-6" style={{ background: 'var(--ff-bg-base)' }}>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6" style={{ background: 'var(--ff-bg-base)' }}> {/* p responsivo */}
           <ErrorBoundary>
             <Outlet />
           </ErrorBoundary>
