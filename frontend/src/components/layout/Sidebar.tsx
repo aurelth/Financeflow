@@ -1,14 +1,11 @@
-import { NavLink, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, ArrowLeftRight, Tag, PiggyBank,
-  BarChart3, GitCompare, FileText, Settings, ShieldCheck, Upload, X, TrendingUp,
+  BarChart3, GitCompare, FileText, Settings, ShieldCheck, Upload,
 } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { useAuthStore }    from '@/store/authStore'
-import { useTranslation }  from 'react-i18next'
-import { useSidebarStore } from '@/store/sidebarStore'
+import { useAuthStore } from '@/store/authStore'
+import { useTranslation } from 'react-i18next'
 
 const navLinkStyle = ({ isActive }: { isActive: boolean }) =>
   isActive
@@ -38,17 +35,11 @@ function onNavLeave(e: React.MouseEvent<HTMLAnchorElement>) {
 }
 
 export default function Sidebar() {
-  const { t }      = useTranslation('common')
-  const user       = useAuthStore(s => s.user)
-  const isAdmin    = user?.role === 'Admin'
-  const location   = useLocation()
-  const { isOpen, close } = useSidebarStore()
+  const { t }   = useTranslation('common')
+  const user    = useAuthStore(s => s.user)
+  const isAdmin = user?.role === 'Admin'
 
-  // Fecha sidebar ao navegar em mobile
-  useEffect(() => {
-    close()
-  }, [location.pathname])
-
+  // Nav items dinâmicos com traduções
   const navItems = [
     { to: '/dashboard',    icon: LayoutDashboard, label: t('nav.dashboard')    },
     { to: '/transactions', icon: ArrowLeftRight,  label: t('nav.transactions') },
@@ -60,35 +51,25 @@ export default function Sidebar() {
     { to: '/imports',      icon: Upload,          label: t('nav.imports')      },
   ]
 
-  const sidebarContent = (
+  return (
     <aside
-      className="w-64 flex flex-col h-full"
+      className="w-64 flex flex-col"
       style={{ background: 'var(--ff-bg-card)', borderRight: '1px solid var(--ff-border)' }}
     >
-      {/* Logo - ícone TrendingUp */}
-      <div className="p-6 flex items-center justify-between" style={{ borderBottom: '1px solid var(--ff-border)' }}>
+      {/* Logo */}
+      <div className="p-6" style={{ borderBottom: '1px solid var(--ff-border)' }}>
         <div className="flex items-center gap-3">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ background: 'var(--ff-emerald)' }}
           >
-            <TrendingUp size={18} style={{ color: 'var(--ff-emerald-subtle)' }} />
+            <span style={{ color: 'var(--ff-emerald-subtle)', fontWeight: 700, fontSize: 13 }}>FF</span>
           </div>
           <div>
             <p style={{ color: 'var(--ff-text-primary)', fontWeight: 600, fontSize: 14 }}>FinanceFlow</p>
             <p style={{ color: 'var(--ff-text-muted)', fontSize: 11 }}>Gestão Financeira</p>
           </div>
         </div>
-        {/* Botão fechar em mobile */}
-        <button
-          onClick={close}
-          className="lg:hidden p-1.5 rounded-lg transition-colors"
-          style={{ color: 'var(--ff-text-muted)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-text-primary)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-text-muted)')}
-        >
-          <X size={18} />
-        </button>
       </div>
 
       {/* Navegação principal */}
@@ -107,6 +88,7 @@ export default function Sidebar() {
           </NavLink>
         ))}
 
+        {/* Link Admin — visível apenas para Admins */}
         {isAdmin && (
           <>
             <div
@@ -153,42 +135,5 @@ export default function Sidebar() {
         </NavLink>
       </div>
     </aside>
-  )
-
-  return (
-    <>
-      {/* Desktop — sidebar sempre visível */}
-      <div className="hidden lg:flex">
-        {sidebarContent}
-      </div>
-
-      {/* Mobile — sidebar com overlay animado */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            <motion.div
-              key="overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 lg:hidden"
-              style={{ background: 'rgba(0,0,0,0.6)' }}
-              onClick={close}
-            />
-            <motion.div
-              key="drawer"
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed inset-y-0 left-0 z-50 lg:hidden"
-            >
-              {sidebarContent}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </>
   )
 }

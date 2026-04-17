@@ -1,11 +1,9 @@
 import { useState } from 'react'
-import { Plus, PiggyBank, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useBudgetSummary }      from '../api/useBudgets'
-import BudgetCard                from '../components/BudgetCard'
-import BudgetForm                from '../components/BudgetForm'
-import DeleteBudgetDialog        from '../components/DeleteBudgetDialog'
-import EmptyState                from '@/components/ui/EmptyState'
-import SkeletonCard              from '@/components/ui/SkeletonCard'
+import { Plus, PiggyBank, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useBudgetSummary } from '../api/useBudgets'
+import BudgetCard from '../components/BudgetCard'
+import BudgetForm from '../components/BudgetForm'
+import DeleteBudgetDialog from '../components/DeleteBudgetDialog'
 import type { Budget, BudgetSummary } from '../types/budget.types'
 
 function getCurrentPeriod() {
@@ -14,10 +12,10 @@ function getCurrentPeriod() {
 }
 
 export default function BudgetsPage() {
-  const [period, setPeriod]                   = useState(getCurrentPeriod)
-  const [showForm, setShowForm]               = useState(false)
-  const [editingBudget, setEditingBudget]     = useState<Budget | null>(null)
-  const [deletingBudget, setDeletingBudget]   = useState<Budget | null>(null)
+  const [period, setPeriod]           = useState(getCurrentPeriod)
+  const [showForm, setShowForm]       = useState(false)
+  const [editingBudget, setEditingBudget]   = useState<Budget | null>(null)
+  const [deletingBudget, setDeletingBudget] = useState<Budget | null>(null)
 
   const { data: summaries = [], isLoading } = useBudgetSummary(period)
   const isEmpty = !isLoading && summaries.length === 0
@@ -95,12 +93,12 @@ export default function BudgetsPage() {
           className="p-1.5 rounded-lg transition-all"
           style={{ color: 'var(--ff-text-muted)' }}
           onMouseEnter={e => {
-            e.currentTarget.style.color       = 'var(--ff-text-primary)'
-            e.currentTarget.style.background  = 'var(--ff-bg-elevated)'
+            e.currentTarget.style.color = 'var(--ff-text-primary)'
+            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.color       = 'var(--ff-text-muted)'
-            e.currentTarget.style.background  = 'transparent'
+            e.currentTarget.style.color = 'var(--ff-text-muted)'
+            e.currentTarget.style.background = 'transparent'
           }}
         >
           <ChevronLeft size={18} />
@@ -113,24 +111,22 @@ export default function BudgetsPage() {
           className="p-1.5 rounded-lg transition-all"
           style={{ color: 'var(--ff-text-muted)' }}
           onMouseEnter={e => {
-            e.currentTarget.style.color       = 'var(--ff-text-primary)'
-            e.currentTarget.style.background  = 'var(--ff-bg-elevated)'
+            e.currentTarget.style.color = 'var(--ff-text-primary)'
+            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.color       = 'var(--ff-text-muted)'
-            e.currentTarget.style.background  = 'transparent'
+            e.currentTarget.style.color = 'var(--ff-text-muted)'
+            e.currentTarget.style.background = 'transparent'
           }}
         >
           <ChevronRight size={18} />
         </button>
       </div>
 
-      {/* Skeleton loading em vez de spinner */}
+      {/* Loading */}
       {isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <SkeletonCard key={i} lines={4} height="h-40" />
-          ))}
+        <div className="flex items-center justify-center py-20">
+          <Loader2 size={24} className="animate-spin" style={{ color: 'var(--ff-emerald)' }} />
         </div>
       )}
 
@@ -148,17 +144,29 @@ export default function BudgetsPage() {
         </div>
       )}
 
-      {/* EmptyState reutilizável */}
+      {/* Estado vazio */}
       {isEmpty && (
-        <EmptyState
-          icon={PiggyBank}
-          title="Nenhum orçamento definido"
-          description={`Ainda não tens orçamentos para ${monthLabel}. Define limites por categoria para controlar os teus gastos.`}
-          action={{
-            label:   'Criar primeiro orçamento',
-            onClick: () => setShowForm(true),
-          }}
-        />
+        <div className="flex flex-col items-center justify-center py-20 space-y-3">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: 'var(--ff-bg-card)' }}
+          >
+            <PiggyBank size={24} style={{ color: 'var(--ff-text-muted)' }} />
+          </div>
+          <p className="text-sm" style={{ color: 'var(--ff-text-muted)' }}>
+            Nenhum orçamento definido para {monthLabel}
+          </p>
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
+            style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-emerald-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-emerald)')}
+          >
+            <Plus size={15} />
+            Criar primeiro orçamento
+          </button>
+        </div>
       )}
 
       {showForm && (

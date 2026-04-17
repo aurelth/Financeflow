@@ -1,14 +1,12 @@
 import { useState } from 'react'
-import { Plus, Receipt } from 'lucide-react'
-import { useTransactions }           from '../api/useTransactions'
-import { useCategories }             from '../../categories/api/useCategories'
-import TransactionTable              from '../components/TransactionTable'
-import TransactionFilters            from '../components/TransactionFilters'
-import TransactionForm               from '../components/TransactionForm'
-import DeleteTransactionDialog       from '../components/DeleteTransactionDialog'
-import ExportButton                  from '@/features/reports/components/ExportButton'
-import EmptyState                    from '@/components/ui/EmptyState'
-import SkeletonTable                 from '@/components/ui/SkeletonTable'
+import { Plus, Receipt, Loader2 } from 'lucide-react'
+import { useTransactions } from '../api/useTransactions'
+import { useCategories } from '../../categories/api/useCategories'
+import TransactionTable from '../components/TransactionTable'
+import TransactionFilters from '../components/TransactionFilters'
+import TransactionForm from '../components/TransactionForm'
+import DeleteTransactionDialog from '../components/DeleteTransactionDialog'
+import ExportButton from '@/features/reports/components/ExportButton'
 import type { Transaction, GetTransactionsQuery } from '../types/transaction.types'
 
 function getDefaultFilters(): GetTransactionsQuery {
@@ -23,7 +21,7 @@ function getDefaultFilters(): GetTransactionsQuery {
 
 const DEFAULT_FILTERS: GetTransactionsQuery = getDefaultFilters()
 
-export default function TransactionsPage() {  
+export default function TransactionsPage() {
   const [filters, setFilters]       = useState<GetTransactionsQuery>(DEFAULT_FILTERS)
   const [showForm, setShowForm]     = useState(false)
   const [editingTx, setEditingTx]   = useState<Transaction | null>(null)
@@ -38,8 +36,6 @@ export default function TransactionsPage() {
 
   const filterMonth = filters.dateFrom ? new Date(filters.dateFrom).getMonth() + 1 : undefined
   const filterYear  = filters.dateFrom ? new Date(filters.dateFrom).getFullYear()  : undefined
-
-  const isEmpty = !isLoading && transactions.length === 0
 
   function handleEdit(tx: Transaction) {
     setEditingTx(tx)
@@ -58,6 +54,8 @@ export default function TransactionsPage() {
   function handlePageChange(page: number) {
     setFilters(f => ({ ...f, page }))
   }
+
+  const isEmpty = !isLoading && transactions.length === 0
 
   return (
     <div className="space-y-6">
@@ -95,8 +93,12 @@ export default function TransactionsPage() {
         onClear={() => setFilters(DEFAULT_FILTERS)}
       />
 
-      {/* Skeleton loading em vez de spinner */}
-      {isLoading && <SkeletonTable rows={6} columns={5} />}
+      {/* Loading */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 size={24} className="animate-spin" style={{ color: 'var(--ff-emerald)' }} />
+        </div>
+      )}
 
       {/* Tabela */}
       {!isLoading && !isEmpty && (
@@ -107,17 +109,29 @@ export default function TransactionsPage() {
         />
       )}
 
-      {/* EmptyState reutilizável */}
+      {/* Estado vazio */}
       {isEmpty && (
-        <EmptyState
-          icon={Receipt}
-          title="Nenhuma transação encontrada"
-          description="Ainda não tens transações no período seleccionado. Cria a tua primeira receita ou despesa."
-          action={{
-            label:   'Criar primeira transação',
-            onClick: () => setShowForm(true),
-          }}
-        />
+        <div className="flex flex-col items-center justify-center py-20 space-y-3">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: 'var(--ff-bg-card)' }}
+          >
+            <Receipt size={24} style={{ color: 'var(--ff-text-muted)' }} />
+          </div>
+          <p className="text-sm" style={{ color: 'var(--ff-text-muted)' }}>
+            Nenhuma transação encontrada
+          </p>
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
+            style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-emerald-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-emerald)')}
+          >
+            <Plus size={15} />
+            Criar primeira transação
+          </button>
+        </div>
       )}
 
       {/* Paginação */}
@@ -129,12 +143,12 @@ export default function TransactionsPage() {
             className="px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             style={{ color: 'var(--ff-text-muted)' }}
             onMouseEnter={e => {
-              e.currentTarget.style.color       = 'var(--ff-text-primary)'
-              e.currentTarget.style.background  = 'var(--ff-bg-elevated)'
+              e.currentTarget.style.color = 'var(--ff-text-primary)'
+              e.currentTarget.style.background = 'var(--ff-bg-elevated)'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.color       = 'var(--ff-text-muted)'
-              e.currentTarget.style.background  = 'transparent'
+              e.currentTarget.style.color = 'var(--ff-text-muted)'
+              e.currentTarget.style.background = 'transparent'
             }}
           >
             Anterior
@@ -151,14 +165,14 @@ export default function TransactionsPage() {
               }
               onMouseEnter={e => {
                 if (page !== currentPage) {
-                  e.currentTarget.style.color       = 'var(--ff-text-primary)'
-                  e.currentTarget.style.background  = 'var(--ff-bg-elevated)'
+                  e.currentTarget.style.color = 'var(--ff-text-primary)'
+                  e.currentTarget.style.background = 'var(--ff-bg-elevated)'
                 }
               }}
               onMouseLeave={e => {
                 if (page !== currentPage) {
-                  e.currentTarget.style.color       = 'var(--ff-text-muted)'
-                  e.currentTarget.style.background  = 'transparent'
+                  e.currentTarget.style.color = 'var(--ff-text-muted)'
+                  e.currentTarget.style.background = 'transparent'
                 }
               }}
             >
@@ -172,12 +186,12 @@ export default function TransactionsPage() {
             className="px-3 py-1.5 rounded-lg text-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             style={{ color: 'var(--ff-text-muted)' }}
             onMouseEnter={e => {
-              e.currentTarget.style.color       = 'var(--ff-text-primary)'
-              e.currentTarget.style.background  = 'var(--ff-bg-elevated)'
+              e.currentTarget.style.color = 'var(--ff-text-primary)'
+              e.currentTarget.style.background = 'var(--ff-bg-elevated)'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.color       = 'var(--ff-text-muted)'
-              e.currentTarget.style.background  = 'transparent'
+              e.currentTarget.style.color = 'var(--ff-text-muted)'
+              e.currentTarget.style.background = 'transparent'
             }}
           >
             Próximo
