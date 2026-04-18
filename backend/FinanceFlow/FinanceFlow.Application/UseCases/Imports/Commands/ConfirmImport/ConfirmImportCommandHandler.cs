@@ -1,6 +1,7 @@
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs.Imports;
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
 
@@ -37,13 +38,11 @@ public class ConfirmImportCommandHandler(
             if (importTransaction.IsDuplicate)
                 continue;
 
-            // Salta transações sem categoria em vez de contar como erro
             if (selection.CategoryId == Guid.Empty)
                 continue;
 
             try
             {
-                // Valida apenas se categoryId foi fornecido
                 var category = await categoryRepository.GetByIdAsync(
                     selection.CategoryId, request.UserId, cancellationToken);
 
@@ -53,13 +52,16 @@ public class ConfirmImportCommandHandler(
                     continue;
                 }
 
+                // Resolve o tipo enviado pelo frontend
+                var transactionType = ResolveType(selection.Type, importTransaction.Type);
+
                 importTransaction.SuggestedCategoryId = selection.CategoryId;
 
                 var transaction = new Transaction
                 {
                     UserId = request.UserId,
                     Amount = importTransaction.Amount,
-                    Type = importTransaction.Type,
+                    Type = transactionType,
                     Date = importTransaction.Date,
                     Description = importTransaction.Description,
                     Status = TransactionStatus.Paid,
@@ -94,5 +96,17 @@ public class ConfirmImportCommandHandler(
             Errors: bankImport.Errors,
             ErrorMessage: bankImport.ErrorMessage,
             CreatedAt: bankImport.CreatedAt);
+    }
+
+    // Resolve o tipo da transação — usa o tipo enviado pelo frontend se válido
+    private static TransactionType ResolveType(string? typeFromRequest, TransactionType fallback)
+    {
+        return typeFromRequest switch
+        {
+            "Income" => TransactionType.Income,
+            "Expense" => TransactionType.Expense,
+            "Transfer" => TransactionType.Transfer,
+            _ => fallback,
+        };
     }
 }

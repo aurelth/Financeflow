@@ -7,5 +7,6 @@ public record ConfirmImportRequestDto(
 public record ConfirmImportItemDto(
     Guid Id,
     bool IsSelected,
-    Guid CategoryId
+    Guid CategoryId,
+    string Type
 );
