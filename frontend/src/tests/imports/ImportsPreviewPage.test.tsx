@@ -26,73 +26,73 @@ vi.mock('@/features/categories/api/useCategories', () => ({
 
 const mockCategories = [
     {
-        id:            'cat-1',
-        name:          'Alimentação',
-        icon:          'utensils',
-        color:         '#f59e0b',
-        type:          'Expense',
-        isDefault:     true,
-        isActive:      true,
-        isOwner:       false,
+        id: 'cat-1',
+        name: 'Alimentação',
+        icon: 'utensils',
+        color: '#f59e0b',
+        type: 'Expense',
+        isDefault: true,
+        isActive: true,
+        isOwner: false,
         subcategories: [],
     },
     {
-        id:            'cat-2',
-        name:          'Salário',
-        icon:          'briefcase',
-        color:         '#22c55e',
-        type:          'Income',
-        isDefault:     true,
-        isActive:      true,
-        isOwner:       false,
+        id: 'cat-2',
+        name: 'Salário',
+        icon: 'briefcase',
+        color: '#22c55e',
+        type: 'Income',
+        isDefault: true,
+        isActive: true,
+        isOwner: false,
         subcategories: [],
     },
 ]
 
 const mockPreview: BankImportPreviewDto = {
-    importId:     'imp-1',
-    fileName:     'extrato-janeiro.ofx',
-    status:       'Pending',
+    importId: 'imp-1',
+    fileName: 'extrato-janeiro.ofx',
+    status: 'Pending',
     totalRecords: 3,
     transactions: [
         {
-            id:                  'bt-1',
-            externalId:          'FIT001',
-            date:                '2026-01-15T00:00:00',
-            amount:              150.00,
-            description:         'IFOOD RESTAURANTE',
-            type:                'Expense',
-            hash:                'abc123',
+            id: 'bt-1',
+            externalId: 'FIT001',
+            date: '2026-01-15T00:00:00',
+            amount: 150.00,
+            description: 'IFOOD RESTAURANTE',
+            type: 'Expense',
+            hash: 'abc123',
             suggestedCategoryId: 'cat-1',
-            isDuplicate:         false,
-            isSelected:          true,
-            transactionId:       null,
+            isDuplicate: false,
+            isSelected: true,
+            transactionId: null,
         },
         {
-            id:                  'bt-2',
-            externalId:          'FIT002',
-            date:                '2026-01-20T00:00:00',
-            amount:              5000.00,
-            description:         'SALARIO EMPRESA',
-            type:                'Income',
-            hash:                'def456',
+            id: 'bt-2',
+            externalId: 'FIT002',
+            date: '2026-01-20T00:00:00',
+            amount: 5000.00,
+            description: 'SALARIO EMPRESA',
+            type: 'Income',
+            hash: 'def456',
             suggestedCategoryId: 'cat-2',
-            isDuplicate:         false,
-            isSelected:          true,
-            transactionId:       null,
+            isDuplicate: false,
+            isSelected: true,
+            transactionId: null,
         },
         {
-            id:                  'bt-3',
-            externalId:          'FIT003',
-            date:                '2026-01-22T00:00:00',
-            amount:              80.00,
-            description:         'UBER TRIP',
-            type:                'Expense',
-            hash:                'ghi789',
+            id: 'bt-3',
+            externalId: 'FIT003',
+            date: '2026-01-22T00:00:00',
+            amount: 80.00,
+            description: 'UBER TRIP',
+            type: 'Expense',
+            hash: 'ghi789',
             suggestedCategoryId: null,
-            isDuplicate:         true,
-            isSelected:          false,
-            transactionId:       'tx-existing',
+            isDuplicate: true,
+            isSelected: false,
+            transactionId: 'tx-existing',
         },
     ],
 }
@@ -169,8 +169,7 @@ describe('ImportsPreviewPage', () => {
 
         expect(mockNavigate).toHaveBeenCalledWith('/imports')
     })
-
-    // Actualizado para o novo formato { transactions: [...] }
+    
     it('deve chamar confirm ao clicar em confirmar', async () => {
         renderPage()
         const user = userEvent.setup()
@@ -184,8 +183,8 @@ describe('ImportsPreviewPage', () => {
         expect(mockConfirmMutate).toHaveBeenCalledWith(
             {
                 transactions: [
-                    { id: 'bt-1', isSelected: true, categoryId: 'cat-1' },
-                    { id: 'bt-2', isSelected: true, categoryId: 'cat-2' },
+                    { id: 'bt-1', isSelected: true, categoryId: 'cat-1', type: 'Expense' },
+                    { id: 'bt-2', isSelected: true, categoryId: 'cat-2', type: 'Income' },
                 ],
             },
             expect.any(Object)
@@ -208,7 +207,7 @@ describe('ImportsPreviewPage', () => {
             expect(screen.getByText('IFOOD RESTAURANTE')).toBeInTheDocument()
         })
 
-        const checkboxes    = screen.getAllByRole('checkbox') as HTMLInputElement[]
+        const checkboxes = screen.getAllByRole('checkbox') as HTMLInputElement[]
         const rowCheckboxes = checkboxes.filter(cb => !cb.disabled)
         await user.click(rowCheckboxes[1])
 
@@ -223,7 +222,7 @@ describe('ImportsPreviewPage', () => {
         await waitFor(() => {
             expect(screen.getByText('duplicada')).toBeInTheDocument()
         })
-        const checkboxes        = screen.getAllByRole('checkbox') as HTMLInputElement[]
+        const checkboxes = screen.getAllByRole('checkbox') as HTMLInputElement[]
         const disabledCheckboxes = checkboxes.filter(cb => cb.disabled)
         expect(disabledCheckboxes.length).toBeGreaterThan(0)
     })
@@ -233,8 +232,8 @@ describe('ImportsPreviewPage', () => {
         await waitFor(() => {
             expect(screen.getByText('IFOOD RESTAURANTE')).toBeInTheDocument()
         })
-        const selects    = screen.getAllByRole('combobox') as HTMLSelectElement[]
-        const withValue  = selects.filter(s => s.value === 'cat-1' || s.value === 'cat-2')
+        const selects = screen.getAllByRole('combobox') as HTMLSelectElement[]
+        const withValue = selects.filter(s => s.value === 'cat-1' || s.value === 'cat-2')
         expect(withValue.length).toBeGreaterThan(0)
     })
 })

@@ -339,4 +339,32 @@ describe('TransactionForm', () => {
     // então validamos via propagateToFuture nos testes existentes
     expect(screen.queryByText('Editar transação recorrente')).not.toBeInTheDocument()
   })
+
+  // Testes para tipo Transfer
+  it('deve renderizar o botão de Transferência', () => {
+    renderForm()
+    expect(screen.getByRole('button', { name: /transfer\./i })).toBeInTheDocument()
+  })
+
+  it('deve mostrar aviso informativo ao seleccionar Transfer', async () => {
+    renderForm()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /transfer\./i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/transferências entre contas não contam/i)).toBeInTheDocument()
+    })
+  })
+
+  it('deve esconder campo de recorrência ao seleccionar Transfer', async () => {
+    renderForm()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /transfer\./i }))
+
+    await waitFor(() => {
+      expect(screen.queryByText('Transação recorrente')).not.toBeInTheDocument()
+    })
+  })
 })
