@@ -1,8 +1,9 @@
-import { Pencil, Trash2, RefreshCw } from 'lucide-react'
+import { Pencil, Trash2, RefreshCw, ArrowLeftRight } from 'lucide-react'
 import { TransactionStatus, RecurrenceType, type Transaction } from '../types/transaction.types'
 import { TransactionType } from '../../categories/types/category.types'
-import CategoryIcon from '../../categories/components/CategoryIcon'
+import CategoryIcon  from '../../categories/components/CategoryIcon'
 import AttachmentViewer from './AttachmentViewer'
+import { resolveType, resolveStatus } from '@/lib/enumUtils'
 
 interface TransactionTableProps {
   transactions: Transaction[]
@@ -39,34 +40,22 @@ const recurrenceLabel: Record<RecurrenceType, string> = {
   [RecurrenceType.Yearly]:  'Anual',
 }
 
-// Normaliza status que pode chegar como string ou número
-function resolveStatus(status: TransactionStatus | string): TransactionStatus {
-  if (typeof status === 'number') return status as TransactionStatus
-  const map: Record<string, TransactionStatus> = {
-    'Paid':      TransactionStatus.Paid,
-    'Pending':   TransactionStatus.Pending,
-    'Scheduled': TransactionStatus.Scheduled,
-  }
-  return map[status] ?? TransactionStatus.Paid
-}
-
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('pt-BR')
 }
 
 function formatAmount(amount: number, type: TransactionType) {
   const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount)
-  return type === TransactionType.Income ? `+${formatted}` : `-${formatted}`
+  if (type === TransactionType.Income)   return `+${formatted}`
+  if (type === TransactionType.Transfer) return `↔ ${formatted}`
+  return `-${formatted}`
 }
 
-// Normaliza type que pode chegar como string ou número
-function resolveType(type: TransactionType | string): TransactionType {
-  if (typeof type === 'number') return type as TransactionType
-  const map: Record<string, TransactionType> = {
-    'Income':  TransactionType.Income,
-    'Expense': TransactionType.Expense,
-  }
-  return map[type] ?? TransactionType.Expense
+// Adicionado: cor do valor por tipo
+function getAmountColor(type: TransactionType): string {
+  if (type === TransactionType.Income)   return 'var(--ff-income)'
+  if (type === TransactionType.Transfer) return '#818cf8'
+  return 'var(--ff-expense)'
 }
 
 export default function TransactionTable({ transactions, onEdit, onDelete }: TransactionTableProps) {
@@ -101,7 +90,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
         </thead>
         <tbody>
           {transactions.map(tx => {
-            // Normaliza status antes de aceder ao mapa de estilos
+            const type   = resolveType(tx.type)
             const status = resolveStatus(tx.status)
             const s      = statusConfig[status] ?? statusConfig[TransactionStatus.Paid]
 
@@ -142,6 +131,20 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
                         {recurrenceLabel[tx.recurrenceType]}
                       </span>
                     )}
+                    {/* Badge Transfer */}
+                    {type === TransactionType.Transfer && (
+                      <span
+                        className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md flex-shrink-0"
+                        style={{
+                          background: 'rgba(99,102,241,0.1)',
+                          color:      '#818cf8',
+                          border:     '1px solid rgba(99,102,241,0.2)',
+                        }}
+                      >
+                        <ArrowLeftRight size={10} />
+                        Transferência
+                      </span>
+                    )}
                   </div>
                   {tx.tags.length > 0 && (
                     <div className="flex gap-1 mt-1 flex-wrap">
@@ -164,18 +167,28 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
                 {/* Categoria */}
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <span
-                      className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
-                      style={{
-                        backgroundColor: tx.categoryColor ? `${tx.categoryColor}20` : 'var(--ff-bg-elevated)',
-                      }}
-                    >
-                      <CategoryIcon
-                        icon={tx.categoryIcon  ?? 'ellipsis'}
-                        color={tx.categoryColor ?? 'var(--ff-text-muted)'}
-                        size={14}
-                      />
-                    </span>
+                    {/* Ícone especial para Transfer */}
+                    {type === TransactionType.Transfer ? (
+                      <span
+                        className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+                        style={{ background: 'rgba(99,102,241,0.1)' }}
+                      >
+                        <ArrowLeftRight size={12} style={{ color: '#818cf8' }} />
+                      </span>
+                    ) : (
+                      <span
+                        className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+                        style={{
+                          backgroundColor: tx.categoryColor ? `${tx.categoryColor}20` : 'var(--ff-bg-elevated)',
+                        }}
+                      >
+                        <CategoryIcon
+                          icon={tx.categoryIcon  ?? 'ellipsis'}
+                          color={tx.categoryColor ?? 'var(--ff-text-muted)'}
+                          size={14}
+                        />
+                      </span>
+                    )}
                     <div className="min-w-0">
                       <p className="truncate" style={{ color: 'var(--ff-text-secondary)' }}>
                         {tx.categoryName ?? '—'}
@@ -196,18 +209,27 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
 
                 {/* Status */}
                 <td className="px-4 py-3">
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full font-medium"
-                    style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}
-                  >
-                    {s.label}
-                  </span>
+                  {type === TransactionType.Transfer ? (                    
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={{ background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}
+                    >
+                      Transferência
+                    </span>
+                  ) : (
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-medium"
+                      style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}
+                    >
+                      {s.label}
+                    </span>
+                  )}
                 </td>
 
                 {/* Valor */}
                 <td className="px-4 py-3 text-right whitespace-nowrap font-semibold">
-                  <span style={{ color: resolveType(tx.type) === TransactionType.Income ? 'var(--ff-income)' : 'var(--ff-expense)' }}>
-                    {formatAmount(tx.amount, resolveType(tx.type))}
+                  <span style={{ color: getAmountColor(type) }}>
+                    {formatAmount(tx.amount, type)}
                   </span>
                 </td>
 
