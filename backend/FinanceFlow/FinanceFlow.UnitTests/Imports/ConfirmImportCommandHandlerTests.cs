@@ -129,4 +129,159 @@ public class ConfirmImportCommandHandlerTests
         _transactionRepository.Verify(r =>
             r.AddAsync(It.IsAny<Transaction>(), default), Times.Never);
     }
+
+    // Transação sem categoria deve ser saltada
+    [Fact]
+    public async Task Handle_DeveSaltarTransacao_QuandoCategoryIdEhGuidEmpty()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+
+        var importTransaction = new BankImportTransaction
+        {
+            Id = Guid.NewGuid(),
+            Hash = "hash456",
+            Amount = 50.00m,
+            Type = TransactionType.Expense,
+            Date = DateTime.UtcNow,
+            IsDuplicate = false,
+            IsSelected = true,
+        };
+
+        var bankImport = new BankImport
+        {
+            Id = importId,
+            UserId = userId,
+            Status = BankImportStatus.Completed,
+            Transactions = [importTransaction],
+        };
+
+        _bankImportRepository
+            .Setup(r => r.GetByIdAsync(importId, userId, default))
+            .ReturnsAsync(bankImport);
+
+        var request = new ConfirmImportRequestDto([
+            new ConfirmImportItemDto(importTransaction.Id, true, Guid.Empty) // Sem categoria
+        ]);
+
+        var command = new ConfirmImportCommand(importId, userId, request);
+
+        // Act
+        var result = await CreateHandler().Handle(command, default);
+
+        // Assert
+        result.Imported.Should().Be(0);
+        result.Errors.Should().Be(0);
+        _transactionRepository.Verify(r =>
+            r.AddAsync(It.IsAny<Transaction>(), default), Times.Never);
+    }
+
+    // Categoria não encontrada deve contar como erro
+    [Fact]
+    public async Task Handle_DeveContarErro_QuandoCategoriaInexistente()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+
+        var importTransaction = new BankImportTransaction
+        {
+            Id = Guid.NewGuid(),
+            Hash = "hash789",
+            Amount = 75.00m,
+            Type = TransactionType.Expense,
+            Date = DateTime.UtcNow,
+            IsDuplicate = false,
+            IsSelected = true,
+        };
+
+        var bankImport = new BankImport
+        {
+            Id = importId,
+            UserId = userId,
+            Status = BankImportStatus.Completed,
+            Transactions = [importTransaction],
+        };
+
+        _bankImportRepository
+            .Setup(r => r.GetByIdAsync(importId, userId, default))
+            .ReturnsAsync(bankImport);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(categoryId, userId, default))
+            .ReturnsAsync((Category?)null); // Categoria não encontrada
+
+        var request = new ConfirmImportRequestDto([
+            new ConfirmImportItemDto(importTransaction.Id, true, categoryId)
+        ]);
+
+        var command = new ConfirmImportCommand(importId, userId, request);
+
+        // Act
+        var result = await CreateHandler().Handle(command, default);
+
+        // Assert
+        result.Imported.Should().Be(0);
+        result.Errors.Should().Be(1);
+        _transactionRepository.Verify(r =>
+            r.AddAsync(It.IsAny<Transaction>(), default), Times.Never);
+    }
+
+    // Persiste SuggestedCategoryId após confirmação
+    [Fact]
+    public async Task Handle_DevePersistirSuggestedCategoryId_AposConfirmacao()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+
+        var importTransaction = new BankImportTransaction
+        {
+            Id = Guid.NewGuid(),
+            Hash = "hash999",
+            Amount = 200.00m,
+            Type = TransactionType.Expense,
+            Date = DateTime.UtcNow,
+            IsDuplicate = false,
+            IsSelected = true,
+        };
+
+        var bankImport = new BankImport
+        {
+            Id = importId,
+            UserId = userId,
+            Status = BankImportStatus.Completed,
+            Transactions = [importTransaction],
+        };
+
+        var category = new Category
+        {
+            Id = categoryId,
+            Name = "Transporte",
+            Type = TransactionType.Expense,
+        };
+
+        _bankImportRepository
+            .Setup(r => r.GetByIdAsync(importId, userId, default))
+            .ReturnsAsync(bankImport);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(categoryId, userId, default))
+            .ReturnsAsync(category);
+
+        var request = new ConfirmImportRequestDto([
+            new ConfirmImportItemDto(importTransaction.Id, true, categoryId)
+        ]);
+
+        var command = new ConfirmImportCommand(importId, userId, request);
+
+        // Act
+        await CreateHandler().Handle(command, default);
+
+        // Assert: SuggestedCategoryId deve ser persistido na transação de importação
+        importTransaction.SuggestedCategoryId.Should().Be(categoryId);
+    }
 }

@@ -3,6 +3,7 @@ using FinanceFlow.Application.DTOs.Reports;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using System.Globalization;
 
 namespace FinanceFlow.Application.UseCases.Analytics.Queries.GetCashFlow;
 
@@ -11,7 +12,8 @@ public class GetCashFlowQueryHandler(
     ICacheService cache)
     : IRequestHandler<GetCashFlowQuery, CashFlowDto>
 {
-    private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(10);
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(10);   
+    private static readonly CultureInfo PtBR = CultureInfo.GetCultureInfo("pt-BR");
 
     public async Task<CashFlowDto> Handle(
         GetCashFlowQuery request,
@@ -36,7 +38,6 @@ public class GetCashFlowQueryHandler(
                 search: null,
                 cancellationToken: cancellationToken);
 
-            // Filtra apenas transações confirmadas (não agendadas)
             var confirmed = transactions
                 .Where(t => t.Status != TransactionStatus.Scheduled)
                 .ToList();
@@ -71,14 +72,13 @@ public class GetCashFlowQueryHandler(
         for (var date = from.Date; date <= to.Date; date = date.AddDays(1))
         {
             var dayTx = transactions.Where(t => t.Date.Date == date).ToList();
-
             var income = dayTx.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount);
             var expenses = dayTx.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount);
             var balance = income - expenses;
             cumulative += balance;
 
             periods.Add(new CashFlowPeriodDto(
-                Label: date.ToString("dd/MM/yyyy"),
+                Label: date.ToString("dd/MM/yyyy", PtBR),
                 Income: income,
                 Expenses: expenses,
                 Balance: balance,
@@ -111,7 +111,7 @@ public class GetCashFlowQueryHandler(
             cumulative += balance;
 
             periods.Add(new CashFlowPeriodDto(
-                Label: current.ToString("MMM/yyyy"),
+                Label: current.ToString("MMM/yyyy", PtBR),
                 Income: income,
                 Expenses: expenses,
                 Balance: balance,

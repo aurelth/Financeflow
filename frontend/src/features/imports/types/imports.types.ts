@@ -36,6 +36,12 @@ export interface BankImportPreviewDto {
   transactions: BankImportTransactionDto[]
 }
 
+export interface ConfirmImportItemDto {
+  id:         string
+  isSelected: boolean
+  categoryId: string
+}
+
 export interface ConfirmImportRequestDto {
-  selectedTransactionIds: string[]
+  transactions: ConfirmImportItemDto[]
 }
