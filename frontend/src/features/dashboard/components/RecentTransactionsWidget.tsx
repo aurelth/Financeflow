@@ -9,7 +9,6 @@ interface RecentTransactionsWidgetProps {
   transactions: Transaction[]
 }
 
-// Cores dos badges com tokens da nova paleta
 const statusStyles: Record<TransactionStatus, { bg: string; color: string; border: string; label: string }> = {
   [TransactionStatus.Paid]: {
     bg:     'rgba(16, 185, 129, 0.1)',
@@ -31,6 +30,17 @@ const statusStyles: Record<TransactionStatus, { bg: string; color: string; borde
   },
 }
 
+// Normaliza status que pode chegar como string ou número
+function resolveStatus(status: TransactionStatus | string): TransactionStatus {
+  if (typeof status === 'number') return status as TransactionStatus
+  const map: Record<string, TransactionStatus> = {
+    'Paid':      TransactionStatus.Paid,
+    'Pending':   TransactionStatus.Pending,
+    'Scheduled': TransactionStatus.Scheduled,
+  }
+  return map[status] ?? TransactionStatus.Paid
+}
+
 function formatAmount(amount: number, type: TransactionType) {
   const formatted = new Intl.NumberFormat('pt-BR', {
     style: 'currency', currency: 'BRL',
@@ -40,6 +50,16 @@ function formatAmount(amount: number, type: TransactionType) {
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('pt-BR')
+}
+
+// Normaliza type que pode chegar como string ou número
+function resolveType(type: TransactionType | string): TransactionType {
+  if (typeof type === 'number') return type as TransactionType
+  const map: Record<string, TransactionType> = {
+    'Income':  TransactionType.Income,
+    'Expense': TransactionType.Expense,
+  }
+  return map[type] ?? TransactionType.Expense
 }
 
 export default function RecentTransactionsWidget({ transactions }: RecentTransactionsWidgetProps) {
@@ -80,7 +100,10 @@ export default function RecentTransactionsWidget({ transactions }: RecentTransac
       ) : (
         <div className="space-y-2">
           {transactions.map(tx => {
-            const s = statusStyles[tx.status]
+            // Normaliza status antes de aceder ao mapa de estilos
+            const status = resolveStatus(tx.status)
+            const s      = statusStyles[status] ?? statusStyles[TransactionStatus.Paid]
+
             return (
               <div
                 key={tx.id}
@@ -92,11 +115,15 @@ export default function RecentTransactionsWidget({ transactions }: RecentTransac
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{
-                    backgroundColor: `${tx.categoryColor}20`,
-                    border:          `1px solid ${tx.categoryColor}30`,
+                    backgroundColor: tx.categoryColor ? `${tx.categoryColor}20` : 'var(--ff-bg-elevated)',
+                    border:          tx.categoryColor ? `1px solid ${tx.categoryColor}30` : '1px solid var(--ff-border)',
                   }}
                 >
-                  <CategoryIcon icon={tx.categoryIcon} color={tx.categoryColor} size={16} />
+                  <CategoryIcon
+                    icon={tx.categoryIcon  ?? 'ellipsis'}
+                    color={tx.categoryColor ?? 'var(--ff-text-muted)'}
+                    size={16}
+                  />
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -118,9 +145,9 @@ export default function RecentTransactionsWidget({ transactions }: RecentTransac
 
                 <span
                   className="text-sm font-semibold flex-shrink-0"
-                  style={{ color: tx.type === TransactionType.Income ? 'var(--ff-income)' : 'var(--ff-expense)' }}
+                  style={{ color: resolveType(tx.type) === TransactionType.Income ? 'var(--ff-income)' : 'var(--ff-expense)' }}
                 >
-                  {formatAmount(tx.amount, tx.type)}
+                  {formatAmount(tx.amount, resolveType(tx.type))}
                 </span>
               </div>
             )

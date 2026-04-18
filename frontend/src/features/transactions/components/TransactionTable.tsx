@@ -39,6 +39,17 @@ const recurrenceLabel: Record<RecurrenceType, string> = {
   [RecurrenceType.Yearly]:  'Anual',
 }
 
+// Normaliza status que pode chegar como string ou número
+function resolveStatus(status: TransactionStatus | string): TransactionStatus {
+  if (typeof status === 'number') return status as TransactionStatus
+  const map: Record<string, TransactionStatus> = {
+    'Paid':      TransactionStatus.Paid,
+    'Pending':   TransactionStatus.Pending,
+    'Scheduled': TransactionStatus.Scheduled,
+  }
+  return map[status] ?? TransactionStatus.Paid
+}
+
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('pt-BR')
 }
@@ -46,6 +57,16 @@ function formatDate(dateStr: string) {
 function formatAmount(amount: number, type: TransactionType) {
   const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount)
   return type === TransactionType.Income ? `+${formatted}` : `-${formatted}`
+}
+
+// Normaliza type que pode chegar como string ou número
+function resolveType(type: TransactionType | string): TransactionType {
+  if (typeof type === 'number') return type as TransactionType
+  const map: Record<string, TransactionType> = {
+    'Income':  TransactionType.Income,
+    'Expense': TransactionType.Expense,
+  }
+  return map[type] ?? TransactionType.Expense
 }
 
 export default function TransactionTable({ transactions, onEdit, onDelete }: TransactionTableProps) {
@@ -80,7 +101,10 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
         </thead>
         <tbody>
           {transactions.map(tx => {
-            const s = statusConfig[tx.status]
+            // Normaliza status antes de aceder ao mapa de estilos
+            const status = resolveStatus(tx.status)
+            const s      = statusConfig[status] ?? statusConfig[TransactionStatus.Paid]
+
             return (
               <tr
                 key={tx.id}
@@ -108,7 +132,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
                     {tx.isRecurring && recurrenceLabel[tx.recurrenceType] && (
                       <span
                         className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md flex-shrink-0"
-                        style={{ // Usa verde esmeralda para recorrência
+                        style={{
                           background: 'var(--ff-emerald-subtle)',
                           color:      'var(--ff-emerald)',
                           border:     '1px solid rgba(16,185,129,0.2)',
@@ -142,13 +166,19 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
                   <div className="flex items-center gap-2">
                     <span
                       className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: `${tx.categoryColor}20` }}
+                      style={{
+                        backgroundColor: tx.categoryColor ? `${tx.categoryColor}20` : 'var(--ff-bg-elevated)',
+                      }}
                     >
-                      <CategoryIcon icon={tx.categoryIcon} color={tx.categoryColor} size={14} />
+                      <CategoryIcon
+                        icon={tx.categoryIcon  ?? 'ellipsis'}
+                        color={tx.categoryColor ?? 'var(--ff-text-muted)'}
+                        size={14}
+                      />
                     </span>
                     <div className="min-w-0">
                       <p className="truncate" style={{ color: 'var(--ff-text-secondary)' }}>
-                        {tx.categoryName}
+                        {tx.categoryName ?? '—'}
                       </p>
                       {tx.subcategoryName && (
                         <p className="text-xs truncate" style={{ color: 'var(--ff-text-muted)' }}>
@@ -176,8 +206,8 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
 
                 {/* Valor */}
                 <td className="px-4 py-3 text-right whitespace-nowrap font-semibold">
-                  <span style={{ color: tx.type === TransactionType.Income ? 'var(--ff-income)' : 'var(--ff-expense)' }}>
-                    {formatAmount(tx.amount, tx.type)}
+                  <span style={{ color: resolveType(tx.type) === TransactionType.Income ? 'var(--ff-income)' : 'var(--ff-expense)' }}>
+                    {formatAmount(tx.amount, resolveType(tx.type))}
                   </span>
                 </td>
 
@@ -189,11 +219,11 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
                       className="p-1.5 rounded-lg transition-all duration-200"
                       style={{ color: 'var(--ff-text-muted)' }}
                       onMouseEnter={e => {
-                        e.currentTarget.style.color = 'var(--ff-text-primary)'
+                        e.currentTarget.style.color      = 'var(--ff-text-primary)'
                         e.currentTarget.style.background = 'var(--ff-bg-elevated)'
                       }}
                       onMouseLeave={e => {
-                        e.currentTarget.style.color = 'var(--ff-text-muted)'
+                        e.currentTarget.style.color      = 'var(--ff-text-muted)'
                         e.currentTarget.style.background = 'transparent'
                       }}
                       title="Editar"
@@ -205,11 +235,11 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
                       className="p-1.5 rounded-lg transition-all duration-200"
                       style={{ color: 'var(--ff-text-muted)' }}
                       onMouseEnter={e => {
-                        e.currentTarget.style.color = 'var(--ff-expense)'
+                        e.currentTarget.style.color      = 'var(--ff-expense)'
                         e.currentTarget.style.background = 'var(--ff-bg-elevated)'
                       }}
                       onMouseLeave={e => {
-                        e.currentTarget.style.color = 'var(--ff-text-muted)'
+                        e.currentTarget.style.color      = 'var(--ff-text-muted)'
                         e.currentTarget.style.background = 'transparent'
                       }}
                       title="Remover"

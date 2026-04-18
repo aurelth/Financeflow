@@ -5,12 +5,13 @@ import type { Category } from '@/features/categories/types/category.types'
 
 interface Props {
   transactions: BankImportTransactionDto[]
-  categories: Category[]
+  categories:   Category[]
 }
 
 export interface ImportPreviewTableHandle {
-  getSelected: () => string[]
-  getCount: () => { selected: number; total: number }
+  getSelected:     () => string[]
+  getTransactions: () => { id: string; isSelected: boolean; categoryId: string }[] // Adicionado
+  getCount:        () => { selected: number; total: number }
 }
 
 function formatAmount(amount: number, type: 'Income' | 'Expense') {
@@ -20,16 +21,30 @@ function formatAmount(amount: number, type: 'Income' | 'Expense') {
   return type === 'Expense' ? `- ${formatted}` : `+ ${formatted}`
 }
 
+const EMPTY_GUID = '00000000-0000-0000-0000-000000000000'
+
 const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
   ({ transactions: initialTransactions, categories }, ref) => {
-    const [rows, setRows] = useState<BankImportTransactionDto[]>(initialTransactions)
+    const [rows, setRows]         = useState<BankImportTransactionDto[]>(initialTransactions)
     const [selectAll, setSelectAll] = useState(true)
 
     useImperativeHandle(ref, () => ({
-      getSelected: () => rows.filter(t => t.isSelected && !t.isDuplicate).map(t => t.id),
+      getSelected: () =>
+        rows.filter(t => t.isSelected && !t.isDuplicate).map(t => t.id),
+
+      // Expõe transacções com categoryId para o backend
+      getTransactions: () =>
+        rows
+          .filter(t => t.isSelected && !t.isDuplicate)
+          .map(t => ({
+            id:         t.id,
+            isSelected: true,
+            categoryId: t.suggestedCategoryId ?? EMPTY_GUID,
+          })),
+
       getCount: () => ({
         selected: rows.filter(t => t.isSelected).length,
-        total: rows.length,
+        total:    rows.length,
       }),
     }))
 
@@ -101,9 +116,9 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
                 day: '2-digit', month: '2-digit', year: 'numeric',
               })
 
-              // Filtra categorias do mesmo tipo da transação
+              // Compara strings em vez de enum numérico
               const filteredCategories = categories.filter(
-                c => c.type === (t.type === 'Expense' ? 2 : 1)
+                c => String(c.type) === t.type
               )
 
               return (
@@ -175,7 +190,6 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
                     {filteredCategories.map(c => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
-                    {/* Aviso quando não há categorias do tipo correto */}
                     {filteredCategories.length === 0 && (
                       <option value="" disabled>
                         {t.type === 'Expense'

@@ -6,6 +6,8 @@ import { useCategories } from '@/features/categories/api/useCategories'
 import ImportPreviewTable, { type ImportPreviewTableHandle } from '../components/ImportPreviewTable'
 import { toast } from 'sonner'
 
+const EMPTY_GUID = '00000000-0000-0000-0000-000000000000'
+
 export default function ImportsPreviewPage() {
   const { id }   = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -16,18 +18,33 @@ export default function ImportsPreviewPage() {
   const tableRef = useRef<ImportPreviewTableHandle>(null)
 
   function handleConfirm() {
-    const selectedIds = tableRef.current?.getSelected() ?? []
+    const transactions = tableRef.current?.getTransactions() ?? []
 
-    if (selectedIds.length === 0) {
+    if (transactions.length === 0) {
       toast.error('Selecione ao menos uma transação para importar.')
       return
     }
 
+    // Avisa sobre transações sem categoria que serão ignoradas
+    const withoutCategory = transactions.filter(t => t.categoryId === EMPTY_GUID).length
+    if (withoutCategory > 0) {
+      toast.warning(
+        `${withoutCategory} transação(ões) sem categoria serão ignoradas na importação.`,
+        { duration: 4000 }
+      )
+    }
+
+    const withCategory = transactions.filter(t => t.categoryId !== EMPTY_GUID)
+    if (withCategory.length === 0) {
+      toast.error('Selecione pelo menos uma categoria para importar.')
+      return
+    }
+
     confirm(
-      { selectedTransactionIds: selectedIds },
+      { transactions },
       {
         onSuccess: () => {
-          toast.success(`${selectedIds.length} transações importadas com sucesso!`)
+          toast.success(`${withCategory.length} transações importadas com sucesso!`)
           navigate('/imports')
         },
         onError: () => {
@@ -37,7 +54,7 @@ export default function ImportsPreviewPage() {
     )
   }
 
-  const duplicateCount = preview?.transactions.filter(t => t.isDuplicate).length ?? 0
+  const duplicateCount  = preview?.transactions.filter(t => t.isDuplicate).length ?? 0
   const hasTransactions = !isLoading && (preview?.transactions.length ?? 0) > 0
 
   return (
@@ -51,11 +68,11 @@ export default function ImportsPreviewPage() {
             className="p-2 rounded-xl transition-colors"
             style={{ color: 'var(--ff-text-muted)' }}
             onMouseEnter={e => {
-              e.currentTarget.style.color = 'var(--ff-text-primary)'
+              e.currentTarget.style.color      = 'var(--ff-text-primary)'
               e.currentTarget.style.background = 'var(--ff-bg-elevated)'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.color = 'var(--ff-text-muted)'
+              e.currentTarget.style.color      = 'var(--ff-text-muted)'
               e.currentTarget.style.background = 'transparent'
             }}
           >

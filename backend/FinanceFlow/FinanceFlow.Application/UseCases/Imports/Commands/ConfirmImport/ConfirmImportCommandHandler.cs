@@ -1,7 +1,6 @@
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs.Imports;
 using FinanceFlow.Domain.Entities;
-using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
 
@@ -24,13 +23,11 @@ public class ConfirmImportCommandHandler(
         var imported = 0;
         var errors = 0;
 
-        // Cria um dicionário com as seleções do usuário
         var selections = request.Request.Transactions
             .ToDictionary(t => t.Id);
 
         foreach (var importTransaction in bankImport.Transactions)
         {
-            // Verifica se o usuário selecionou esta transação
             if (!selections.TryGetValue(importTransaction.Id, out var selection))
                 continue;
 
@@ -40,9 +37,13 @@ public class ConfirmImportCommandHandler(
             if (importTransaction.IsDuplicate)
                 continue;
 
+            // Salta transações sem categoria em vez de contar como erro
+            if (selection.CategoryId == Guid.Empty)
+                continue;
+
             try
             {
-                // Valida se a categoria existe e pertence ao usuário
+                // Valida apenas se categoryId foi fornecido
                 var category = await categoryRepository.GetByIdAsync(
                     selection.CategoryId, request.UserId, cancellationToken);
 
@@ -51,6 +52,8 @@ public class ConfirmImportCommandHandler(
                     errors++;
                     continue;
                 }
+
+                importTransaction.SuggestedCategoryId = selection.CategoryId;
 
                 var transaction = new Transaction
                 {
@@ -67,7 +70,6 @@ public class ConfirmImportCommandHandler(
 
                 await transactionRepository.AddAsync(transaction, cancellationToken);
 
-                // Vincula a transação criada ao registro de importação
                 importTransaction.TransactionId = transaction.Id;
                 imported++;
             }
@@ -79,6 +81,7 @@ public class ConfirmImportCommandHandler(
 
         bankImport.Imported = imported;
         bankImport.Errors = errors;
+
         await bankImportRepository.UpdateAsync(bankImport, cancellationToken);
 
         return new BankImportDto(
