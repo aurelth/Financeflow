@@ -10,7 +10,7 @@ interface Props {
 
 export interface ImportPreviewTableHandle {
   getSelected:     () => string[]
-  getTransactions: () => { id: string; isSelected: boolean; categoryId: string }[] // Adicionado
+  getTransactions: () => { id: string; isSelected: boolean; categoryId: string }[]
   getCount:        () => { selected: number; total: number }
 }
 

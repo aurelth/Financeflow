@@ -51,7 +51,7 @@ function formatAmount(amount: number, type: TransactionType) {
   return `-${formatted}`
 }
 
-// Adicionado: cor do valor por tipo
+// Cor do valor por tipo
 function getAmountColor(type: TransactionType): string {
   if (type === TransactionType.Income)   return 'var(--ff-income)'
   if (type === TransactionType.Transfer) return '#818cf8'

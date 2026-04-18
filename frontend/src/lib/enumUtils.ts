@@ -12,7 +12,7 @@ export function resolveType(type: TransactionType | string): TransactionType {
   return map[type] ?? TransactionType.Expense
 }
 
-// Adicionado: normaliza TransactionStatus que pode chegar como string ou número
+// Normaliza TransactionStatus que pode chegar como string ou número
 export function resolveStatus(status: TransactionStatus | string): TransactionStatus {
   if (typeof status === 'number') return status as TransactionStatus
   const map: Record<string, TransactionStatus> = {

@@ -61,7 +61,7 @@ public class GetReportByCategoryQueryHandler(
 
                     // Agrupa subcategorias dentro da categoria
                     var subcategories = g
-                        .Where(t => t.SubcategoryId.HasValue) // Modificado: Guid? usa HasValue
+                        .Where(t => t.SubcategoryId.HasValue)
                         .GroupBy(t => new { t.SubcategoryId, SubcategoryName = t.Subcategory!.Name })
                         .Select(sg => new SubcategoryReportItemDto(
                             SubcategoryId: sg.Key.SubcategoryId!.Value,

@@ -170,7 +170,7 @@ describe('ImportsPreviewPage', () => {
         expect(mockNavigate).toHaveBeenCalledWith('/imports')
     })
 
-    // Modificado: actualizado para o novo formato { transactions: [...] }
+    // Actualizado para o novo formato { transactions: [...] }
     it('deve chamar confirm ao clicar em confirmar', async () => {
         renderPage()
         const user = userEvent.setup()

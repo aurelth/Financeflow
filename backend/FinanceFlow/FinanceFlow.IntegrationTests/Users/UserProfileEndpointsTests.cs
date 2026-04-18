@@ -64,7 +64,7 @@ public class UserProfileEndpointsTests(FinanceFlowWebApplicationFactory factory)
         var client = CreateClient();
         var (_, profile) = await AuthenticateAsync(client, "getprofile.lang@teste.com");
 
-        // Adicionado: Language deve ter valor padrão pt-BR
+        // Language deve ter valor padrão pt-BR
         profile.Language.Should().Be("pt-BR");
     }
 

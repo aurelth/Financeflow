@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { X, Paperclip, FileText, Image, RefreshCw } from 'lucide-react'
+import { X, Paperclip, FileText, Image, RefreshCw, ArrowLeftRight } from 'lucide-react'
 import AttachmentViewer from './AttachmentViewer'
 import { useCategories } from '../../categories/api/useCategories'
 import {
@@ -36,7 +36,6 @@ const defaultForm: CreateTransactionRequest = {
   tags:           [],
 }
 
-// Estilos de input com tokens da nova paleta
 const inputStyle: React.CSSProperties = {
   width:        '100%',
   background:   'var(--ff-bg-elevated)',
@@ -79,7 +78,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
       : defaultForm
   )
 
-  const [tagInput, setTagInput]   = useState('')
+  const [tagInput, setTagInput]     = useState('')
   const [attachment, setAttachment] = useState<File | null>(null)
   const [currentAttachmentPath, setCurrentAttachmentPath] = useState<string | null>(transaction?.attachmentPath ?? null)
   const [currentAttachmentName, setCurrentAttachmentName] = useState<string | null>(transaction?.attachmentName ?? null)
@@ -93,10 +92,14 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
   const uploadAttachment          = useUploadAttachment(transaction?.id ?? '')
   const removeAttachment          = useRemoveAttachment(transaction?.id ?? '')
 
-  const filteredCategories = categories.filter(c => c.type === form.type)
-  const selectedCategory   = categories.find(c => c.id === form.categoryId)
-  const subcategories      = selectedCategory?.subcategories ?? []
-  const initialType        = useRef(form.type)
+  // Filtra categorias pelo tipo — Transfer inclui todas as categorias
+  const filteredCategories = form.type === TransactionType.Transfer
+    ? categories
+    : categories.filter(c => c.type === form.type)
+
+  const selectedCategory = categories.find(c => c.id === form.categoryId)
+  const subcategories    = selectedCategory?.subcategories ?? []
+  const initialType      = useRef(form.type)
 
   useEffect(() => {
     if (form.type === initialType.current) return
@@ -180,11 +183,11 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
               className="p-1.5 rounded-lg transition-all"
               style={{ color: 'var(--ff-text-muted)' }}
               onMouseEnter={e => {
-                e.currentTarget.style.color = 'var(--ff-text-primary)'
+                e.currentTarget.style.color      = 'var(--ff-text-primary)'
                 e.currentTarget.style.background = 'var(--ff-bg-elevated)'
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.color = 'var(--ff-text-muted)'
+                e.currentTarget.style.color      = 'var(--ff-text-muted)'
                 e.currentTarget.style.background = 'transparent'
               }}
             >
@@ -195,24 +198,44 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
           {/* Body */}
           <div className="px-6 py-5 space-y-4">
 
-            {/* Tipo */}
-            <div className="grid grid-cols-2 gap-2">
-              {[TransactionType.Expense, TransactionType.Income].map(t => (
+            {/* Tipo — agora com 3 opções */}
+            <div className="grid grid-cols-3 gap-2">
+              {[TransactionType.Expense, TransactionType.Income, TransactionType.Transfer].map(t => (
                 <button
                   key={t}
                   onClick={() => setForm(f => ({ ...f, type: t }))}
                   className="py-2.5 rounded-xl text-sm font-semibold transition-all"
                   style={form.type === t
                     ? t === TransactionType.Income
-                      ? { background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.4)', color: 'var(--ff-income)' }
-                      : { background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.4)', color: 'var(--ff-expense)' }
+                      ? { background: 'rgba(16,185,129,0.1)',  border: '1px solid rgba(16,185,129,0.4)',  color: 'var(--ff-income)'  }
+                      : t === TransactionType.Expense
+                        ? { background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.4)',   color: 'var(--ff-expense)' }
+                        : { background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8'           }
                     : { background: 'var(--ff-bg-elevated)', border: '1px solid var(--ff-border)', color: 'var(--ff-text-muted)' }
                   }
                 >
-                  {t === TransactionType.Income ? '↑ Receita' : '↓ Despesa'}
+                  {t === TransactionType.Income
+                    ? '↑ Receita'
+                    : t === TransactionType.Expense
+                      ? '↓ Despesa'
+                      : '↔ Transfer.'
+                  }
                 </button>
               ))}
             </div>
+
+            {/* Aviso informativo para Transfer */}
+            {form.type === TransactionType.Transfer && (
+              <div
+                className="flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs"
+                style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8' }}
+              >
+                <ArrowLeftRight size={14} className="flex-shrink-0 mt-0.5" />
+                <span>
+                  Transferências entre contas não contam como receita nem despesa — são movimentações internas.
+                </span>
+              </div>
+            )}
 
             {/* Valor */}
             <div>
@@ -224,7 +247,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                 placeholder="0,00"
                 style={inputStyle}
                 onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
+                onBlur={e =>  (e.target.style.borderColor = 'var(--ff-border)')}
               />
             </div>
 
@@ -235,10 +258,10 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                 type="text"
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                placeholder="Ex: Almoço, Salário..."
+                placeholder="Ex: Almoço, Salário, Transferência..."
                 style={inputStyle}
                 onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
+                onBlur={e =>  (e.target.style.borderColor = 'var(--ff-border)')}
               />
             </div>
 
@@ -252,7 +275,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                   style={inputStyle}
                   onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
-                  onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
+                  onBlur={e =>  (e.target.style.borderColor = 'var(--ff-border)')}
                 />
               </div>
               <div>
@@ -262,7 +285,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   onChange={e => setForm(f => ({ ...f, status: Number(e.target.value) as TransactionStatus }))}
                   style={inputStyle}
                   onFocus={e => (e.currentTarget.style.borderColor = 'var(--ff-emerald)')}
-                  onBlur={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
+                  onBlur={e =>  (e.currentTarget.style.borderColor = 'var(--ff-border)')}
                 >
                   <option value={TransactionStatus.Paid}>Pago</option>
                   <option value={TransactionStatus.Pending}>Pendente</option>
@@ -281,8 +304,8 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
               />
             </div>
 
-            {/* Subcategoria */}
-            {subcategories.length > 0 && (
+            {/* Subcategoria — oculta para Transfer */}
+            {subcategories.length > 0 && form.type !== TransactionType.Transfer && (
               <div>
                 <label style={labelStyle}>Subcategoria</label>
                 <select
@@ -290,7 +313,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   onChange={e => setForm(f => ({ ...f, subcategoryId: e.target.value || null }))}
                   style={inputStyle}
                   onFocus={e => (e.currentTarget.style.borderColor = 'var(--ff-emerald)')}
-                  onBlur={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
+                  onBlur={e =>  (e.currentTarget.style.borderColor = 'var(--ff-border)')}
                 >
                   <option value="">Nenhuma</option>
                   {subcategories.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -298,38 +321,40 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
               </div>
             )}
 
-            {/* Recorrência */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.isRecurring}
-                  onChange={e => setForm(f => ({
-                    ...f,
-                    isRecurring:    e.target.checked,
-                    recurrenceType: e.target.checked ? RecurrenceType.Monthly : RecurrenceType.None,
-                  }))}
-                  style={{ accentColor: 'var(--ff-emerald)', width: 16, height: 16 }}
-                />
-                <span className="text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
-                  Transação recorrente
-                </span>
-              </label>
-              {form.isRecurring && (
-                <select
-                  value={form.recurrenceType}
-                  onChange={e => setForm(f => ({ ...f, recurrenceType: Number(e.target.value) as RecurrenceType }))}
-                  style={inputStyle}
-                  onFocus={e => (e.currentTarget.style.borderColor = 'var(--ff-emerald)')}
-                  onBlur={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
-                >
-                  <option value={RecurrenceType.Daily}>Diária</option>
-                  <option value={RecurrenceType.Weekly}>Semanal</option>
-                  <option value={RecurrenceType.Monthly}>Mensal</option>
-                  <option value={RecurrenceType.Yearly}>Anual</option>
-                </select>
-              )}
-            </div>
+            {/* Recorrência — oculta para Transfer */}
+            {form.type !== TransactionType.Transfer && (
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.isRecurring}
+                    onChange={e => setForm(f => ({
+                      ...f,
+                      isRecurring:    e.target.checked,
+                      recurrenceType: e.target.checked ? RecurrenceType.Monthly : RecurrenceType.None,
+                    }))}
+                    style={{ accentColor: 'var(--ff-emerald)', width: 16, height: 16 }}
+                  />
+                  <span className="text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+                    Transação recorrente
+                  </span>
+                </label>
+                {form.isRecurring && (
+                  <select
+                    value={form.recurrenceType}
+                    onChange={e => setForm(f => ({ ...f, recurrenceType: Number(e.target.value) as RecurrenceType }))}
+                    style={inputStyle}
+                    onFocus={e => (e.currentTarget.style.borderColor = 'var(--ff-emerald)')}
+                    onBlur={e =>  (e.currentTarget.style.borderColor = 'var(--ff-border)')}
+                  >
+                    <option value={RecurrenceType.Daily}>Diária</option>
+                    <option value={RecurrenceType.Weekly}>Semanal</option>
+                    <option value={RecurrenceType.Monthly}>Mensal</option>
+                    <option value={RecurrenceType.Yearly}>Anual</option>
+                  </select>
+                )}
+              </div>
+            )}
 
             {/* Comprovante */}
             <div>
@@ -408,11 +433,11 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm transition-colors"
                   style={{ border: '1px dashed var(--ff-border)', color: 'var(--ff-text-muted)' }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.color = 'var(--ff-text-secondary)'
+                    e.currentTarget.style.color       = 'var(--ff-text-secondary)'
                     e.currentTarget.style.borderColor = 'var(--ff-emerald)'
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.color = 'var(--ff-text-muted)'
+                    e.currentTarget.style.color       = 'var(--ff-text-muted)'
                     e.currentTarget.style.borderColor = 'var(--ff-border)'
                   }}
                 >
@@ -441,7 +466,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   placeholder="Adicionar tag..."
                   style={inputStyle}
                   onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
-                  onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
+                  onBlur={e =>  (e.target.style.borderColor = 'var(--ff-border)')}
                 />
                 <button
                   onClick={addTag}
@@ -502,7 +527,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
               className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
               style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
               onMouseEnter={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald-hover)' }}
-              onMouseLeave={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald)' }}
+              onMouseLeave={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald)'       }}
             >
               {isPending ? 'Salvando...' : isEditing ? 'Atualizar' : 'Criar'}
             </button>
