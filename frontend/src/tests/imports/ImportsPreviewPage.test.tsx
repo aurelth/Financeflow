@@ -118,7 +118,7 @@ describe('ImportsPreviewPage', () => {
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Preview da importação')
     })
 
-    it('deve exibir o nome do ficheiro', () => {
+    it('deve exibir o nome do arquivo', () => {
         renderPage()
         expect(screen.getAllByText('extrato-janeiro.ofx').length).toBeGreaterThan(0)
     })

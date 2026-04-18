@@ -116,7 +116,7 @@ describe('TransactionForm', () => {
     expect(screen.getByText('Adicionar comprovante')).toBeInTheDocument()
   })
 
-  it('deve exibir nome do ficheiro e botões de substituir e remover quando há anexo', () => {
+  it('deve exibir nome do arquivo e botões de substituir e remover quando há anexo', () => {
     renderForm(mockTransactionWithAttachment)
     expect(screen.getByText('comprovante.pdf')).toBeInTheDocument()
     expect(screen.getByText('Substituir')).toBeInTheDocument()

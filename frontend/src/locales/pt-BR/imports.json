@@ -4,12 +4,12 @@
     "subtitle": "Importe extratos bancários no formato OFX"
   },
   "upload": {
-    "drag": "Arraste o ficheiro OFX aqui",
+    "drag": "Arraste o arquivo OFX aqui",
     "or": "ou",
-    "browse": "selecione um ficheiro",
-    "onlyOFX": "Apenas ficheiros .ofx são suportados.",
+    "browse": "selecione um arquivo",
+    "onlyOFX": "Apenas arquivos .ofx são suportados.",
     "send": "Enviar",
-    "selected": "Ficheiro selecionado"
+    "selected": "arquivo selecionado"
   },
   "history": {
     "title": "Histórico de importações",

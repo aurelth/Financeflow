@@ -40,7 +40,7 @@ interface ImportHistoryRowProps {
 }
 
 function ImportHistoryRow({ item, onPreview, onDelete, isDeleting }: ImportHistoryRowProps) {
-  const date = new Date(`${item.createdAt}Z`).toLocaleDateString('pt-PT', {
+  const date = new Date(`${item.createdAt}Z`).toLocaleDateString('pt-BR', {
     day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
   })
 
@@ -99,7 +99,7 @@ function ImportHistoryRow({ item, onPreview, onDelete, isDeleting }: ImportHisto
         <button
           onClick={() => onDelete(item.id)}
           disabled={isDeleting}
-          title="Eliminar importação"
+          title="Excluir importação"
           className="p-2 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ color: 'var(--ff-text-muted)' }}
           onMouseEnter={e => {
@@ -134,12 +134,12 @@ export default function ImportsPage() {
     upload(file, {
       onSuccess: (result) => {
         setUploading(false)
-        toast.success('Ficheiro enviado! A processar...')
+        toast.success('Arquivo enviado! Processando...')
         navigate(`/imports/${result.id}/preview`)
       },
       onError: () => {
         setUploading(false)
-        toast.error('Erro ao enviar o ficheiro. Verifique se é um OFX válido.')
+        toast.error('Erro ao enviar o arquivo. Verifique se é um OFX válido.')
       },
     })
   }
@@ -150,11 +150,11 @@ export default function ImportsPage() {
     deleteImport(id, {
       onSuccess: () => {
         setDeletingId(null)
-        toast.success('Importação eliminada com sucesso.')
+        toast.success('Importação excluída com sucesso.')
       },
       onError: () => {
         setDeletingId(null)
-        toast.error('Erro ao eliminar a importação.')
+        toast.error('Erro ao excluir a importação.')
       },
     })
   }
@@ -200,7 +200,7 @@ export default function ImportsPage() {
         <div className="flex items-center gap-2 mb-4">
           <Upload size={16} style={{ color: 'var(--ff-emerald)' }} />
           <h2 className="text-sm font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
-            Novo ficheiro
+            Novo arquivo
           </h2>
         </div>
         <OFXUploadZone onFileSelect={handleFileSelect} isLoading={isPending || uploading} />

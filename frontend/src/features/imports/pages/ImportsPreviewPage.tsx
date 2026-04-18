@@ -107,7 +107,7 @@ export default function ImportsPreviewPage() {
         )}
       </div>
 
-      {/* Resumo do ficheiro */}
+      {/* Resumo do arquivo */}
       {preview && (
         <div
           className="flex items-center gap-6 px-5 py-4 rounded-xl"
@@ -167,7 +167,7 @@ export default function ImportsPreviewPage() {
             <FileText size={24} style={{ color: 'var(--ff-text-muted)' }} />
           </div>
           <p className="text-sm" style={{ color: 'var(--ff-text-muted)' }}>
-            Nenhuma transação encontrada neste ficheiro
+            Nenhuma transação encontrada neste arquivo
           </p>
         </div>
       )}

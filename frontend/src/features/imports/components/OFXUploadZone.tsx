@@ -13,7 +13,7 @@ export default function OFXUploadZone({ onFileSelect, isLoading }: Props) {
 
   function validateAndSelect(file: File) {
     if (!file.name.toLowerCase().endsWith('.ofx')) {
-      setError('Apenas ficheiros .ofx são suportados.')
+      setError('Apenas arquivos .ofx são suportados.')
       setSelectedFile(null)
       return
     }
@@ -73,7 +73,7 @@ export default function OFXUploadZone({ onFileSelect, isLoading }: Props) {
 
         <div className="text-center">
           <p className="text-sm font-medium" style={{ color: 'var(--ff-text-primary)' }}>
-            Arraste o ficheiro OFX aqui
+            Arraste o arquivo OFX aqui
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
             ou clique para selecionar
@@ -86,7 +86,7 @@ export default function OFXUploadZone({ onFileSelect, isLoading }: Props) {
         <p className="text-xs px-1" style={{ color: '#f87171' }}>{error}</p>
       )}
 
-      {/* Ficheiro selecionado */}
+      {/* Arquivo selecionado */}
       {selectedFile && !error && (
         <div
           className="flex items-center justify-between px-4 py-3 rounded-xl"
