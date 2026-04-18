@@ -2,6 +2,7 @@ import { useState, forwardRef, useImperativeHandle } from 'react'
 import { ArrowDownCircle, ArrowUpCircle, AlertCircle, ArrowLeftRight } from 'lucide-react'
 import type { BankImportTransactionDto } from '../types/imports.types'
 import type { Category } from '@/features/categories/types/category.types'
+import { isLikelyTransfer } from '@/lib/transferUtils'
 
 interface Props {
   transactions: BankImportTransactionDto[]
@@ -37,7 +38,7 @@ interface RowState extends BankImportTransactionDto {
 }
 
 const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
-  ({ transactions: initialTransactions, categories }, ref) => {    
+  ({ transactions: initialTransactions, categories }, ref) => {
     const [rows, setRows] = useState<RowState[]>(
       initialTransactions.map(t => ({ ...t, localType: t.type as RowType }))
     )
@@ -46,7 +47,7 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
     useImperativeHandle(ref, () => ({
       getSelected: () =>
         rows.filter(t => t.isSelected && !t.isDuplicate).map(t => t.id),
-      
+
       getTransactions: () =>
         rows
           .filter(t => t.isSelected && !t.isDuplicate)
@@ -77,11 +78,14 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
         t.id === id ? { ...t, suggestedCategoryId: categoryId || null } : t
       ))
     }
-    
+
+    // Suporta toggle para Income e Expense — volta ao tipo original ao desmarcar
     function toggleTransfer(id: string) {
       setRows(rows.map(t => {
         if (t.id !== id) return t
-        const newType: RowType = t.localType === 'Transfer' ? 'Income' : 'Transfer'
+        const newType: RowType = t.localType === 'Transfer'
+          ? t.type as RowType
+          : 'Transfer'
         return { ...t, localType: newType, suggestedCategoryId: null }
       }))
     }
@@ -120,7 +124,7 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
         >
           <ArrowLeftRight size={13} className="flex-shrink-0 mt-0.5" />
           <span>
-            Para entradas que são transferências entre contas, clique no ícone <ArrowLeftRight size={11} className="inline" /> para marcá-las como transferência — não serão contadas como receita.
+            Transações identificadas como transferências entre contas mostram o ícone <ArrowLeftRight size={11} className="inline" /> — clique para marcá-las como transferência e evitar dupla contagem.
           </span>
         </div>
 
@@ -146,15 +150,15 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
           {/* Rows */}
           <div className="divide-y" style={{ borderColor: 'var(--ff-border)' }}>
             {rows.map(t => {
-              const date = new Date(`${t.date}Z`).toLocaleDateString('pt-PT', {
+              const date = new Date(`${t.date}Z`).toLocaleDateString('pt-BR', {
                 day: '2-digit', month: '2-digit', year: 'numeric',
               })
 
-              const isTransfer = t.localType === 'Transfer'
+              const isTransfer   = t.localType === 'Transfer'
+              const likelyTransfer = isLikelyTransfer(t.description)
 
-              // Filtra categorias pelo tipo local
               const filteredCategories = isTransfer
-                ? categories // Transfer pode usar qualquer categoria
+                ? categories
                 : categories.filter(c => String(c.type) === t.localType)
 
               return (
@@ -183,7 +187,6 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
 
                   {/* Descrição */}
                   <div className="flex items-center gap-2 min-w-0">
-                    {/* Ícone de Transfer para entradas marcadas */}
                     {isTransfer ? (
                       <ArrowLeftRight size={15} style={{ color: '#818cf8', flexShrink: 0 }} />
                     ) : t.type === 'Expense' ? (
@@ -207,7 +210,6 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
                         duplicada
                       </span>
                     )}
-                    {/* Badge Transfer */}
                     {isTransfer && (
                       <span
                         className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs flex-shrink-0"
@@ -216,11 +218,11 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
                         Transferência
                       </span>
                     )}
-                    {/* Botão toggle Transfer — apenas para entradas não duplicadas */}
-                    {t.type === 'Income' && !t.isDuplicate && (
+                    {/* Toggle visível apenas para transações com palavras-chave de transferência */}
+                    {likelyTransfer && !t.isDuplicate && (
                       <button
                         onClick={() => toggleTransfer(t.id)}
-                        title={isTransfer ? 'Marcar como receita' : 'Marcar como transferência'}
+                        title={isTransfer ? 'Marcar como original' : 'Marcar como transferência'}
                         className="flex-shrink-0 p-1 rounded transition-colors"
                         style={{
                           color:      isTransfer ? '#818cf8' : 'var(--ff-text-muted)',
