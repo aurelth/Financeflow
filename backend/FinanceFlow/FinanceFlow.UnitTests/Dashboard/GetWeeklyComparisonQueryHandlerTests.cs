@@ -84,4 +84,33 @@ public class GetWeeklyComparisonQueryHandlerTests
         result[0].Expenses.Should().Be(200);
         result[2].Expenses.Should().Be(500);
     }
+
+    // Transfer não deve contar nas semanas
+    [Fact]
+    public async Task Handle_DeveExcluirTransferencias_DaComparacaoSemanal()
+    {
+        // Arrange
+        var cat = new Category { Name = "Test", Icon = "💰", Color = "#fff" };
+        var transactions = new List<Transaction>
+    {
+        new() { Id = Guid.NewGuid(), UserId = UserId, Type = TransactionType.Income,   Status = TransactionStatus.Paid, Amount = 1000, Date = new DateTime(2026, 3, 3), CategoryId = Guid.NewGuid(), Category = cat, Tags = "[]" },
+        new() { Id = Guid.NewGuid(), UserId = UserId, Type = TransactionType.Transfer, Status = TransactionStatus.Paid, Amount = 500,  Date = new DateTime(2026, 3, 3), CategoryId = Guid.NewGuid(), Category = cat, Tags = "[]" }, // deve ser ignorado
+    };
+
+        _transactionRepository
+            .Setup(r => r.GetPagedByUserAsync(
+                UserId, 1, int.MaxValue,
+                It.IsAny<DateTime>(), It.IsAny<DateTime>(),
+                null, null, null, null, null, null, null, default))
+            .ReturnsAsync((transactions, transactions.Count));
+
+        var query = new GetWeeklyComparisonQuery(UserId, Month: 3, Year: 2026);
+
+        // Act
+        var result = (await CreateHandler().Handle(query, default)).ToList();
+
+        // Assert — Transfer não conta como Income nem Expense
+        result[0].Income.Should().Be(1000);
+        result[0].Expenses.Should().Be(0); // Transfer não é despesa
+    }
 }

@@ -163,4 +163,41 @@ public class DashboardEndpointsTests(FinanceFlowWebApplicationFactory factory)
         result.Should().NotBeNull();
         result.Should().HaveCount(4);
     }
+
+    // Transfer não deve aparecer nas estatísticas do dashboard
+    [Fact]
+    public async Task GetSummary_DeveExcluirTransferencias_DosCalculos()
+    {
+        var client = CreateClient();
+        await AuthenticateAsync(client, "summary.transfer.dashboard@teste.com");
+
+        // Cria uma categoria para a transferência
+        var categoryResponse = await client.PostAsJsonAsync("/api/categories", new
+        {
+            Name = "Transferência Teste",
+            Icon = "arrow-left-right",
+            Color = "#6366f1",
+            Type = 3, // Transfer
+        });
+        var category = await categoryResponse.Content.ReadAsJsonAsync<CategoryDto>();
+
+        // Cria uma transação de transferência
+        await client.PostAsJsonAsync("/api/transactions", new
+        {
+            Amount = 1000,
+            Type = 3, // Transfer
+            Date = "2026-03-15",
+            Description = "Transferência entre contas",
+            Status = 1, // Paid
+            CategoryId = category!.Id,
+        });
+
+        var response = await client.GetAsync("/api/dashboard/summary?month=3&year=2026");
+        var result = await response.Content.ReadAsJsonAsync<DashboardSummaryDto>();
+
+        // Assert — Transfer não conta como receita nem despesa
+        result!.TotalIncome.Should().Be(0);
+        result.TotalExpenses.Should().Be(0);
+        result.Balance.Should().Be(0);
+    }    
 }
