@@ -1,8 +1,9 @@
-import { ArrowRight } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { ArrowRight, ArrowLeftRight } from 'lucide-react'
+import { useNavigate }    from 'react-router-dom'
 import { TransactionType } from '@/features/categories/types/category.types'
 import { TransactionStatus } from '@/features/transactions/types/transaction.types'
-import CategoryIcon from '@/features/categories/components/CategoryIcon'
+import CategoryIcon       from '@/features/categories/components/CategoryIcon'
+import { resolveType, resolveStatus } from '@/lib/enumUtils'
 import type { Transaction } from '@/features/transactions/types/transaction.types'
 
 interface RecentTransactionsWidgetProps {
@@ -30,36 +31,24 @@ const statusStyles: Record<TransactionStatus, { bg: string; color: string; borde
   },
 }
 
-// Normaliza status que pode chegar como string ou número
-function resolveStatus(status: TransactionStatus | string): TransactionStatus {
-  if (typeof status === 'number') return status as TransactionStatus
-  const map: Record<string, TransactionStatus> = {
-    'Paid':      TransactionStatus.Paid,
-    'Pending':   TransactionStatus.Pending,
-    'Scheduled': TransactionStatus.Scheduled,
-  }
-  return map[status] ?? TransactionStatus.Paid
+// Cor e formatação para Transfer
+function getAmountColor(type: TransactionType): string {
+  if (type === TransactionType.Income)   return 'var(--ff-income)'
+  if (type === TransactionType.Transfer) return '#818cf8'
+  return 'var(--ff-expense)'
 }
 
 function formatAmount(amount: number, type: TransactionType) {
   const formatted = new Intl.NumberFormat('pt-BR', {
     style: 'currency', currency: 'BRL',
   }).format(amount)
-  return type === TransactionType.Income ? `+${formatted}` : `-${formatted}`
+  if (type === TransactionType.Income)   return `+${formatted}`
+  if (type === TransactionType.Transfer) return `↔ ${formatted}`
+  return `-${formatted}`
 }
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('pt-BR')
-}
-
-// Normaliza type que pode chegar como string ou número
-function resolveType(type: TransactionType | string): TransactionType {
-  if (typeof type === 'number') return type as TransactionType
-  const map: Record<string, TransactionType> = {
-    'Income':  TransactionType.Income,
-    'Expense': TransactionType.Expense,
-  }
-  return map[type] ?? TransactionType.Expense
 }
 
 export default function RecentTransactionsWidget({ transactions }: RecentTransactionsWidgetProps) {
@@ -100,7 +89,7 @@ export default function RecentTransactionsWidget({ transactions }: RecentTransac
       ) : (
         <div className="space-y-2">
           {transactions.map(tx => {
-            // Normaliza status antes de aceder ao mapa de estilos
+            const type   = resolveType(tx.type)
             const status = resolveStatus(tx.status)
             const s      = statusStyles[status] ?? statusStyles[TransactionStatus.Paid]
 
@@ -112,19 +101,29 @@ export default function RecentTransactionsWidget({ transactions }: RecentTransac
                 onMouseEnter={e => (e.currentTarget.style.background = '#222222')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-bg-elevated)')}
               >
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{
-                    backgroundColor: tx.categoryColor ? `${tx.categoryColor}20` : 'var(--ff-bg-elevated)',
-                    border:          tx.categoryColor ? `1px solid ${tx.categoryColor}30` : '1px solid var(--ff-border)',
-                  }}
-                >
-                  <CategoryIcon
-                    icon={tx.categoryIcon  ?? 'ellipsis'}
-                    color={tx.categoryColor ?? 'var(--ff-text-muted)'}
-                    size={16}
-                  />
-                </div>
+                {/* Ícone especial para Transfer */}
+                {type === TransactionType.Transfer ? (
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}
+                  >
+                    <ArrowLeftRight size={16} style={{ color: '#818cf8' }} />
+                  </div>
+                ) : (
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{
+                      backgroundColor: tx.categoryColor ? `${tx.categoryColor}20` : 'var(--ff-bg-elevated)',
+                      border:          tx.categoryColor ? `1px solid ${tx.categoryColor}30` : '1px solid var(--ff-border)',
+                    }}
+                  >
+                    <CategoryIcon
+                      icon={tx.categoryIcon  ?? 'ellipsis'}
+                      color={tx.categoryColor ?? 'var(--ff-text-muted)'}
+                      size={16}
+                    />
+                  </div>
+                )}
 
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" style={{ color: 'var(--ff-text-primary)' }}>
@@ -134,20 +133,31 @@ export default function RecentTransactionsWidget({ transactions }: RecentTransac
                     <span className="text-xs" style={{ color: 'var(--ff-text-muted)' }}>
                       {formatDate(tx.date)}
                     </span>
-                    <span
-                      className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                      style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}
-                    >
-                      {s.label}
-                    </span>
+                    {/* Badge Transfer */}
+                    {type === TransactionType.Transfer && (
+                      <span
+                        className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                        style={{ background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}
+                      >
+                        Transferência
+                      </span>
+                    )}
+                    {type !== TransactionType.Transfer && (
+                      <span
+                        className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                        style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}
+                      >
+                        {s.label}
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 <span
                   className="text-sm font-semibold flex-shrink-0"
-                  style={{ color: resolveType(tx.type) === TransactionType.Income ? 'var(--ff-income)' : 'var(--ff-expense)' }}
+                  style={{ color: getAmountColor(type) }}
                 >
-                  {formatAmount(tx.amount, resolveType(tx.type))}
+                  {formatAmount(tx.amount, type)}
                 </span>
               </div>
             )

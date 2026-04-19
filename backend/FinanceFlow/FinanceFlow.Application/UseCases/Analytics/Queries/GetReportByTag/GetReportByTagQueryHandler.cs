@@ -50,7 +50,7 @@ public class GetReportByTagQueryHandler(
                     t.Amount,
                     t.Type
                 })
-                .Where(t => t.Tags.Length > 0) // Modificado: usa .Length para arrays
+                .Where(t => t.Tags.Length > 0)
                 .SelectMany(t => t.Tags.Select(tag => new { Tag = tag, t.Amount, t.Type }))
                 .GroupBy(x => x.Tag.ToLowerInvariant().Trim())
                 .ToList();

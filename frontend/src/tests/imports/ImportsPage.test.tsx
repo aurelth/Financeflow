@@ -73,7 +73,7 @@ describe('ImportsPage', () => {
 
     it('deve exibir a zona de upload', () => {
         renderPage()
-        expect(screen.getByText('Arraste o ficheiro OFX aqui')).toBeInTheDocument()
+        expect(screen.getByText('Arraste o arquivo OFX aqui')).toBeInTheDocument()
     })
 
     it('deve exibir o histórico de importações', () => {
@@ -122,7 +122,7 @@ describe('ImportsPage', () => {
         expect(screen.getByText('Nenhuma importação encontrada')).toBeInTheDocument()
     })
 
-    it('deve exibir erro ao selecionar ficheiro não OFX', async () => {
+    it('deve exibir erro ao selecionar arquivo não OFX', async () => {
         renderPage()
 
         const input = document.getElementById('ofx-input') as HTMLInputElement
@@ -133,11 +133,11 @@ describe('ImportsPage', () => {
         input.dispatchEvent(new Event('change', { bubbles: true }))
 
         await waitFor(() => {
-            expect(screen.getByText('Apenas ficheiros .ofx são suportados.')).toBeInTheDocument()
+            expect(screen.getByText('Apenas arquivos .ofx são suportados.')).toBeInTheDocument()
         })
     })
 
-    it('deve exibir ficheiro selecionado ao escolher OFX válido', async () => {
+    it('deve exibir arquivo selecionado ao escolher OFX válido', async () => {
         renderPage()
         const user = userEvent.setup()
 
@@ -170,13 +170,13 @@ describe('ImportsPage', () => {
         expect(mockUploadMutate).toHaveBeenCalledWith(file, expect.any(Object))
     })
 
-    it('deve exibir botão de eliminar para cada importação', () => {
+    it('deve exibir botão de excluir para cada importação', () => {
         renderPage()
-        const deleteButtons = screen.getAllByTitle('Eliminar importação')
+        const deleteButtons = screen.getAllByTitle('Excluir importação')
         expect(deleteButtons).toHaveLength(2)
     })
 
-    it('deve chamar deleteImport ao clicar em eliminar', async () => {
+    it('deve chamar deleteImport ao clicar em excluir', async () => {
         const mockDeleteMutate = vi.fn()
         vi.mocked(vi.fn()).mockReturnValue({ mutate: mockDeleteMutate, isPending: false })
 
@@ -184,7 +184,7 @@ describe('ImportsPage', () => {
         const { unmount } = renderPage()
         const user = userEvent.setup()
 
-        const deleteButtons = screen.getAllByTitle('Eliminar importação')
+        const deleteButtons = screen.getAllByTitle('Excluir importação')
         await user.click(deleteButtons[0])
 
         // Verifica que o botão está presente e clicável
@@ -192,7 +192,7 @@ describe('ImportsPage', () => {
         unmount()
     })
 
-    it('deve limpar ficheiro selecionado ao clicar em X', async () => {
+    it('deve limpar arquivo selecionado ao clicar em X', async () => {
         renderPage()
         const user = userEvent.setup()
 

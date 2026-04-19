@@ -1,5 +1,6 @@
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs.Imports;
+using FinanceFlow.Domain.Constants;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
@@ -37,33 +38,46 @@ public class ConfirmImportCommandHandler(
             if (importTransaction.IsDuplicate)
                 continue;
 
-            // Salta transações sem categoria em vez de contar como erro
-            if (selection.CategoryId == Guid.Empty)
-                continue;
+            // Resolve o tipo enviado pelo frontend
+            var transactionType = ResolveType(selection.Type, importTransaction.Type);
+
+            // Categoria opcional para Transfer — usa categoria padrão
+            var categoryId = selection.CategoryId;
+
+            if (categoryId == Guid.Empty)
+            {
+                if (transactionType == TransactionType.Transfer)
+                    categoryId = WellKnownIds.TransferCategoryId;
+                else
+                    continue; // Salta transações não-Transfer sem categoria
+            }
 
             try
             {
-                // Valida apenas se categoryId foi fornecido
-                var category = await categoryRepository.GetByIdAsync(
-                    selection.CategoryId, request.UserId, cancellationToken);
-
-                if (category is null)
+                // Valida categoria apenas se não for a categoria padrão de transferência
+                if (categoryId != WellKnownIds.TransferCategoryId)
                 {
-                    errors++;
-                    continue;
+                    var category = await categoryRepository.GetByIdAsync(
+                        categoryId, request.UserId, cancellationToken);
+
+                    if (category is null)
+                    {
+                        errors++;
+                        continue;
+                    }
                 }
 
-                importTransaction.SuggestedCategoryId = selection.CategoryId;
+                importTransaction.SuggestedCategoryId = categoryId;
 
                 var transaction = new Transaction
                 {
                     UserId = request.UserId,
                     Amount = importTransaction.Amount,
-                    Type = importTransaction.Type,
+                    Type = transactionType,
                     Date = importTransaction.Date,
                     Description = importTransaction.Description,
                     Status = TransactionStatus.Paid,
-                    CategoryId = selection.CategoryId,
+                    CategoryId = categoryId,
                     ImportHash = importTransaction.Hash,
                     Tags = "[]",
                 };
@@ -94,5 +108,16 @@ public class ConfirmImportCommandHandler(
             Errors: bankImport.Errors,
             ErrorMessage: bankImport.ErrorMessage,
             CreatedAt: bankImport.CreatedAt);
+    }
+
+    private static TransactionType ResolveType(string? typeFromRequest, TransactionType fallback)
+    {
+        return typeFromRequest switch
+        {
+            "Income" => TransactionType.Income,
+            "Expense" => TransactionType.Expense,
+            "Transfer" => TransactionType.Transfer,
+            _ => fallback,
+        };
     }
 }

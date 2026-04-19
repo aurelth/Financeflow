@@ -116,7 +116,7 @@ describe('TransactionForm', () => {
     expect(screen.getByText('Adicionar comprovante')).toBeInTheDocument()
   })
 
-  it('deve exibir nome do ficheiro e botões de substituir e remover quando há anexo', () => {
+  it('deve exibir nome do arquivo e botões de substituir e remover quando há anexo', () => {
     renderForm(mockTransactionWithAttachment)
     expect(screen.getByText('comprovante.pdf')).toBeInTheDocument()
     expect(screen.getByText('Substituir')).toBeInTheDocument()
@@ -338,5 +338,33 @@ describe('TransactionForm', () => {
     // O teste de categoria via UI requer interação com o Popover
     // então validamos via propagateToFuture nos testes existentes
     expect(screen.queryByText('Editar transação recorrente')).not.toBeInTheDocument()
+  })
+
+  // Testes para tipo Transfer
+  it('deve renderizar o botão de Transferência', () => {
+    renderForm()
+    expect(screen.getByRole('button', { name: /transfer\./i })).toBeInTheDocument()
+  })
+
+  it('deve mostrar aviso informativo ao seleccionar Transfer', async () => {
+    renderForm()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /transfer\./i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/transferências entre contas não contam/i)).toBeInTheDocument()
+    })
+  })
+
+  it('deve esconder campo de recorrência ao seleccionar Transfer', async () => {
+    renderForm()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /transfer\./i }))
+
+    await waitFor(() => {
+      expect(screen.queryByText('Transação recorrente')).not.toBeInTheDocument()
+    })
   })
 })

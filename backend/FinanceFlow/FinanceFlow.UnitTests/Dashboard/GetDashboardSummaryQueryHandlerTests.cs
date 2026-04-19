@@ -129,4 +129,34 @@ public class GetDashboardSummaryQueryHandlerTests
         result.Balance.Should().Be(0);
         result.ProjectedBalance.Should().Be(0);
     }
+
+    // Transfer não deve contar para receitas nem despesas
+    [Fact]
+    public async Task Handle_DeveExcluirTransferencias_DosCalculos()
+    {
+        // Arrange
+        var transactions = new List<Transaction>
+    {
+        MakeTransaction(TransactionType.Income,   TransactionStatus.Paid, 5000, new DateTime(2026, 3, 5)),
+        MakeTransaction(TransactionType.Expense,  TransactionStatus.Paid, 2000, new DateTime(2026, 3, 10)),
+        MakeTransaction(TransactionType.Transfer, TransactionStatus.Paid, 1000, new DateTime(2026, 3, 15)), // deve ser ignorado
+    };
+
+        _transactionRepository
+            .Setup(r => r.GetPagedByUserAsync(
+                UserId, 1, int.MaxValue,
+                It.IsAny<DateTime>(), It.IsAny<DateTime>(),
+                null, null, null, null, null, null, null, default))
+            .ReturnsAsync((transactions, transactions.Count));
+
+        var query = new GetDashboardSummaryQuery(UserId, Month: 3, Year: 2026);
+
+        // Act
+        var result = await CreateHandler().Handle(query, default);
+
+        // Assert
+        result.TotalIncome.Should().Be(5000);   // Transfer não conta como receita
+        result.TotalExpenses.Should().Be(2000); // Transfer não conta como despesa
+        result.Balance.Should().Be(3000);
+    }
 }

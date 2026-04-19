@@ -8,48 +8,48 @@ import { TransactionStatus, RecurrenceType } from '@/features/transactions/types
 
 const mockTransactions = [
   {
-    id:              'tx-1',
-    amount:          150.00,
-    type:            TransactionType.Expense,
-    date:            '2026-03-10T00:00:00Z',
-    description:     'Mercado',
-    status:          TransactionStatus.Paid,
-    isRecurring:     false,
-    recurrenceType:  RecurrenceType.None,
+    id: 'tx-1',
+    amount: 150.00,
+    type: TransactionType.Expense,
+    date: '2026-03-10T00:00:00Z',
+    description: 'Mercado',
+    status: TransactionStatus.Paid,
+    isRecurring: false,
+    recurrenceType: RecurrenceType.None,
     recurrenceGroupId: null,
-    attachmentPath:  null,
-    attachmentName:  null,
-    tags:            ['alimentação'],
-    categoryId:      'cat-1',
-    categoryName:    'Alimentação',
-    categoryIcon:    '🍔',
-    categoryColor:   '#f97316',
-    subcategoryId:   null,
+    attachmentPath: null,
+    attachmentName: null,
+    tags: ['alimentação'],
+    categoryId: 'cat-1',
+    categoryName: 'Alimentação',
+    categoryIcon: '🍔',
+    categoryColor: '#f97316',
+    subcategoryId: null,
     subcategoryName: null,
-    createdAt:       '2026-03-10T00:00:00Z',
-    updatedAt:       null,
+    createdAt: '2026-03-10T00:00:00Z',
+    updatedAt: null,
   },
   {
-    id:              'tx-2',
-    amount:          3000.00,
-    type:            TransactionType.Income,
-    date:            '2026-03-05T00:00:00Z',
-    description:     'Freelance',
-    status:          TransactionStatus.Paid,
-    isRecurring:     true,
-    recurrenceType:  RecurrenceType.Monthly,
+    id: 'tx-2',
+    amount: 3000.00,
+    type: TransactionType.Income,
+    date: '2026-03-05T00:00:00Z',
+    description: 'Freelance',
+    status: TransactionStatus.Paid,
+    isRecurring: true,
+    recurrenceType: RecurrenceType.Monthly,
     recurrenceGroupId: null,
-    attachmentPath:  'attachments/user/file.pdf',
-    attachmentName:  null,
-    tags:            [],
-    categoryId:      'cat-2',
-    categoryName:    'Trabalho',
-    categoryIcon:    '💼',
-    categoryColor:   '#22c55e',
-    subcategoryId:   null,
+    attachmentPath: 'attachments/user/file.pdf',
+    attachmentName: null,
+    tags: [],
+    categoryId: 'cat-2',
+    categoryName: 'Trabalho',
+    categoryIcon: '💼',
+    categoryColor: '#22c55e',
+    subcategoryId: null,
     subcategoryName: null,
-    createdAt:       '2026-03-05T00:00:00Z',
-    updatedAt:       null,
+    createdAt: '2026-03-05T00:00:00Z',
+    updatedAt: null,
   },
 ]
 
@@ -89,8 +89,8 @@ describe('TransactionTable', () => {
   })
 
   it('deve exibir ícone de anexo quando attachmentPath está preenchido', () => {
-  renderTable()
-  // Verifica pela classe CSS do ícone Lucide
+    renderTable()
+    // Verifica pela classe CSS do ícone Lucide
     const paperclips = document.querySelectorAll('.lucide-paperclip')
     expect(paperclips.length).toBeGreaterThan(0)
   })
@@ -130,5 +130,51 @@ describe('TransactionTable', () => {
   it('deve exibir valor positivo para receitas', () => {
     renderTable()
     expect(screen.getByText('+R$ 3.000,00')).toBeInTheDocument()
+  })
+
+  // Testes para tipo Transfer
+  it('deve exibir badge de Transferência para transações do tipo Transfer', () => {
+    const transferTransaction = {
+      ...mockTransactions[0],
+      id: 'tx-3',
+      type: TransactionType.Transfer,
+      description: 'Transferência conta 2',
+    }
+
+    const qc = new QueryClient()
+    render(
+      <QueryClientProvider client={qc}>
+        <TransactionTable
+          transactions={[transferTransaction]}
+          onEdit={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      </QueryClientProvider>
+    )
+
+    expect(screen.getAllByText('Transferência').length).toBeGreaterThan(0)
+  })
+
+  it('deve exibir valor com símbolo ↔ para transferências', () => {
+    const transferTransaction = {
+      ...mockTransactions[0],
+      id: 'tx-3',
+      type: TransactionType.Transfer,
+      description: 'Transferência conta 2',
+      amount: 1000,
+    }
+
+    const qc = new QueryClient()
+    render(
+      <QueryClientProvider client={qc}>
+        <TransactionTable
+          transactions={[transferTransaction]}
+          onEdit={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      </QueryClientProvider>
+    )
+
+    expect(screen.getByText(/↔/)).toBeInTheDocument()
   })
 })

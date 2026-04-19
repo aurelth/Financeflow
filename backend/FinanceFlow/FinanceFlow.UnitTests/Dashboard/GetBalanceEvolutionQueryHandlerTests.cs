@@ -126,4 +126,49 @@ public class GetBalanceEvolutionQueryHandlerTests
         result.Should().NotBeEmpty();
         result.All(r => r.Balance == 0).Should().BeTrue();
     }
+
+    // Transfer não deve afectar a evolução do saldo
+    [Fact]
+    public async Task Handle_DeveExcluirTransferencias_DaEvolucaoDoSaldo()
+    {
+        // Arrange
+        var transactions = new List<Transaction>
+    {
+        new()
+        {
+            Id         = Guid.NewGuid(), UserId = UserId,
+            Type       = TransactionType.Income, Status = TransactionStatus.Paid,
+            Amount     = 1000, Date = new DateTime(2026, 1, 1),
+            CategoryId = Guid.NewGuid(),
+            Category   = new Category { Name = "Test", Icon = "💰", Color = "#fff" },
+            Tags       = "[]",
+        },
+        new()
+        {
+            Id         = Guid.NewGuid(), UserId = UserId,
+            Type       = TransactionType.Transfer, Status = TransactionStatus.Paid, // deve ser ignorado
+            Amount     = 500, Date = new DateTime(2026, 1, 1),
+            CategoryId = Guid.NewGuid(),
+            Category   = new Category { Name = "Test", Icon = "💰", Color = "#fff" },
+            Tags       = "[]",
+        },
+    };
+
+        _transactionRepository
+            .Setup(r => r.GetPagedByUserAsync(
+                UserId, 1, int.MaxValue,
+                It.IsAny<DateTime>(), It.IsAny<DateTime>(),
+                null, null, null, null, null, null, null, default))
+            .ReturnsAsync((transactions, transactions.Count));
+
+        var query = new GetBalanceEvolutionQuery(UserId, Month: 1, Year: 2026);
+
+        // Act
+        var result = (await CreateHandler().Handle(query, default)).ToList();
+
+        // Assert — saldo apenas da receita, Transfer ignorado
+        var day1 = result.First(r => r.Date == "2026-01-01");
+        day1.Income.Should().Be(1000);
+        day1.Balance.Should().Be(1000); // Transfer não afecta o saldo
+    }
 }

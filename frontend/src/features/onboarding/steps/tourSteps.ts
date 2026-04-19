@@ -1,6 +1,6 @@
 import type { DriveStep } from 'driver.js'
 
-// Adicionado: passos do tour com IDs dos elementos alvo na sidebar e dashboard
+// Passos do tour com IDs dos elementos alvo na sidebar e dashboard
 export function getTourSteps(t: (key: string) => string): DriveStep[] {
   return [
     {

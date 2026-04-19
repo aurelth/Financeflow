@@ -236,7 +236,7 @@ export default function AttachmentViewer({
               {!loading && objectUrl && !isImageContent && !isPdfContent && (
                 <div className="flex flex-col items-center gap-3 py-12" style={{ color: 'var(--ff-text-muted)' }}>
                   <FileText size={40} />
-                  <p className="text-sm">Pré-visualização não disponível para este tipo de ficheiro.</p>
+                  <p className="text-sm">Pré-visualização não disponível para este tipo de arquivo.</p>
                   <button
                     onClick={handleDownload}
                     className="flex items-center gap-2 text-sm transition-colors"
@@ -245,7 +245,7 @@ export default function AttachmentViewer({
                     onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-emerald)')}
                   >
                     <Download size={14} />
-                    Baixar ficheiro
+                    Baixar arquivo
                   </button>
                 </div>
               )}

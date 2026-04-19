@@ -61,6 +61,7 @@ export default function TransactionFilters({ filters, categories, onChange, onCl
           <option value="">Todos os tipos</option>
           <option value={TransactionType.Income}>Receita</option>
           <option value={TransactionType.Expense}>Despesa</option>
+          <option value={TransactionType.Transfer}>Transferência</option>
         </select>
 
         {/* Status */}

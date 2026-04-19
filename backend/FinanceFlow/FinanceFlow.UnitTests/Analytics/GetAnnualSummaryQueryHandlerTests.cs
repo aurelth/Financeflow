@@ -133,4 +133,27 @@ public class GetAnnualSummaryQueryHandlerTests
         months[0].CumulativeBalance.Should().Be(5000);  // Janeiro
         months[1].CumulativeBalance.Should().Be(3000);  // Fevereiro: 5000 - 2000
     }
+
+    // Transfer não deve contar no resumo anual
+    [Fact]
+    public async Task Handle_DeveExcluirTransferencias_DoResumoAnual()
+    {
+        // Arrange
+        SetupCache();
+        SetupTransactions([
+            new Transaction { Type = TransactionType.Income,   Amount = 5000, Date = new DateTime(2026, 1, 10), Status = TransactionStatus.Paid, Category = new Category() },
+        new Transaction { Type = TransactionType.Expense,  Amount = 2000, Date = new DateTime(2026, 1, 20), Status = TransactionStatus.Paid, Category = new Category() },
+        new Transaction { Type = TransactionType.Transfer, Amount = 1000, Date = new DateTime(2026, 1, 15), Status = TransactionStatus.Paid, Category = new Category() },
+    ]);
+
+        var query = new GetAnnualSummaryQuery(Guid.NewGuid(), 2026);
+
+        // Act
+        var result = await CreateHandler().Handle(query, default);
+
+        // Assert
+        result.TotalIncome.Should().Be(5000);
+        result.TotalExpenses.Should().Be(2000);
+        result.NetBalance.Should().Be(3000);
+    }
 }

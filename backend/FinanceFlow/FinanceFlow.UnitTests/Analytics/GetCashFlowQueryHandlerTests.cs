@@ -156,4 +156,57 @@ public class GetCashFlowQueryHandlerTests
         periods[0].CumulativeBalance.Should().Be(5000);
         periods[1].CumulativeBalance.Should().Be(3000); // 5000 - 2000
     }
+
+    // Transfer não deve contar no fluxo de caixa
+    [Fact]
+    public async Task Handle_DeveExcluirTransferencias_DoFluxoDeCaixa()
+    {
+        // Arrange
+        SetupCache();
+        SetupTransactions([
+            new Transaction { Type = TransactionType.Income,   Amount = 5000, Date = new DateTime(2026, 1, 10), Status = TransactionStatus.Paid, Category = new Category() },
+        new Transaction { Type = TransactionType.Expense,  Amount = 2000, Date = new DateTime(2026, 1, 20), Status = TransactionStatus.Paid, Category = new Category() },
+        new Transaction { Type = TransactionType.Transfer, Amount = 1000, Date = new DateTime(2026, 1, 15), Status = TransactionStatus.Paid, Category = new Category() },
+    ]);
+
+        var query = new GetCashFlowQuery(
+            UserId: Guid.NewGuid(),
+            From: new DateTime(2026, 1, 1),
+            To: new DateTime(2026, 1, 31),
+            GroupBy: "month");
+
+        // Act
+        var result = await CreateHandler().Handle(query, default);
+
+        // Assert
+        result.TotalIncome.Should().Be(5000);
+        result.TotalExpenses.Should().Be(2000);
+        result.NetBalance.Should().Be(3000);
+    }
+
+    // Labels dos meses em português
+    [Fact]
+    public async Task Handle_DeveGerarLabelsEmPortugues_AoAgruparPorMes()
+    {
+        // Arrange
+        SetupCache();
+        SetupTransactions([
+            new Transaction { Type = TransactionType.Income, Amount = 1000, Date = new DateTime(2026, 1, 10), Status = TransactionStatus.Paid, Category = new Category() },
+        new Transaction { Type = TransactionType.Income, Amount = 2000, Date = new DateTime(2026, 2, 10), Status = TransactionStatus.Paid, Category = new Category() },
+    ]);
+
+        var query = new GetCashFlowQuery(
+            UserId: Guid.NewGuid(),
+            From: new DateTime(2026, 1, 1),
+            To: new DateTime(2026, 2, 28),
+            GroupBy: "month");
+
+        // Act
+        var result = await CreateHandler().Handle(query, default);
+
+        // Assert — labels em português
+        var periods = result.Periods.ToList();
+        periods[0].Label.Should().Be("jan./2026");
+        periods[1].Label.Should().Be("fev./2026");
+    }
 }

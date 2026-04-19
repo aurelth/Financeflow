@@ -64,7 +64,7 @@ public class ConfirmImportCommandHandlerTests
             .ReturnsAsync(category);
 
         var request = new ConfirmImportRequestDto([
-            new ConfirmImportItemDto(importTransaction.Id, true, categoryId)
+            new ConfirmImportItemDto(importTransaction.Id, true, categoryId, "Expense")
         ]);
 
         var command = new ConfirmImportCommand(importId, userId, request);
@@ -116,7 +116,7 @@ public class ConfirmImportCommandHandlerTests
             .ReturnsAsync(bankImport);
 
         var request = new ConfirmImportRequestDto([
-            new ConfirmImportItemDto(importTransaction.Id, true, Guid.NewGuid())
+            new ConfirmImportItemDto(importTransaction.Id, true, Guid.NewGuid(), "Expense")
         ]);
 
         var command = new ConfirmImportCommand(importId, userId, request);
@@ -162,7 +162,7 @@ public class ConfirmImportCommandHandlerTests
             .ReturnsAsync(bankImport);
 
         var request = new ConfirmImportRequestDto([
-            new ConfirmImportItemDto(importTransaction.Id, true, Guid.Empty) // Sem categoria
+            new ConfirmImportItemDto(importTransaction.Id, true, Guid.Empty, "Expense") // Sem categoria
         ]);
 
         var command = new ConfirmImportCommand(importId, userId, request);
@@ -214,7 +214,7 @@ public class ConfirmImportCommandHandlerTests
             .ReturnsAsync((Category?)null); // Categoria não encontrada
 
         var request = new ConfirmImportRequestDto([
-            new ConfirmImportItemDto(importTransaction.Id, true, categoryId)
+            new ConfirmImportItemDto(importTransaction.Id, true, categoryId, "Expense")
         ]);
 
         var command = new ConfirmImportCommand(importId, userId, request);
@@ -273,7 +273,7 @@ public class ConfirmImportCommandHandlerTests
             .ReturnsAsync(category);
 
         var request = new ConfirmImportRequestDto([
-            new ConfirmImportItemDto(importTransaction.Id, true, categoryId)
+            new ConfirmImportItemDto(importTransaction.Id, true, categoryId, "Expense")
         ]);
 
         var command = new ConfirmImportCommand(importId, userId, request);
@@ -283,5 +283,65 @@ public class ConfirmImportCommandHandlerTests
 
         // Assert: SuggestedCategoryId deve ser persistido na transação de importação
         importTransaction.SuggestedCategoryId.Should().Be(categoryId);
+    }
+
+    // Tipo Transfer enviado pelo frontend deve ser persistido
+    [Fact]
+    public async Task Handle_DeveUsarTipoTransfer_QuandoEnviadoPeloFrontend()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+
+        var importTransaction = new BankImportTransaction
+        {
+            Id = Guid.NewGuid(),
+            Hash = "hash-transfer",
+            Amount = 3000.00m,
+            Type = TransactionType.Income, // Original era Income
+            Date = DateTime.UtcNow,
+            IsDuplicate = false,
+            IsSelected = true,
+        };
+
+        var bankImport = new BankImport
+        {
+            Id = importId,
+            UserId = userId,
+            Status = BankImportStatus.Completed,
+            Transactions = [importTransaction],
+        };
+
+        var category = new Category
+        {
+            Id = categoryId,
+            Name = "Transferência",
+            Type = TransactionType.Transfer,
+        };
+
+        _bankImportRepository
+            .Setup(r => r.GetByIdAsync(importId, userId, default))
+            .ReturnsAsync(bankImport);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(categoryId, userId, default))
+            .ReturnsAsync(category);
+
+        var request = new ConfirmImportRequestDto([
+            new ConfirmImportItemDto(importTransaction.Id, true, categoryId, "Transfer") // Frontend marcou como Transfer
+        ]);
+
+        var command = new ConfirmImportCommand(importId, userId, request);
+
+        // Act
+        var result = await CreateHandler().Handle(command, default);
+
+        // Assert
+        result.Imported.Should().Be(1);
+        _transactionRepository.Verify(r =>
+            r.AddAsync(It.Is<Transaction>(t =>
+                t.Type == TransactionType.Transfer), // Deve ser Transfer
+            default), Times.Once);
     }
 }
