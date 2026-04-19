@@ -1,5 +1,6 @@
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Domain.Interfaces;
+using FinanceFlow.Infrastructure.AI;
 using FinanceFlow.Infrastructure.Auth;
 using FinanceFlow.Infrastructure.Caching;
 using FinanceFlow.Infrastructure.Email;
@@ -68,6 +69,9 @@ public static class DependencyInjection
 
         // Language
         services.AddScoped<ILanguageService, LanguageService>();
+
+        // IA
+        services.AddScoped<IAnthropicService, AnthropicService>();
 
         return services;
     }
