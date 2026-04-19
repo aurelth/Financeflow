@@ -65,6 +65,7 @@ const translations: Record<string, string> = {
   'sections.language':       'Idioma',
   'sections.notifications':  'Notificações',
   'language.subtitle':       'Escolha o idioma para textos e formatação',
+  'nav.assistant':           'Assistente IA',
 }
 
 vi.mock('react-i18next', () => ({
@@ -127,3 +128,6 @@ vi.mock('@/lib/driver', () => ({
     destroy:   vi.fn(),
   })),
 }))
+
+// Mock do scrollIntoView
+window.HTMLElement.prototype.scrollIntoView = vi.fn()
