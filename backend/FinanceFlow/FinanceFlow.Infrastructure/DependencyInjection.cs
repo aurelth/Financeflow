@@ -70,8 +70,9 @@ public static class DependencyInjection
         // Language
         services.AddScoped<ILanguageService, LanguageService>();
 
-        // IA
+        // IA - Assistente Financeiro
         services.AddScoped<IAnthropicService, AnthropicService>();
+        services.AddScoped<IFinancialContextService, FinancialContextService>();
 
         return services;
     }

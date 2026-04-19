@@ -140,6 +140,78 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
+    // Resumo mensal para o assistente IA
+    public async Task<(decimal TotalIncome, decimal TotalExpense, IEnumerable<Transaction> LastTen)> GetMonthlySummaryAsync(
+        Guid userId,
+        int month,
+        int year,
+        CancellationToken cancellationToken = default)
+    {
+        var dateFrom = new DateTime(year, month, 1);
+        var dateTo = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+
+        var transactions = await context.Transactions
+            .IgnoreQueryFilters()
+            .Include(t => t.Category)
+            .Where(t =>
+                t.UserId == userId &&
+                t.DeletedAt == null &&
+                t.Date >= dateFrom &&
+                t.Date <= dateTo &&
+                t.Type != TransactionType.Transfer)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var totalIncome = transactions
+            .Where(t => t.Type == TransactionType.Income)
+            .Sum(t => t.Amount);
+
+        var totalExpense = transactions
+            .Where(t => t.Type == TransactionType.Expense)
+            .Sum(t => t.Amount);
+
+        var lastTen = transactions
+            .OrderByDescending(t => t.Date)
+            .Take(10)
+            .ToList();
+
+        return (totalIncome, totalExpense, lastTen);
+    }
+
+    // Top categorias de despesa para o assistente IA
+    public async Task<IEnumerable<(string CategoryName, decimal TotalAmount)>> GetTopExpenseCategoriesAsync(
+        Guid userId,
+        int month,
+        int year,
+        int top = 5,
+        CancellationToken cancellationToken = default)
+    {
+        var dateFrom = new DateTime(year, month, 1);
+        var dateTo = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+
+        var result = await context.Transactions
+            .IgnoreQueryFilters()
+            .Include(t => t.Category)
+            .Where(t =>
+                t.UserId == userId &&
+                t.DeletedAt == null &&
+                t.Type == TransactionType.Expense &&
+                t.Date >= dateFrom &&
+                t.Date <= dateTo)
+            .GroupBy(t => t.Category.Name)
+            .Select(g => new
+            {
+                CategoryName = g.Key,
+                TotalAmount = g.Sum(t => t.Amount)
+            })
+            .OrderByDescending(x => x.TotalAmount)
+            .Take(top)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        return result.Select(x => (x.CategoryName, x.TotalAmount));
+    }
+
     public async Task AddAsync(
         Transaction transaction,
         CancellationToken cancellationToken = default)
