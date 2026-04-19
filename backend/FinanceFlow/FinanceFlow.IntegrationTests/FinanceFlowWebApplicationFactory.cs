@@ -75,6 +75,9 @@ public class FinanceFlowWebApplicationFactory
                 ["AdminSeed:Name"] = "Admin Teste",
                 ["AdminSeed:Email"] = "admin@financeflow.com",
                 ["AdminSeed:Password"] = "Admin@123456",
+                ["Anthropic:ApiKey"] = "test-key-noop",
+                ["Anthropic:Model"] = "claude-sonnet-4-20250514",
+                ["Anthropic:MaxTokens"] = "1024",
             });
         });
 
@@ -113,6 +116,14 @@ public class FinanceFlowWebApplicationFactory
                 services.Remove(emailDescriptor);
 
             services.AddScoped<IEmailService, NoOpEmailService>();
+
+            // Substitui o AnthropicService por NoOp nos testes
+            var anthropicDescriptor = services.SingleOrDefault(d =>
+                d.ServiceType == typeof(IAnthropicService));
+            if (anthropicDescriptor != null)
+                services.Remove(anthropicDescriptor);
+
+            services.AddScoped<IAnthropicService, NoOpAnthropicService>();
 
             // Sobrescreve parâmetros de validação do JWT
             services.PostConfigure<JwtBearerOptions>(
