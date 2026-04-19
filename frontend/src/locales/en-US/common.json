@@ -37,6 +37,7 @@
     "settings": "Settings",
     "profile": "Profile",
     "admin": "Administration",
-    "comparison": "Comparison"
+    "comparison": "Comparison",
+    "assistant": "AI Assistant"
   }
 }
