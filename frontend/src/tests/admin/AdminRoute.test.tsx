@@ -4,12 +4,6 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import AdminRoute from '@/routes/AdminRoute'
 
 vi.mock('@/store/authStore', () => ({
-  useAuthStore: (selector: any) => selector({
-    user: { role: 'Admin' },
-  }),
-}))
-
-vi.mock('@/store/authStore', () => ({
   useAuthStore: vi.fn(),
 }))
 
