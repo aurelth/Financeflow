@@ -73,6 +73,7 @@ public static class DependencyInjection
         // IA - Assistente Financeiro
         services.AddScoped<IAnthropicService, AnthropicService>();
         services.AddScoped<IFinancialContextService, FinancialContextService>();
+        services.AddScoped<IHealthScoreService, HealthScoreService>();
 
         return services;
     }
