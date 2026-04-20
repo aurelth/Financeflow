@@ -1,11 +1,10 @@
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs.HealthScore;
 using FinanceFlow.Domain.Entities;
-using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace FinanceFlow.Infrastructure.AI;
+namespace FinanceFlow.Application.Services;
 
 public class HealthScoreService(
     ITransactionRepository transactionRepository,

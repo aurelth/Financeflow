@@ -71,9 +71,7 @@ public static class DependencyInjection
         services.AddScoped<ILanguageService, LanguageService>();
 
         // IA - Assistente Financeiro
-        services.AddScoped<IAnthropicService, AnthropicService>();
-        services.AddScoped<IFinancialContextService, FinancialContextService>();
-        services.AddScoped<IHealthScoreService, HealthScoreService>();
+        services.AddScoped<IAnthropicService, AnthropicService>();        
 
         return services;
     }

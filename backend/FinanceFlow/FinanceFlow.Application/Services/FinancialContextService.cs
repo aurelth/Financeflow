@@ -4,7 +4,7 @@ using FinanceFlow.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 using FinanceFlow.Domain.Entities;
 
-namespace FinanceFlow.Infrastructure.AI;
+namespace FinanceFlow.Application.Services;
 
 public class FinancialContextService(
     ITransactionRepository transactionRepository,
