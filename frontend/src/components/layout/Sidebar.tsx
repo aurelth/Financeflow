@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import {
   LayoutDashboard, ArrowLeftRight, Tag, PiggyBank,
-  BarChart3, GitCompare, FileText, Settings, ShieldCheck, Upload, X, TrendingUp,
+  BarChart3, GitCompare, FileText, Settings, ShieldCheck, Upload, X, TrendingUp, Sparkles,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -65,7 +65,7 @@ export default function Sidebar() {
       className="w-64 flex flex-col h-full"
       style={{ background: 'var(--ff-bg-card)', borderRight: '1px solid var(--ff-border)' }}
     >
-      {/* Logo - ícone TrendingUp */}
+      {/* Logo */}
       <div className="p-6 flex items-center justify-between" style={{ borderBottom: '1px solid var(--ff-border)' }}>
         <div className="flex items-center gap-3">
           <div
@@ -106,6 +106,22 @@ export default function Sidebar() {
             {label}
           </NavLink>
         ))}
+
+        {/* Divisor e link do Assistente IA */}
+        <div
+          className="my-2"
+          style={{ borderTop: '1px solid var(--ff-border)', marginLeft: '-4px', marginRight: '-4px' }}
+        />
+        <NavLink
+          to="/assistant"
+          className={navLinkClass}
+          style={navLinkStyle}
+          onMouseEnter={onNavEnter}
+          onMouseLeave={onNavLeave}
+        >
+          <Sparkles size={18} />
+          {t('nav.assistant')}
+        </NavLink>
 
         {isAdmin && (
           <>

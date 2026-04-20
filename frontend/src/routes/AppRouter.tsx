@@ -22,6 +22,7 @@ import AdminCategoriesPage from '@/features/admin/pages/AdminCategoriesPage'
 import ImportsPage from '@/features/imports/pages/ImportsPage'
 import ImportsPreviewPage from '@/features/imports/pages/ImportsPreviewPage'
 import ReportsPage from '@/features/reports/pages/ReportsPage'
+import AssistantPage from '@/features/assistant/pages/AssistantPage'
 
 export default function AppRouter() {
   return (
@@ -52,6 +53,7 @@ export default function AppRouter() {
             <Route path="/imports/:id/preview"  element={<ImportsPreviewPage key={window.location.pathname} />} />
             <Route path="/profile"              element={<ProfilePage />} />
             <Route path="/settings"             element={<SettingsPage />} />
+            <Route path="/assistant"            element={<AssistantPage />} />
 
             {/* Rotas Admin dentro do AppLayout */}
             <Route element={<AdminRoute />}>

@@ -47,6 +47,25 @@ public interface ITransactionRepository
         DateTime fromDate,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Retorna resumo financeiro do utilizador para um mês/ano específico.
+    /// </summary>
+    Task<(decimal TotalIncome, decimal TotalExpense, IEnumerable<Transaction> LastTen)> GetMonthlySummaryAsync(
+        Guid userId,
+        int month,
+        int year,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retorna top N categorias de despesa do utilizador para um mês/ano específico.
+    /// </summary>
+    Task<IEnumerable<(string CategoryName, decimal TotalAmount)>> GetTopExpenseCategoriesAsync(
+        Guid userId,
+        int month,
+        int year,
+        int top = 5,
+        CancellationToken cancellationToken = default);
+
     Task AddAsync(Transaction transaction, CancellationToken cancellationToken = default);
     Task UpdateAsync(Transaction transaction, CancellationToken cancellationToken = default);
     Task DeleteAsync(Transaction transaction, CancellationToken cancellationToken = default);
