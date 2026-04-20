@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import {
   LayoutDashboard, ArrowLeftRight, Tag, PiggyBank,
-  BarChart3, GitCompare, FileText, Settings, ShieldCheck, Upload, X, TrendingUp, Sparkles,
+  BarChart3, GitCompare, FileText, Settings, ShieldCheck, Upload, X, TrendingUp, Sparkles, HeartPulse,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -58,6 +58,7 @@ export default function Sidebar() {
     { to: '/reports',      icon: BarChart3,       label: t('nav.reports')      },
     { to: '/exports',      icon: FileText,        label: t('nav.exports')      },
     { to: '/imports',      icon: Upload,          label: t('nav.imports')      },
+    { to: '/health-score', icon: HeartPulse,      label: t('nav.healthScore')  },
   ]
 
   const sidebarContent = (

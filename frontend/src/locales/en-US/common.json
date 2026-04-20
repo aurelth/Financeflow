@@ -38,6 +38,7 @@
     "profile": "Profile",
     "admin": "Administration",
     "comparison": "Comparison",
-    "assistant": "AI Assistant"
+    "assistant": "AI Assistant",
+    "healthScore": "Financial Health"
   }
 }
