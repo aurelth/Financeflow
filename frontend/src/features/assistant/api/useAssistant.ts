@@ -18,14 +18,14 @@ export function useAssistant() {
   const sendMessage = useCallback(async (message: string) => {
     if (!message.trim() || isLoading) return
 
-    // Adiciona a mensagem do utilizador ao histórico imediatamente
+    // A mensagem do utilizador ao histórico imediatamente
     const userMessage: ChatMessage = { role: 'user', content: message }
     setMessages(prev => [...prev, userMessage])
     setIsLoading(true)
     setError(null)
 
     try {
-      const { data } = await api.post<SendMessageResponse>('/assistant/chat', { message })
+      const { data } = await api.post<SendMessageResponse>('/api/assistant/chat', { message })
 
       const assistantMessage: ChatMessage = {
         role:    'assistant',

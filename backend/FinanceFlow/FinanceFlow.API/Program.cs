@@ -18,6 +18,9 @@ builder.Host.UseSerilog((ctx, lc) => lc
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
+builder.Services.Configure<RouteOptions>(options =>
+    options.LowercaseUrls = true);
+
 // Extensions
 builder.Services
     .AddApplication()
