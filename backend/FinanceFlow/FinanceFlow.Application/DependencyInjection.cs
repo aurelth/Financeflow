@@ -1,9 +1,11 @@
 
-using System.Reflection;
-using FluentValidation;
 using FinanceFlow.Application.Common.Behaviors;
+using FinanceFlow.Application.Common.Interfaces;
+using FinanceFlow.Application.Services;
+using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace FinanceFlow.Application;
 
@@ -29,6 +31,10 @@ public static class DependencyInjection
 
         // FluentValidation
         services.AddValidatorsFromAssembly(assembly);
+
+        // Serviços de análise financeira
+        services.AddScoped<IFinancialContextService, FinancialContextService>();
+        services.AddScoped<IHealthScoreService, HealthScoreService>();
 
         return services;
     }

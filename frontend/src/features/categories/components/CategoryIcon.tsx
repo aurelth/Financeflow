@@ -1,7 +1,7 @@
 import {
   Utensils, Car, HeartPulse, House, GraduationCap,
   Gamepad2, Shirt, Monitor, Ellipsis, Briefcase,
-  Laptop, TrendingUp, LucideProps,
+  Laptop, TrendingUp, ArrowLeftRight, LucideProps,
 } from 'lucide-react'
 
 // Mapa de nomes Lucide → componente
@@ -18,6 +18,7 @@ const LUCIDE_ICONS: Record<string, React.FC<LucideProps>> = {
   'briefcase':      Briefcase,
   'laptop':         Laptop,
   'trending-up':    TrendingUp,
+  'arrow-left-right': ArrowLeftRight,
 }
 
 interface CategoryIconProps {

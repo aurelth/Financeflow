@@ -4,11 +4,12 @@ using FinanceFlow.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
 using FinanceFlow.Domain.Entities;
 
-namespace FinanceFlow.Infrastructure.AI;
+namespace FinanceFlow.Application.Services;
 
 public class FinancialContextService(
     ITransactionRepository transactionRepository,
     IBudgetRepository budgetRepository,
+    IHealthScoreService healthScoreService,
     ILogger<FinancialContextService> logger) : IFinancialContextService
 {
     public async Task<string> BuildContextAsync(
@@ -31,11 +32,22 @@ public class FinancialContextService(
         var budgets =
             await budgetRepository.GetByUserAndPeriodAsync(userId, month, year, cancellationToken);
 
+        // Score de saúde financeira
+        var healthScore =
+            await healthScoreService.CalculateAsync(userId, month, year, cancellationToken);
+
         var balance = totalIncome - totalExpense;
         var monthName = new DateTime(year, month, 1).ToString("MMMM", new System.Globalization.CultureInfo("pt-BR"));
 
         var sb = new StringBuilder();
         sb.AppendLine($"=== CONTEXTO FINANCEIRO — {monthName.ToUpper()} DE {year} ===");
+        sb.AppendLine();
+
+        // Score de saúde financeira
+        sb.AppendLine("## SCORE DE SAÚDE FINANCEIRA");
+        sb.AppendLine($"- Score: {healthScore.Score}/100 ({healthScore.Classification})");
+        foreach (var detail in healthScore.Details)
+            sb.AppendLine($"- {detail.Criterion}: {detail.Points}/{detail.MaxPoints} pts — {detail.Justification}");
         sb.AppendLine();
 
         // Resumo do mês

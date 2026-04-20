@@ -10,10 +10,20 @@ const schema = z.object({
   name:  z.string().min(2, 'Mínimo 2 caracteres').max(100, 'Máximo 100 caracteres'),
   icon:  z.string().min(1, 'Selecione um ícone'),
   color: z.string().regex(/^#([A-Fa-f0-9]{6})$/, 'Cor inválida'),
-  type:  z.nativeEnum(TransactionType),
+  type:  z.union([z.nativeEnum(TransactionType), z.string()]).transform(val =>
+    typeof val === 'string' && isNaN(Number(val))
+      ? TransactionType[val as keyof typeof TransactionType]
+      : Number(val) as TransactionType
+  ),
 })
 
-type FormData = z.infer<typeof schema>
+// Usa tipo explícito para evitar conflito com o transform
+type FormData = {
+  name:  string
+  icon:  string
+  color: string
+  type:  TransactionType
+}
 
 interface CategoryFormProps {
   category?:  Category
@@ -22,7 +32,6 @@ interface CategoryFormProps {
   onCancel:   () => void
 }
 
-// Estilos com tokens da nova paleta
 const inputStyle: React.CSSProperties = {
   width:        '100%',
   background:   'var(--ff-bg-elevated)',
@@ -46,12 +55,14 @@ export default function CategoryForm({ category, onSubmit, isPending, onCancel }
   const isEditing = !!category
 
   const { register, handleSubmit, control, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       name:  category?.name  ?? '',
       icon:  category?.icon  ?? '📁',
       color: category?.color ?? '#10b981',
-      type:  category?.type  ?? TransactionType.Expense,
+      type:  category
+        ? TransactionType[category.type as unknown as keyof typeof TransactionType] ?? category.type
+        : TransactionType.Expense,
     },
   })
 
