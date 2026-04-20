@@ -9,20 +9,31 @@ import type {
   CreateSubcategoryRequest,
   UpdateSubcategoryRequest,
 } from '../types/category.types'
+import { TransactionType } from '../types/category.types'
+
+// Normaliza o type da categoria — API retorna string, frontend usa enum numérico
+const normalizeCategory = (c: Category): Category => ({
+  ...c,
+  type: typeof c.type === 'string'
+    ? TransactionType[c.type as keyof typeof TransactionType]
+    : c.type,
+})
 
 // Queries
 
 export const useCategories = () =>
   useQuery({
     queryKey: ['categories'],
-    queryFn:  () => api.get<Category[]>('/api/categories').then(r => r.data),
+    queryFn:  () => api.get<Category[]>('/api/categories')
+      .then(r => r.data.map(normalizeCategory)),
     staleTime: 5 * 60 * 1000,
   })
 
 export const useCategory = (id: string) =>
   useQuery({
     queryKey: ['categories', id],
-    queryFn:  () => api.get<Category>(`/api/categories/${id}`).then(r => r.data),
+    queryFn:  () => api.get<Category>(`/api/categories/${id}`)
+      .then(r => normalizeCategory(r.data)),
     enabled:  !!id,
     staleTime: 5 * 60 * 1000,
   })
