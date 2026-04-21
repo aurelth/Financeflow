@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<INotificationPreferencesRepository, NotificationPreferencesRepository>();
         services.AddScoped<IBankImportRepository, BankImportRepository>();
+        services.AddScoped<IGoalRepository, GoalRepository>();
 
         // Caching
         services.AddScoped<ICacheService, RedisCacheService>();

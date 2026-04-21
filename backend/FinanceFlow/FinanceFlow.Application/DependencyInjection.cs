@@ -36,6 +36,9 @@ public static class DependencyInjection
         services.AddScoped<IFinancialContextService, FinancialContextService>();
         services.AddScoped<IHealthScoreService, HealthScoreService>();
 
+        //Goals
+        services.AddScoped<IGoalProgressService, GoalProgressService>();
+
         return services;
     }
 }
