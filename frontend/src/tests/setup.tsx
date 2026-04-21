@@ -67,6 +67,7 @@ const translations: Record<string, string> = {
   'language.subtitle':       'Escolha o idioma para textos e formatação',
   'nav.assistant':           'Assistente IA',
   'nav.healthScore':         'Saúde Financeira',
+  'nav.goals': 'Metas',
 }
 
 vi.mock('react-i18next', () => ({
