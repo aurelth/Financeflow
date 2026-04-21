@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir:   './e2e',
+  globalSetup:   './e2e/setup/global-setup.ts',
   fullyParallel: false, // Sequencial — testes dependem de estado (login, dados criados)
   forbidOnly: !!process.env.CI,
   retries:    process.env.CI ? 2 : 0,
@@ -10,7 +11,7 @@ export default defineConfig({
   reporter:   'html',
 
   use: {
-    baseURL:       'http://localhost:3000',
+    baseURL:       'http://localhost:3000',    
     trace:         'on-first-retry',
     screenshot:    'only-on-failure',
     video:         'retain-on-failure',
@@ -22,7 +23,5 @@ export default defineConfig({
       name:  'chromium',
       use:   { ...devices['Desktop Chrome'] },
     },
-  ],
-
-  // Não inicia o servidor automaticamente — frontend e backend devem estar a correr
+  ],  
 })
