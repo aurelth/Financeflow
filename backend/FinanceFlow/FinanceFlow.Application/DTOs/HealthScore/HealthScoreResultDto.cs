@@ -1,12 +1,12 @@
 namespace FinanceFlow.Application.DTOs.HealthScore;
 
-public record HealthScoreResult(
+public record HealthScoreResultDto(
     int Score,
     string Classification,
-    IEnumerable<ScoreDetail> Details
+    IEnumerable<ScoreDetailDto> Details
 );
 
-public record ScoreDetail(
+public record ScoreDetailDto(
     string Criterion,
     int Points,
     int MaxPoints,

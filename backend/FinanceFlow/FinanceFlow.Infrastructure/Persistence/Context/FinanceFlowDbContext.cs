@@ -16,6 +16,7 @@ public class FinanceFlowDbContext(DbContextOptions<FinanceFlowDbContext> options
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<BankImport> BankImports => Set<BankImport>();
     public DbSet<BankImportTransaction> BankImportTransactions => Set<BankImportTransaction>();
+    public DbSet<Goal> Goals => Set<Goal>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -35,6 +36,7 @@ public class FinanceFlowDbContext(DbContextOptions<FinanceFlowDbContext> options
         modelBuilder.Entity<PasswordResetToken>().HasQueryFilter(p => p.DeletedAt == null);
         modelBuilder.Entity<BankImport>().HasQueryFilter(b => b.DeletedAt == null);
         modelBuilder.Entity<BankImportTransaction>().HasQueryFilter(t => t.DeletedAt == null);
+        modelBuilder.Entity<Goal>().HasQueryFilter(g => g.DeletedAt == null);
     }
 
     public override Task<int> SaveChangesAsync(

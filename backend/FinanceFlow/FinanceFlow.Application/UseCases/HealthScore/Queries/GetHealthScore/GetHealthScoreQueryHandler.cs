@@ -5,9 +5,9 @@ using MediatR;
 namespace FinanceFlow.Application.UseCases.HealthScore.Queries.GetHealthScore;
 
 public class GetHealthScoreQueryHandler(IHealthScoreService healthScoreService)
-    : IRequestHandler<GetHealthScoreQuery, HealthScoreResult>
+    : IRequestHandler<GetHealthScoreQuery, HealthScoreResultDto>
 {
-    public async Task<HealthScoreResult> Handle(
+    public async Task<HealthScoreResultDto> Handle(
         GetHealthScoreQuery request,
         CancellationToken cancellationToken)
         => await healthScoreService.CalculateAsync(

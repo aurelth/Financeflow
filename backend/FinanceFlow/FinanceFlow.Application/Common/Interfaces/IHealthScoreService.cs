@@ -4,7 +4,7 @@ namespace FinanceFlow.Application.Common.Interfaces;
 
 public interface IHealthScoreService
 {
-    Task<HealthScoreResult> CalculateAsync(
+    Task<HealthScoreResultDto> CalculateAsync(
         Guid userId,
         int month,
         int year,
