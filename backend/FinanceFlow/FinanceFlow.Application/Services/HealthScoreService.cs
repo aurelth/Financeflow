@@ -9,6 +9,7 @@ namespace FinanceFlow.Application.Services;
 public class HealthScoreService(
     ITransactionRepository transactionRepository,
     IBudgetRepository budgetRepository,
+    IGoalProgressService goalProgressService,
     ILogger<HealthScoreService> logger) : IHealthScoreService
 {
     public async Task<HealthScoreResultDto> CalculateAsync(
@@ -29,16 +30,20 @@ public class HealthScoreService(
         var budgets =
             await budgetRepository.GetByUserAndPeriodAsync(userId, month, year, cancellationToken);
 
+        // Progresso das metas
+        var goalsSummary =
+            await goalProgressService.CalculateAsync(userId, cancellationToken);
+
         var transactionsList = transactions.ToList();
         var categoriesList = topCategories.ToList();
         var budgetsList = budgets.ToList();
 
         var details = new List<ScoreDetailDto>();
 
-        // Critério 1 — Saldo positivo (25 pts)
+        // Critério 1 — Saldo positivo (20 pts) — Modificado de 25 para 20
         details.Add(CalculateSaldoPositivo(totalIncome, totalExpense));
 
-        // Critério 2 — Controlo de orçamentos (25 pts)
+        // Critério 2 — Controlo de orçamentos (20 pts) — Modificado de 25 para 20
         details.Add(CalculateControlOrcamentos(budgetsList, categoriesList));
 
         // Critério 3 — Regularidade de receitas (20 pts)
@@ -50,6 +55,9 @@ public class HealthScoreService(
         // Critério 5 — Transações agendadas em dia (15 pts)
         details.Add(CalculateTransacoesAgendadas(transactionsList, month, year));
 
+        // Critério 6 — Metas financeiras (10 pts)
+        details.Add(CalculateMetasFinanceiras(goalsSummary));
+
         var score = details.Sum(d => d.Points);
         var classification = ClassifyScore(score);
 
@@ -58,7 +66,7 @@ public class HealthScoreService(
 
     private static ScoreDetailDto CalculateSaldoPositivo(decimal totalIncome, decimal totalExpense)
     {
-        const int maxPoints = 25;
+        const int maxPoints = 20;
 
         if (totalIncome == 0 && totalExpense == 0)
             return new ScoreDetailDto("Saldo do mês", 0, maxPoints,
@@ -74,15 +82,14 @@ public class HealthScoreService(
             return new ScoreDetailDto("Saldo do mês", 0, maxPoints,
                 $"Saldo negativo de R$ {Math.Abs(balance):N2}. As despesas superaram as receitas.");
 
-        // Proporção poupada: quanto mais poupa, mais pontos
         var savingsRate = balance / totalIncome;
 
         var points = savingsRate switch
         {
-            >= 0.30m => maxPoints,           // Poupou 30%+ → pontuação máxima
-            >= 0.20m => (int)(maxPoints * 0.8),  // Poupou 20-29%
-            >= 0.10m => (int)(maxPoints * 0.6),  // Poupou 10-19%
-            _ => (int)(maxPoints * 0.3),  // Poupou menos de 10%
+            >= 0.30m => maxPoints,
+            >= 0.20m => (int)(maxPoints * 0.8),
+            >= 0.10m => (int)(maxPoints * 0.6),
+            _ => (int)(maxPoints * 0.3),
         };
 
         var justification = savingsRate >= 0.30m
@@ -96,7 +103,7 @@ public class HealthScoreService(
         IList<Budget> budgetsList,
         IList<(string CategoryName, decimal TotalAmount)> categoriesList)
     {
-        const int maxPoints = 25;
+        const int maxPoints = 20;
 
         if (budgetsList.Count == 0)
             return new ScoreDetailDto("Controlo de orçamentos", 0, maxPoints,
@@ -117,7 +124,6 @@ public class HealthScoreService(
 
         var percentage = (decimal)dentroLimite / total;
         var points = (int)(maxPoints * percentage);
-
         var justification = dentroLimite == total
             ? $"Perfeito! Todas as {total} categorias com orçamento estão dentro do limite."
             : $"{dentroLimite} de {total} categorias dentro do limite. {total - dentroLimite} categoria(s) excedida(s).";
@@ -137,7 +143,6 @@ public class HealthScoreService(
             return new ScoreDetailDto("Regularidade de receitas", maxPoints, maxPoints,
                 $"Receitas de R$ {totalIncome:N2} registadas no mês.");
 
-        // Receita baixa — pontuação parcial
         var points = (int)(maxPoints * 0.5);
         return new ScoreDetailDto("Regularidade de receitas", points, maxPoints,
             $"Receitas baixas (R$ {totalIncome:N2}). Registe todas as suas fontes de rendimento.");
@@ -203,6 +208,43 @@ public class HealthScoreService(
 
         return new ScoreDetailDto("Transações agendadas", points, maxPoints,
             $"{emAtraso.Count} transação(ões) agendada(s) ainda não pagas este mês.");
+    }
+
+    // Critério 6: Metas financeiras
+    private static ScoreDetailDto CalculateMetasFinanceiras(
+        DTOs.Goals.GoalsSummaryResultDto goalsSummary)
+    {
+        const int maxPoints = 10;
+
+        var goals = goalsSummary.Goals.ToList();
+
+        if (goals.Count == 0)
+            return new ScoreDetailDto("Metas financeiras", maxPoints / 2, maxPoints,
+                "Nenhuma meta definida. Definir metas ajuda a manter o foco financeiro.");
+
+        var ativas = goals.Where(g => !g.IsCompleted).ToList();
+        var concluidas = goals.Where(g => g.IsCompleted).ToList();
+
+        if (concluidas.Count == goals.Count)
+            return new ScoreDetailDto("Metas financeiras", maxPoints, maxPoints,
+                "Parabéns! Todas as metas foram concluídas.");
+
+        if (ativas.Count == 0)
+            return new ScoreDetailDto("Metas financeiras", maxPoints, maxPoints,
+                "Todas as metas ativas estão em dia.");
+
+        var emDia = ativas.Count(g => g.Status == "OnTrack" || g.Status == "Completed");
+        var atrasadas = ativas.Count(g => g.Status == "Behind" || g.Status == "Overdue");
+
+        if (atrasadas == 0)
+            return new ScoreDetailDto("Metas financeiras", maxPoints, maxPoints,
+                $"{ativas.Count} meta(s) ativa(s) e todas em dia.");
+
+        var proportion = (decimal)emDia / ativas.Count;
+        var points = (int)(maxPoints * proportion);
+
+        return new ScoreDetailDto("Metas financeiras", points, maxPoints,
+            $"{atrasadas} de {ativas.Count} meta(s) ativa(s) com contribuição abaixo do planeado.");
     }
 
     private static string ClassifyScore(int score) => score switch

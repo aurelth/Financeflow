@@ -10,6 +10,7 @@ public class FinancialContextService(
     ITransactionRepository transactionRepository,
     IBudgetRepository budgetRepository,
     IHealthScoreService healthScoreService,
+    IGoalProgressService goalProgressService,
     ILogger<FinancialContextService> logger) : IFinancialContextService
 {
     public async Task<string> BuildContextAsync(
@@ -35,6 +36,10 @@ public class FinancialContextService(
         // Score de saúde financeira
         var healthScore =
             await healthScoreService.CalculateAsync(userId, month, year, cancellationToken);
+
+        // Metas financeiras
+        var goalsSummary =
+            await goalProgressService.CalculateAsync(userId, cancellationToken);
 
         var balance = totalIncome - totalExpense;
         var monthName = new DateTime(year, month, 1).ToString("MMMM", new System.Globalization.CultureInfo("pt-BR"));
@@ -90,6 +95,34 @@ public class FinancialContextService(
                     : 0;
                 var status = percentage >= 100 ? "EXCEDIDO" : percentage >= 80 ? "ATENÇÃO" : "OK";
                 sb.AppendLine($"- {budget.Category?.Name}: R$ {spent:N2} / R$ {budget.LimitAmount:N2} ({percentage:N0}%) [{status}]");
+            }
+        }
+        sb.AppendLine();
+
+        // Metas financeiras
+        sb.AppendLine("## METAS FINANCEIRAS");
+        var goalsList = goalsSummary.Goals.ToList();
+        if (goalsList.Count == 0)
+        {
+            sb.AppendLine("- Nenhuma meta financeira definida.");
+        }
+        else
+        {
+            sb.AppendLine($"- Poupança disponível este mês: R$ {goalsSummary.AvailableThisMonth:N2}");
+            sb.AppendLine($"- Total comprometido com metas: R$ {goalsSummary.CommittedThisMonth:N2}");
+            sb.AppendLine($"- Diferença: R$ {goalsSummary.Difference:N2}");
+            sb.AppendLine();
+            foreach (var goal in goalsList)
+            {
+                var status = goal.Status switch
+                {
+                    "OnTrack" => "Em dia",
+                    "Behind" => "Atrasada",
+                    "Completed" => "Concluída",
+                    "Overdue" => "Vencida",
+                    _ => goal.Status
+                };
+                sb.AppendLine($"- {goal.Emoji} {goal.Name}: R$ {goal.AccumulatedAmount:N2} / R$ {goal.TargetAmount:N2} ({goal.ProgressPercentage:N0}%) [{status}] — Prazo: {goal.Deadline:MM/yyyy}");
             }
         }
         sb.AppendLine();
