@@ -10,7 +10,7 @@ public class GoalProgressService(
     ITransactionRepository transactionRepository,
     ILogger<GoalProgressService> logger) : IGoalProgressService
 {
-    public async Task<GoalsSummaryResult> CalculateAsync(
+    public async Task<GoalsSummaryResultDto> CalculateAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
     {
@@ -19,7 +19,7 @@ public class GoalProgressService(
         var goals = (await goalRepository.GetByUserAsync(userId, cancellationToken)).ToList();
 
         if (goals.Count == 0)
-            return new GoalsSummaryResult(0, 0, 0, []);
+            return new GoalsSummaryResultDto(0, 0, 0, []);
 
         var now = DateTime.UtcNow;
         var today = new DateTime(now.Year, now.Month, 1);
@@ -140,7 +140,7 @@ public class GoalProgressService(
                 : receivedThisMonth < plannedThisMonth ? "Behind"
                 : "OnTrack";
 
-            return new GoalProgressResult(
+            return new GoalProgressResultDto(
                 Id: goal.Id,
                 Name: goal.Name,
                 Emoji: goal.Emoji,
@@ -156,7 +156,7 @@ public class GoalProgressService(
                 Status: status);
         }).ToList();
 
-        return new GoalsSummaryResult(
+        return new GoalsSummaryResultDto(
             AvailableThisMonth: Math.Round(currentAvailable, 2),
             CommittedThisMonth: Math.Round(totalCommittedNow, 2),
             Difference: Math.Round(currentAvailable - totalCommittedNow, 2),

@@ -4,7 +4,7 @@ namespace FinanceFlow.Application.Common.Interfaces;
 
 public interface IGoalProgressService
 {
-    Task<GoalsSummaryResult> CalculateAsync(
+    Task<GoalsSummaryResultDto> CalculateAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
 }

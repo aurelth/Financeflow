@@ -1,6 +1,6 @@
 namespace FinanceFlow.Application.DTOs.HealthScore;
 
-public record HealthScoreHistoryItem(
+public record HealthScoreHistoryItemDto(
     int Month,
     int Year,
     string MonthLabel,

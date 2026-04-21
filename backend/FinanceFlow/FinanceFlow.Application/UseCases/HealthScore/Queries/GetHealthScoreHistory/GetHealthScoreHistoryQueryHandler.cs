@@ -5,13 +5,13 @@ using MediatR;
 namespace FinanceFlow.Application.UseCases.HealthScore.Queries.GetHealthScoreHistory;
 
 public class GetHealthScoreHistoryQueryHandler(IHealthScoreService healthScoreService)
-    : IRequestHandler<GetHealthScoreHistoryQuery, IEnumerable<HealthScoreHistoryItem>>
+    : IRequestHandler<GetHealthScoreHistoryQuery, IEnumerable<HealthScoreHistoryItemDto>>
 {
-    public async Task<IEnumerable<HealthScoreHistoryItem>> Handle(
+    public async Task<IEnumerable<HealthScoreHistoryItemDto>> Handle(
         GetHealthScoreHistoryQuery request,
         CancellationToken cancellationToken)
     {
-        var result = new List<HealthScoreHistoryItem>();
+        var result = new List<HealthScoreHistoryItemDto>();
         var now = DateTime.UtcNow;
 
         // Calcula os últimos 6 meses sequencialmente
@@ -30,7 +30,7 @@ public class GetHealthScoreHistoryQueryHandler(IHealthScoreService healthScoreSe
             var monthLabel = new DateTime(year, month, 1)
                 .ToString("MMM/yy", new System.Globalization.CultureInfo("pt-BR"));
 
-            result.Add(new HealthScoreHistoryItem(
+            result.Add(new HealthScoreHistoryItemDto(
                 Month: month,
                 Year: year,
                 MonthLabel: monthLabel,

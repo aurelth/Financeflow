@@ -1,6 +1,6 @@
 namespace FinanceFlow.Application.DTOs.Goals;
 
-public record GoalProgressResult(
+public record GoalProgressResultDto(
     Guid Id,
     string Name,
     string Emoji,
@@ -16,9 +16,9 @@ public record GoalProgressResult(
     string Status  // "OnTrack", "Behind", "Completed", "Overdue"
 );
 
-public record GoalsSummaryResult(
+public record GoalsSummaryResultDto(
     decimal AvailableThisMonth,
     decimal CommittedThisMonth,
     decimal Difference,
-    IEnumerable<GoalProgressResult> Goals
+    IEnumerable<GoalProgressResultDto> Goals
 );

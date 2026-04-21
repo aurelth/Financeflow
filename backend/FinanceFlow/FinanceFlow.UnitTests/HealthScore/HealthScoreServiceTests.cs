@@ -13,16 +13,16 @@ public class HealthScoreQueryHandlerTests
 
     private static readonly Guid UserId = Guid.NewGuid();
 
-    private static readonly HealthScoreResult ValidResult = new(
+    private static readonly HealthScoreResultDto ValidResult = new(
         Score: 75,
         Classification: "Bom",
         Details:
         [
-            new ScoreDetail("Saldo do mês",               20, 25, "Saldo positivo."),
-            new ScoreDetail("Controlo de orçamentos",     25, 25, "Todas as categorias dentro do limite."),
-            new ScoreDetail("Regularidade de receitas",   20, 20, "Receitas registadas."),
-            new ScoreDetail("Diversificação de despesas", 10, 15, "Gastos moderadamente concentrados."),
-            new ScoreDetail("Transações agendadas",       15, 15, "Nenhuma transação em atraso."),
+            new ScoreDetailDto("Saldo do mês",               20, 25, "Saldo positivo."),
+            new ScoreDetailDto("Controlo de orçamentos",     25, 25, "Todas as categorias dentro do limite."),
+            new ScoreDetailDto("Regularidade de receitas",   20, 20, "Receitas registadas."),
+            new ScoreDetailDto("Diversificação de despesas", 10, 15, "Gastos moderadamente concentrados."),
+            new ScoreDetailDto("Transações agendadas",       15, 15, "Nenhuma transação em atraso."),
         ]);
 
     // GetHealthScoreQueryHandler

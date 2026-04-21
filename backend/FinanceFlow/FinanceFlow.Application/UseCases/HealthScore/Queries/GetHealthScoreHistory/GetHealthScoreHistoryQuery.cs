@@ -5,4 +5,4 @@ namespace FinanceFlow.Application.UseCases.HealthScore.Queries.GetHealthScoreHis
 
 public record GetHealthScoreHistoryQuery(
     Guid UserId
-) : IRequest<IEnumerable<HealthScoreHistoryItem>>;
+) : IRequest<IEnumerable<HealthScoreHistoryItemDto>>;

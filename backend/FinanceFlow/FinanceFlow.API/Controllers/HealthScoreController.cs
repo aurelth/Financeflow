@@ -12,7 +12,7 @@ public class HealthScoreController(IMediator mediator) : BaseController(mediator
 {
     /// <summary>Retorna o score de saúde financeira do mês informado.</summary>
     [HttpGet]
-    [ProducesResponseType(typeof(HealthScoreResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(HealthScoreResultDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(
         [FromQuery] int? month,
         [FromQuery] int? year,
@@ -30,7 +30,7 @@ public class HealthScoreController(IMediator mediator) : BaseController(mediator
 
     /// <summary>Retorna o histórico de scores dos últimos 6 meses.</summary>
     [HttpGet("history")]
-    [ProducesResponseType(typeof(IEnumerable<HealthScoreHistoryItem>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<HealthScoreHistoryItemDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetHistory(CancellationToken cancellationToken)
     {
         var query = new GetHealthScoreHistoryQuery(CurrentUserId);

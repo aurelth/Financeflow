@@ -7,4 +7,4 @@ public record GetHealthScoreQuery(
     Guid UserId,
     int Month,
     int Year
-) : IRequest<HealthScoreResult>;
+) : IRequest<HealthScoreResultDto>;

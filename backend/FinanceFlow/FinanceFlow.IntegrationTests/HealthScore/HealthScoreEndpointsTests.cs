@@ -62,7 +62,7 @@ public class HealthScoreEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadAsJsonAsync<HealthScoreResult>();
+        var result = await response.Content.ReadAsJsonAsync<HealthScoreResultDto>();
         result.Should().NotBeNull();
         result!.Score.Should().BeInRange(0, 100);
         result.Classification.Should().NotBeNullOrEmpty();
@@ -81,7 +81,7 @@ public class HealthScoreEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadAsJsonAsync<HealthScoreResult>();
+        var result = await response.Content.ReadAsJsonAsync<HealthScoreResultDto>();
         result.Should().NotBeNull();
         result!.Score.Should().BeInRange(0, 100);
     }
@@ -108,7 +108,7 @@ public class HealthScoreEndpointsTests(FinanceFlowWebApplicationFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var result = await response.Content
-            .ReadAsJsonAsync<IEnumerable<HealthScoreHistoryItem>>();
+            .ReadAsJsonAsync<IEnumerable<HealthScoreHistoryItemDto>>();
         result.Should().NotBeNull();
         result.Should().HaveCount(6);
     }
@@ -122,7 +122,7 @@ public class HealthScoreEndpointsTests(FinanceFlowWebApplicationFactory factory)
         // Act
         var response = await _client.GetAsync("/api/healthscore/history");
         var result = await response.Content
-            .ReadAsJsonAsync<IEnumerable<HealthScoreHistoryItem>>();
+            .ReadAsJsonAsync<IEnumerable<HealthScoreHistoryItemDto>>();
 
         // Assert
         result.Should().OnlyContain(h =>
