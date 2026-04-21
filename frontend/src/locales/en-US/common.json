@@ -39,6 +39,7 @@
     "admin": "Administration",
     "comparison": "Comparison",
     "assistant": "AI Assistant",
-    "healthScore": "Financial Health"
+    "healthScore": "Financial Health",
+    "goals": "Goals"
   }
 }
