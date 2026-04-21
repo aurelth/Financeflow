@@ -66,7 +66,7 @@ public class HealthScoreEndpointsTests(FinanceFlowWebApplicationFactory factory)
         result.Should().NotBeNull();
         result!.Score.Should().BeInRange(0, 100);
         result.Classification.Should().NotBeNullOrEmpty();
-        result.Details.Should().HaveCount(5);
+        result.Details.Should().HaveCount(6);
     }
 
     [Fact]
