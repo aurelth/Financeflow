@@ -11,6 +11,8 @@ export default defineConfig({
     passWithNoTests: true,
     pool:            'threads',
     testTimeout:     30000,
+    include:         ['src/tests/**/*.{test,spec}.{ts,tsx}'],
+    exclude:         ['e2e/**', 'node_modules/**'], 
   },
   resolve: {
     alias: {
