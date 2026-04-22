@@ -276,6 +276,17 @@ git push origin develop
 
 ---
 
+
+## Documentação
+
+- [Diagrama de Arquitetura](docs/architecture.svg)
+- [Diagrama de Base de Dados](docs/database.svg)
+- [Guia de Contribuição](CONTRIBUTING.md)
+
+
+---
+
+
 ## Roadmap
 
 | Versão | Fase | Status |
