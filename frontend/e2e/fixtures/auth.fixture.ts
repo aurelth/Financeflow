@@ -11,16 +11,19 @@ export const test = base.extend<{ authenticatedPage: Page }>({
     const context = await browser.newContext({ baseURL: 'http://localhost:3000' })
     const page    = await context.newPage()
 
-    // Navega para a app e injeta o sessionStorage antes do React carregar
+    // Injeta o sessionStorage
     await page.goto('/')
     await page.evaluate((data) => {
       if (data.accessToken) sessionStorage.setItem('accessToken', data.accessToken)
       if (data.user)        sessionStorage.setItem('user', data.user)
     }, sessionData)
 
-    // Recarrega para o React ler o sessionStorage
+    // Recarrega e aguarda autenticação
     await page.reload()
     await page.waitForURL('**/dashboard', { timeout: 15000 })
+
+    // Aguarda o toast desaparecer
+    await page.waitForSelector('[data-sonner-toast]', { state: 'detached', timeout: 10000 }).catch(() => {})
 
     await use(page)
     await context.close()
