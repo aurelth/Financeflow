@@ -92,7 +92,7 @@ describe('ProfilePage', () => {
 
   it('deve exibir link para contato de alteração de nome', () => {
     renderPage()
-    expect(screen.getByText(/suporte@financeflow\.com/i)).toBeInTheDocument()
+    expect(screen.getByText(/contato@financeflowapp\.io/i)).toBeInTheDocument()
   })
 
   it('deve renderizar o formulário de preferências', () => {

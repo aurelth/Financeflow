@@ -1,0 +1,27 @@
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+WORKDIR /app
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+COPY ["FinanceFlow.Workers/FinanceFlow.Workers.csproj", "FinanceFlow.Workers/"]
+COPY ["FinanceFlow.Application/FinanceFlow.Application.csproj", "FinanceFlow.Application/"]
+COPY ["FinanceFlow.Domain/FinanceFlow.Domain.csproj", "FinanceFlow.Domain/"]
+COPY ["FinanceFlow.Infrastructure/FinanceFlow.Infrastructure.csproj", "FinanceFlow.Infrastructure/"]
+
+RUN dotnet restore "FinanceFlow.Workers/FinanceFlow.Workers.csproj"
+
+COPY FinanceFlow.Workers/ FinanceFlow.Workers/
+COPY FinanceFlow.Application/ FinanceFlow.Application/
+COPY FinanceFlow.Domain/ FinanceFlow.Domain/
+COPY FinanceFlow.Infrastructure/ FinanceFlow.Infrastructure/
+
+RUN dotnet publish "FinanceFlow.Workers/FinanceFlow.Workers.csproj" -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+ENTRYPOINT ["dotnet", "FinanceFlow.Workers.dll"]

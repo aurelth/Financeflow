@@ -191,7 +191,7 @@ export default function ProfilePage() {
             className="transition-opacity hover:opacity-75"
             style={{ color: 'var(--ff-emerald)' }}
           >
-            suporte@financeflow.com
+            contato@financeflowapp.io
           </a>
         </p>
       </div>
