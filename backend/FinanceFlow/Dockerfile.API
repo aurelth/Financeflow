@@ -12,7 +12,10 @@ COPY ["FinanceFlow.Infrastructure/FinanceFlow.Infrastructure.csproj", "FinanceFl
 
 RUN dotnet restore "FinanceFlow.API/FinanceFlow.API.csproj"
 
-COPY . .
+COPY FinanceFlow.API/ FinanceFlow.API/
+COPY FinanceFlow.Application/ FinanceFlow.Application/
+COPY FinanceFlow.Domain/ FinanceFlow.Domain/
+COPY FinanceFlow.Infrastructure/ FinanceFlow.Infrastructure/
 
 RUN dotnet publish "FinanceFlow.API/FinanceFlow.API.csproj" -c Release -o /app/publish
 

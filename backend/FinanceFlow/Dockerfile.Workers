@@ -11,7 +11,10 @@ COPY ["FinanceFlow.Infrastructure/FinanceFlow.Infrastructure.csproj", "FinanceFl
 
 RUN dotnet restore "FinanceFlow.Workers/FinanceFlow.Workers.csproj"
 
-COPY . .
+COPY FinanceFlow.Workers/ FinanceFlow.Workers/
+COPY FinanceFlow.Application/ FinanceFlow.Application/
+COPY FinanceFlow.Domain/ FinanceFlow.Domain/
+COPY FinanceFlow.Infrastructure/ FinanceFlow.Infrastructure/
 
 RUN dotnet publish "FinanceFlow.Workers/FinanceFlow.Workers.csproj" -c Release -o /app/publish
 
