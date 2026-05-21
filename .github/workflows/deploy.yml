@@ -50,6 +50,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u aurelth --password-stdin
             cd /home/deploy/financeflow
             docker compose pull api workers
             docker compose up -d api workers
