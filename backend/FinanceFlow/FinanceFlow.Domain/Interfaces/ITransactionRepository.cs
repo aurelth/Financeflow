@@ -66,6 +66,23 @@ public interface ITransactionRepository
         int top = 5,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Retorna a soma das transações vinculadas a uma categoria específica.
+    /// Usado para calcular o progresso das metas financeiras.
+    /// </summary>
+    Task<decimal> GetTotalByCategoryAsync(
+        Guid categoryId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retorna a soma das transações de uma categoria num mês/ano específico.
+    /// </summary>
+    Task<decimal> GetTotalByCategoryAndMonthAsync(
+        Guid categoryId,
+        int month,
+        int year,
+        CancellationToken cancellationToken = default);
+
     Task AddAsync(Transaction transaction, CancellationToken cancellationToken = default);
     Task UpdateAsync(Transaction transaction, CancellationToken cancellationToken = default);
     Task DeleteAsync(Transaction transaction, CancellationToken cancellationToken = default);

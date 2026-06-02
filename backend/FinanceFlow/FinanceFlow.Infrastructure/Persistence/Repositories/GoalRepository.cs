@@ -21,8 +21,8 @@ public class GoalRepository(FinanceFlowDbContext context) : IGoalRepository
         Guid userId,
         CancellationToken cancellationToken = default) =>
         await context.Goals
+            .Include(g => g.LinkedCategory)
             .Where(g => g.Id == id && g.UserId == userId)
-            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
     public async Task AddAsync(

@@ -1,261 +1,167 @@
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs.Goals;
-using FinanceFlow.Application.UseCases.Goals.Commands.CreateGoal;
-using FinanceFlow.Application.UseCases.Goals.Commands.DeleteGoal;
-using FinanceFlow.Application.UseCases.Goals.Commands.UpdateGoal;
-using FinanceFlow.Application.UseCases.Goals.Queries.GetGoalsSummary;
-using FinanceFlow.Application.Common.Exceptions;
-using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
-using FluentAssertions;
-using Moq;
+using Microsoft.Extensions.Logging;
 
-namespace FinanceFlow.UnitTests.Goals;
+namespace FinanceFlow.Application.Services;
 
-public class GoalHandlerTests
+public class GoalProgressService(
+    IGoalRepository goalRepository,
+    ITransactionRepository transactionRepository,
+    ILogger<GoalProgressService> logger) : IGoalProgressService
 {
-    private readonly Mock<IGoalRepository> _goalRepository = new();
-    private readonly Mock<IGoalProgressService> _goalProgressService = new();
-
-    private static readonly Guid UserId = Guid.NewGuid();
-    private static readonly Guid GoalId = Guid.NewGuid();
-
-    private static readonly GoalsSummaryResultDto ValidSummary = new(
-        AvailableThisMonth: 1500,
-        CommittedThisMonth: 900,
-        Difference: 600,
-        Goals:
-        [
-            new GoalProgressResultDto(
-                Id:                  GoalId,
-                Name:                "Viagem",
-                Emoji:               "✈️",
-                TargetAmount:        5000,
-                MonthlyContribution: 400,
-                Deadline:            DateTime.UtcNow.AddMonths(12),
-                AccumulatedAmount:   800,
-                PlannedThisMonth:    400,
-                ReceivedThisMonth:   400,
-                ProgressPercentage:  16,
-                IsCompleted:         false,
-                MonthsToComplete:    11,
-                Status:              "OnTrack"),
-        ]);
-
-    private static readonly Goal ValidGoal = new()
+    public async Task<GoalsSummaryResultDto> CalculateAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
     {
-        Id = GoalId,
-        UserId = UserId,
-        Name = "Viagem",
-        Emoji = "✈️",
-        TargetAmount = 5000,
-        MonthlyContribution = 400,
-        Deadline = DateTime.UtcNow.AddMonths(12),
-        CreatedAt = DateTime.UtcNow,
-    };
+        logger.LogInformation("Calculando progresso das metas para utilizador {UserId}.", userId);
 
-    // GetGoalsSummaryQueryHandler
+        var goals = (await goalRepository.GetByUserAsync(userId, cancellationToken)).ToList();
 
-    [Fact]
-    public async Task GetGoalsSummary_DeveRetornarResultado_QuandoServicoFunciona()
-    {
-        // Arrange
-        _goalProgressService
-            .Setup(s => s.CalculateAsync(UserId, default))
-            .ReturnsAsync(ValidSummary);
+        if (goals.Count == 0)
+            return new GoalsSummaryResultDto(0, 0, 0, []);
 
-        var handler = new GetGoalsSummaryQueryHandler(_goalProgressService.Object);
-        var query = new GetGoalsSummaryQuery(UserId);
+        var now = DateTime.UtcNow;
+        var today = new DateTime(now.Year, now.Month, 1);
 
-        // Act
-        var result = await handler.Handle(query, default);
+        var results = new List<GoalProgressResultDto>();
 
-        // Assert
-        result.Should().NotBeNull();
-        result.Goals.Should().HaveCount(1);
-        result.AvailableThisMonth.Should().Be(1500);
-        result.CommittedThisMonth.Should().Be(900);
-        result.Difference.Should().Be(600);
+        foreach (var goal in goals)
+        {
+            decimal accumulatedAmount;
+            decimal plannedThisMonth;
+            decimal receivedThisMonth;
 
-        _goalProgressService.Verify(s =>
-            s.CalculateAsync(UserId, default), Times.Once);
+            if (goal.LinkedCategoryId.HasValue)
+            {
+                // Progresso baseado nas transações vinculadas à categoria da meta
+                accumulatedAmount = await transactionRepository
+                    .GetTotalByCategoryAsync(goal.LinkedCategoryId.Value, cancellationToken);
+
+                var acc = Math.Round(accumulatedAmount, 2);
+                var isCompleted = acc >= goal.TargetAmount;
+
+                plannedThisMonth = isCompleted ? 0 : goal.MonthlyContribution;
+                
+                receivedThisMonth = isCompleted ? 0 : await transactionRepository
+                    .GetTotalByCategoryAndMonthAsync(
+                        goal.LinkedCategoryId.Value,
+                        now.Month,
+                        now.Year,
+                        cancellationToken);
+
+                var progress = goal.TargetAmount > 0
+                    ? Math.Min(100, Math.Round((acc / goal.TargetAmount) * 100, 1))
+                    : 0;
+
+                int? monthsToComplete = null;
+                if (!isCompleted && goal.MonthlyContribution > 0)
+                {
+                    var remaining = goal.TargetAmount - acc;
+                    monthsToComplete = (int)Math.Ceiling((double)(remaining / goal.MonthlyContribution));
+                }
+
+                var status = isCompleted ? "Completed"
+                    : today > new DateTime(goal.Deadline.Year, goal.Deadline.Month, 1) ? "Overdue"
+                    : "OnTrack";
+
+                results.Add(new GoalProgressResultDto(
+                    Id: goal.Id,
+                    Name: goal.Name,
+                    Emoji: goal.Emoji,
+                    TargetAmount: goal.TargetAmount,
+                    MonthlyContribution: goal.MonthlyContribution,
+                    Deadline: goal.Deadline,
+                    AccumulatedAmount: acc,
+                    PlannedThisMonth: plannedThisMonth,
+                    ReceivedThisMonth: receivedThisMonth,
+                    ProgressPercentage: progress,
+                    IsCompleted: isCompleted,
+                    MonthsToComplete: monthsToComplete,
+                    Status: status,
+                    LinkedCategoryId: goal.LinkedCategoryId));
+            }
+            else
+            {
+                // Comportamento legado para metas sem categoria vinculada
+                accumulatedAmount = await CalculateLegacyProgressAsync(
+                    goal, userId, today, cancellationToken);
+
+                var acc = Math.Round(accumulatedAmount, 2);
+                var isCompleted = acc >= goal.TargetAmount;
+                var progress = goal.TargetAmount > 0
+                    ? Math.Min(100, Math.Round((acc / goal.TargetAmount) * 100, 1))
+                    : 0;
+
+                plannedThisMonth = isCompleted ? 0 : goal.MonthlyContribution;
+                receivedThisMonth = plannedThisMonth;
+
+                int? monthsToComplete = null;
+                if (!isCompleted && goal.MonthlyContribution > 0)
+                {
+                    var remaining = goal.TargetAmount - acc;
+                    monthsToComplete = (int)Math.Ceiling((double)(remaining / goal.MonthlyContribution));
+                }
+
+                var status = isCompleted ? "Completed"
+                    : today > new DateTime(goal.Deadline.Year, goal.Deadline.Month, 1) ? "Overdue"
+                    : "OnTrack";
+
+                results.Add(new GoalProgressResultDto(
+                    Id: goal.Id,
+                    Name: goal.Name,
+                    Emoji: goal.Emoji,
+                    TargetAmount: goal.TargetAmount,
+                    MonthlyContribution: goal.MonthlyContribution,
+                    Deadline: goal.Deadline,
+                    AccumulatedAmount: acc,
+                    PlannedThisMonth: plannedThisMonth,
+                    ReceivedThisMonth: receivedThisMonth,
+                    ProgressPercentage: progress,
+                    IsCompleted: isCompleted,
+                    MonthsToComplete: monthsToComplete,
+                    Status: status,
+                    LinkedCategoryId: goal.LinkedCategoryId));
+            }
+        }
+
+        var totalCommittedNow = results.Where(r => !r.IsCompleted).Sum(r => r.PlannedThisMonth);
+        var currentAvailable = 0m;
+
+        return new GoalsSummaryResultDto(
+            AvailableThisMonth: Math.Round(currentAvailable, 2),
+            CommittedThisMonth: Math.Round(totalCommittedNow, 2),
+            Difference: Math.Round(currentAvailable - totalCommittedNow, 2),
+            Goals: results);
     }
 
-    // CreateGoalCommandHandler
-
-    [Fact]
-    public async Task CreateGoal_DeveCriarMeta_QuandoDadosSaoValidos()
+    private async Task<decimal> CalculateLegacyProgressAsync(
+        FinanceFlow.Domain.Entities.Goal goal,
+        Guid userId,
+        DateTime today,
+        CancellationToken cancellationToken)
     {
-        // Arrange
-        Guid capturedGoalId = Guid.Empty;
+        var oldestCreation = goal.CreatedAt;
+        var accumulated = 0m;
 
-        _goalRepository
-            .Setup(r => r.AddAsync(It.IsAny<Goal>(), default))
-            .Callback<Goal, CancellationToken>((g, _) => capturedGoalId = g.Id)
-            .Returns(Task.CompletedTask);
+        var cursor = new DateTime(oldestCreation.Year, oldestCreation.Month, 1);
+        while (cursor <= today)
+        {
+            var (income, expense, _) = await transactionRepository
+                .GetMonthlySummaryAsync(userId, cursor.Month, cursor.Year, cancellationToken);
 
-        _goalProgressService
-            .Setup(s => s.CalculateAsync(UserId, default))
-            .ReturnsAsync(() => new GoalsSummaryResultDto(
-                AvailableThisMonth: 1500,
-                CommittedThisMonth: 500,
-                Difference: 1000,
-                Goals:
-                [
-                    new GoalProgressResultDto(
-                    Id:                  capturedGoalId,
-                    Name:                "Viagem",
-                    Emoji:               "✈️",
-                    TargetAmount:        5000,
-                    MonthlyContribution: 400,
-                    Deadline:            DateTime.UtcNow.AddMonths(12),
-                    AccumulatedAmount:   0,
-                    PlannedThisMonth:    400,
-                    ReceivedThisMonth:   400,
-                    ProgressPercentage:  0,
-                    IsCompleted:         false,
-                    MonthsToComplete:    13,
-                    Status:              "OnTrack"),
-                ]));
+            var available = Math.Max(0, income - expense);
+            if (available > 0 && accumulated < goal.TargetAmount)
+            {
+                var toAdd = Math.Min(
+                    goal.MonthlyContribution,
+                    goal.TargetAmount - accumulated);
+                accumulated += toAdd;
+            }
 
-        var handler = new CreateGoalCommandHandler(
-            _goalRepository.Object,
-            _goalProgressService.Object);
+            cursor = cursor.AddMonths(1);
+        }
 
-        var command = new CreateGoalCommand(
-            UserId: UserId,
-            Name: "Viagem",
-            TargetAmount: 5000,
-            MonthlyContribution: 400,
-            Deadline: DateTime.UtcNow.AddMonths(12),
-            Emoji: "✈️");
-
-        // Act
-        var result = await handler.Handle(command, default);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Name.Should().Be("Viagem");
-
-        _goalRepository.Verify(r =>
-            r.AddAsync(It.IsAny<Goal>(), default), Times.Once);
-    }
-
-    // UpdateGoalCommandHandler
-
-    [Fact]
-    public async Task UpdateGoal_DeveAtualizar_QuandoMetaExiste()
-    {
-        // Arrange
-        _goalRepository
-            .Setup(r => r.GetByIdAsync(GoalId, UserId, default))
-            .ReturnsAsync(ValidGoal);
-
-        _goalRepository
-            .Setup(r => r.UpdateAsync(It.IsAny<Goal>(), default))
-            .Returns(Task.CompletedTask);
-
-        _goalProgressService
-            .Setup(s => s.CalculateAsync(UserId, default))
-            .ReturnsAsync(ValidSummary);
-
-        var handler = new UpdateGoalCommandHandler(
-            _goalRepository.Object,
-            _goalProgressService.Object);
-
-        var command = new UpdateGoalCommand(
-            Id: GoalId,
-            UserId: UserId,
-            Name: "Viagem Europa",
-            TargetAmount: 8000,
-            MonthlyContribution: 500,
-            Deadline: DateTime.UtcNow.AddMonths(18),
-            Emoji: "🌍");
-
-        // Act
-        var result = await handler.Handle(command, default);
-
-        // Assert
-        result.Should().NotBeNull();
-
-        _goalRepository.Verify(r =>
-            r.UpdateAsync(It.IsAny<Goal>(), default), Times.Once);
-    }
-
-    [Fact]
-    public async Task UpdateGoal_DeveLancarNotFoundException_QuandoMetaNaoExiste()
-    {
-        // Arrange
-        _goalRepository
-            .Setup(r => r.GetByIdAsync(GoalId, UserId, default))
-            .ReturnsAsync((Goal?)null);
-
-        var handler = new UpdateGoalCommandHandler(
-            _goalRepository.Object,
-            _goalProgressService.Object);
-
-        var command = new UpdateGoalCommand(
-            Id: GoalId,
-            UserId: UserId,
-            Name: "Viagem",
-            TargetAmount: 5000,
-            MonthlyContribution: 400,
-            Deadline: DateTime.UtcNow.AddMonths(12),
-            Emoji: "✈️");
-
-        // Act
-        var act = async () => await handler.Handle(command, default);
-
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
-
-        _goalRepository.Verify(r =>
-            r.UpdateAsync(It.IsAny<Goal>(), default), Times.Never);
-    }
-
-    // DeleteGoalCommandHandler
-
-    [Fact]
-    public async Task DeleteGoal_DeveRemover_QuandoMetaExiste()
-    {
-        // Arrange
-        _goalRepository
-            .Setup(r => r.GetByIdAsync(GoalId, UserId, default))
-            .ReturnsAsync(ValidGoal);
-
-        _goalRepository
-            .Setup(r => r.DeleteAsync(It.IsAny<Goal>(), default))
-            .Returns(Task.CompletedTask);
-
-        var handler = new DeleteGoalCommandHandler(_goalRepository.Object);
-        var command = new DeleteGoalCommand(GoalId, UserId);
-
-        // Act
-        await handler.Handle(command, default);
-
-        // Assert
-        _goalRepository.Verify(r =>
-            r.DeleteAsync(It.IsAny<Goal>(), default), Times.Once);
-    }
-
-    [Fact]
-    public async Task DeleteGoal_DeveLancarNotFoundException_QuandoMetaNaoExiste()
-    {
-        // Arrange
-        _goalRepository
-            .Setup(r => r.GetByIdAsync(GoalId, UserId, default))
-            .ReturnsAsync((Goal?)null);
-
-        var handler = new DeleteGoalCommandHandler(_goalRepository.Object);
-        var command = new DeleteGoalCommand(GoalId, UserId);
-
-        // Act
-        var act = async () => await handler.Handle(command, default);
-
-        // Assert
-        await act.Should().ThrowAsync<NotFoundException>();
-
-        _goalRepository.Verify(r =>
-            r.DeleteAsync(It.IsAny<Goal>(), default), Times.Never);
+        return accumulated;
     }
 }

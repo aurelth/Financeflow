@@ -11,11 +11,12 @@ public class CategoryMappingProfile : Profile
         // Subcategory → SubcategoryDto
         CreateMap<Subcategory, SubcategoryDto>();
 
-        // Category → CategoryDto
-        // IsOwner é calculado: categoria é do utilizador quando UserId não é null
+        // Category → CategoryDto        
         CreateMap<Category, CategoryDto>()
             .ForCtorParam(nameof(CategoryDto.IsOwner),
                 opt => opt.MapFrom(src => src.UserId != null))
+            .ForCtorParam(nameof(CategoryDto.IsGoalCategory),
+                opt => opt.MapFrom(src => src.IsGoalCategory))
             .ForCtorParam(nameof(CategoryDto.Subcategories),
                 opt => opt.MapFrom(src => src.Subcategories
                     .Where(s => s.DeletedAt == null && s.IsActive)

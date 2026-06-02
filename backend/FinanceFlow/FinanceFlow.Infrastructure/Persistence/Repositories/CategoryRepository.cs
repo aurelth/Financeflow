@@ -16,6 +16,8 @@ public class CategoryRepository(FinanceFlowDbContext context) : ICategoryReposit
             .Where(c =>
                 c.DeletedAt == null &&
                 c.IsActive == true &&
+                c.IsArchived == false &&
+                c.IsGoalCategory == false &&
                 (c.UserId == null || c.UserId == userId))
             .OrderBy(c => c.Type)
             .ThenBy(c => c.Name)
@@ -32,23 +34,24 @@ public class CategoryRepository(FinanceFlowDbContext context) : ICategoryReposit
             .Where(c =>
                 c.Id == id &&
                 c.DeletedAt == null &&
+                c.IsArchived == false &&
                 (c.UserId == null || c.UserId == userId))
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
     public async Task<bool> ExistsByNameAsync(
-    string name,
-    Guid userId,
-    TransactionType type,
-    CancellationToken cancellationToken = default) =>
-    await context.Categories
-        .IgnoreQueryFilters()
-        .AnyAsync(c =>
-            c.Name == name &&
-            c.Type == type &&
-            c.DeletedAt == null &&
-            (c.UserId == userId || c.UserId == null),
-        cancellationToken);
+        string name,
+        Guid userId,
+        TransactionType type,
+        CancellationToken cancellationToken = default) =>
+        await context.Categories
+            .IgnoreQueryFilters()
+            .AnyAsync(c =>
+                c.Name == name &&
+                c.Type == type &&
+                c.DeletedAt == null &&
+                (c.UserId == userId || c.UserId == null),
+            cancellationToken);
 
     public async Task<bool> HasTransactionsAsync(
         Guid categoryId,
@@ -59,6 +62,33 @@ public class CategoryRepository(FinanceFlowDbContext context) : ICategoryReposit
                 t.CategoryId == categoryId &&
                 t.DeletedAt == null,
             cancellationToken);
+    
+    public async Task<IEnumerable<Category>> GetGoalCategoriesByUserAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default) =>
+        await context.Categories
+            .IgnoreQueryFilters()
+            .Where(c =>
+                c.DeletedAt == null &&
+                c.IsActive == true &&
+                c.IsArchived == false &&
+                c.IsGoalCategory == true &&
+                c.UserId == userId)
+            .OrderBy(c => c.Name)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+    public async Task<Category?> GetByIdForUpdateAsync(
+    Guid id,
+    Guid userId,
+    CancellationToken cancellationToken = default) =>
+    await context.Categories
+        .IgnoreQueryFilters()
+        .Where(c =>
+            c.Id == id &&
+            c.DeletedAt == null &&
+            (c.UserId == null || c.UserId == userId))
+        .FirstOrDefaultAsync(cancellationToken);
 
     public async Task AddAsync(
         Category category,
@@ -91,10 +121,10 @@ public class CategoryRepository(FinanceFlowDbContext context) : ICategoryReposit
             .Where(c =>
                 c.IsDefault == true &&
                 c.DeletedAt == null)
-            .OrderBy(c => c.Name)            
+            .OrderBy(c => c.Name)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
-    
+
     public async Task<Category?> GetDefaultByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default) =>
@@ -105,7 +135,7 @@ public class CategoryRepository(FinanceFlowDbContext context) : ICategoryReposit
                 c.IsDefault == true &&
                 c.DeletedAt == null)
             .FirstOrDefaultAsync(cancellationToken);
-    
+
     public async Task<bool> DefaultExistsByNameAsync(
         string name,
         TransactionType type,

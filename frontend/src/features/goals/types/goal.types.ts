@@ -12,6 +12,7 @@ export interface GoalProgressResultDto {
   isCompleted:         boolean
   monthsToComplete:    number | null
   status:              'OnTrack' | 'Behind' | 'Completed' | 'Overdue'
+  linkedCategoryId:    string | null
 }
 
 export interface GoalsSummaryResultDto {

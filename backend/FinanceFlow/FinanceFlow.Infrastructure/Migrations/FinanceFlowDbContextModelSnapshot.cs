@@ -208,8 +208,18 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsArchived")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
+
+                    b.Property<bool>("IsGoalCategory")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -252,6 +262,9 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<Guid?>("LinkedCategoryId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("MonthlyContribution")
                         .HasColumnType("decimal(18,2)");
 
@@ -270,6 +283,8 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LinkedCategoryId");
 
                     b.HasIndex("UserId");
 
@@ -706,11 +721,18 @@ namespace FinanceFlow.Infrastructure.Migrations
 
             modelBuilder.Entity("FinanceFlow.Domain.Entities.Goal", b =>
                 {
+                    b.HasOne("FinanceFlow.Domain.Entities.Category", "LinkedCategory")
+                        .WithMany()
+                        .HasForeignKey("LinkedCategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("FinanceFlow.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("LinkedCategory");
 
                     b.Navigation("User");
                 });

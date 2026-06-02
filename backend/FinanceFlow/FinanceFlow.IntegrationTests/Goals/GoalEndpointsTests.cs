@@ -250,4 +250,76 @@ public class GoalEndpointsTests(FinanceFlowWebApplicationFactory factory)
         var result = await getResponse.Content.ReadAsJsonAsync<GoalsSummaryResultDto>();
         result!.Goals.Should().NotContain(g => g.Id == created.Id);
     }
+
+    // Testes de categoria vinculada
+
+    [Fact]
+    public async Task Create_DeveCriarCategoriaVinculada_QuandoMetaCriada()
+    {
+        // Arrange
+        await AuthenticateAsync("goals.createcat@teste.com");
+
+        // Act
+        var createResponse = await _client.PostAsJsonAsync("/api/goals", ValidGoalRequest);
+        var created = await createResponse.Content.ReadAsJsonAsync<GoalProgressResultDto>();
+
+        // Assert — meta deve ter LinkedCategoryId preenchido
+        created.Should().NotBeNull();
+        created!.LinkedCategoryId.Should().NotBeNull();
+
+        // Assert — categoria deve aparecer no endpoint de categorias de metas
+        var categoriesResponse = await _client.GetAsync("/api/categories/goals");
+        categoriesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var categories = await categoriesResponse.Content.ReadAsJsonAsync<IEnumerable<CategoryDto>>();
+        categories.Should().NotBeNull();
+        categories!.Should().Contain(c =>
+            c.Id == created.LinkedCategoryId &&
+            c.Name == $"Meta: {ValidGoalRequest.Name}");
+    }
+
+    [Fact]
+    public async Task Update_DeveRenomearCategoriaVinculada_QuandoNomeMudou()
+    {
+        // Arrange
+        await AuthenticateAsync("goals.updatecat@teste.com");
+
+        var createResponse = await _client.PostAsJsonAsync("/api/goals", ValidGoalRequest);
+        var created = await createResponse.Content.ReadAsJsonAsync<GoalProgressResultDto>();
+
+        var updateRequest = new UpdateGoalRequestDto(
+            Name: "Viagem para Japão",
+            TargetAmount: 15000,
+            MonthlyContribution: 700,
+            Deadline: DateTime.UtcNow.AddMonths(24),
+            Emoji: "🗾");
+
+        // Act
+        await _client.PutAsJsonAsync($"/api/goals/{created!.Id}", updateRequest);
+
+        // Assert — categoria deve ter o novo nome
+        var categoriesResponse = await _client.GetAsync("/api/categories/goals");
+        var categories = await categoriesResponse.Content.ReadAsJsonAsync<IEnumerable<CategoryDto>>();
+        categories!.Should().Contain(c =>
+            c.Id == created.LinkedCategoryId &&
+            c.Name == "Meta: Viagem para Japão");
+    }
+
+    [Fact]
+    public async Task Delete_DeveArquivarCategoriaVinculada_QuandoMetaExcluida()
+    {
+        // Arrange
+        await AuthenticateAsync("goals.deletecat@teste.com");
+
+        var createResponse = await _client.PostAsJsonAsync("/api/goals", ValidGoalRequest);
+        var created = await createResponse.Content.ReadAsJsonAsync<GoalProgressResultDto>();
+
+        // Act
+        await _client.DeleteAsync($"/api/goals/{created!.Id}");
+
+        // Assert — categoria arquivada não deve aparecer no endpoint de categorias de metas
+        var categoriesResponse = await _client.GetAsync("/api/categories/goals");
+        var categories = await categoriesResponse.Content.ReadAsJsonAsync<IEnumerable<CategoryDto>>();
+        categories!.Should().NotContain(c => c.Id == created.LinkedCategoryId);
+    }
 }

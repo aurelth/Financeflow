@@ -212,6 +212,16 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
         return result.Select(x => (x.CategoryName, x.TotalAmount));
     }
 
+    public async Task<decimal> GetTotalByCategoryAsync(
+    Guid categoryId,
+    CancellationToken cancellationToken = default) =>
+    await context.Transactions
+        .IgnoreQueryFilters()
+        .Where(t =>
+            t.CategoryId == categoryId &&
+            t.DeletedAt == null)
+        .SumAsync(t => t.Amount, cancellationToken);
+
     public async Task AddAsync(
         Transaction transaction,
         CancellationToken cancellationToken = default)
@@ -234,5 +244,24 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
     {
         context.Transactions.Remove(transaction);
         await context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<decimal> GetTotalByCategoryAndMonthAsync(
+    Guid categoryId,
+    int month,
+    int year,
+    CancellationToken cancellationToken = default)
+    {
+        var dateFrom = new DateTime(year, month, 1);
+        var dateTo = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+
+        return await context.Transactions
+            .IgnoreQueryFilters()
+            .Where(t =>
+                t.CategoryId == categoryId &&
+                t.DeletedAt == null &&
+                t.Date >= dateFrom &&
+                t.Date <= dateTo)
+            .SumAsync(t => t.Amount, cancellationToken);
     }
 }

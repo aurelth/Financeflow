@@ -13,7 +13,8 @@ public record GoalProgressResultDto(
     decimal ProgressPercentage,
     bool IsCompleted,
     int? MonthsToComplete,
-    string Status  // "OnTrack", "Behind", "Completed", "Overdue"
+    string Status,  // "OnTrack", "Behind", "Completed", "Overdue"
+    Guid? LinkedCategoryId
 );
 
 public record GoalsSummaryResultDto(

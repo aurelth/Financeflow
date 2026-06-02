@@ -11,5 +11,6 @@ public record CategoryDto(
     bool IsDefault,
     bool IsActive,
     bool IsOwner,      // true = criada pelo utilizador, false = padrão do sistema
+    bool IsGoalCategory,
     IEnumerable<SubcategoryDto> Subcategories
 );

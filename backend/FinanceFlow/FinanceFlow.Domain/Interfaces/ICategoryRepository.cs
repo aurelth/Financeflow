@@ -27,6 +27,18 @@ public interface ICategoryRepository
     /// </summary>
     Task<bool> HasTransactionsAsync(Guid categoryId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Retorna categorias de metas do utilizador para o formulário de transação.
+    /// </summary>
+    Task<IEnumerable<Category>> GetGoalCategoriesByUserAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retorna uma categoria pelo Id para atualização (com tracking).
+    /// </summary>
+    Task<Category?> GetByIdForUpdateAsync(Guid id, Guid userId, CancellationToken cancellationToken = default);
+
     Task AddAsync(Category category, CancellationToken cancellationToken = default);
     Task UpdateAsync(Category category, CancellationToken cancellationToken = default);
     Task DeleteAsync(Category category, CancellationToken cancellationToken = default);

@@ -25,6 +25,7 @@ export interface Category {
   isDefault:     boolean
   isActive:      boolean
   isOwner:       boolean
+   isGoalCategory: boolean
   subcategories: Subcategory[]
 }
 
