@@ -14,6 +14,8 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.Icon).HasMaxLength(50);
         builder.Property(c => c.Color).HasMaxLength(20).HasDefaultValue("#6366f1");
         builder.Property(c => c.Type).IsRequired();
+        builder.Property(c => c.IsGoalCategory).HasDefaultValue(false);
+        builder.Property(c => c.IsArchived).HasDefaultValue(false);
         builder.HasOne(c => c.User)
                .WithMany(u => u.Categories)
                .HasForeignKey(c => c.UserId)

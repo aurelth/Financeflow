@@ -131,8 +131,7 @@ export default function DashboardPage() {
   useEffect(() => {    
     if (isLoading) return;
 
-    const shouldStart = !localStorage.getItem("onboarding_seen");
-    console.log("shouldStart:", shouldStart);
+    const shouldStart = !localStorage.getItem("onboarding_seen");    
     if (!shouldStart) return;
 
     const timeout = setTimeout(() => {

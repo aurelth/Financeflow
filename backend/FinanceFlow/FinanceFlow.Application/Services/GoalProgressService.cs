@@ -24,123 +24,61 @@ public class GoalProgressService(
         var now = DateTime.UtcNow;
         var today = new DateTime(now.Year, now.Month, 1);
 
-        // Calcula a poupança mensal desde a meta mais antiga até hoje
-        var oldestCreation = goals.Min(g => g.CreatedAt);
-        var monthlyBudgets = new Dictionary<(int Year, int Month), decimal>();
+        var results = new List<GoalProgressResultDto>();
 
-        var cursor = new DateTime(oldestCreation.Year, oldestCreation.Month, 1);
-        while (cursor <= today)
+        foreach (var goal in goals)
         {
-            // Execução sequencial — EF Core não suporta queries paralelas no mesmo DbContext
-            var (income, expense, _) = await transactionRepository
-                .GetMonthlySummaryAsync(userId, cursor.Month, cursor.Year, cancellationToken);
+            decimal accumulatedAmount;
+            decimal receivedThisMonth;
 
-            monthlyBudgets[(cursor.Year, cursor.Month)] = Math.Max(0, income - expense);
-            cursor = cursor.AddMonths(1);
-        }
-
-        // Acumula o progresso de cada meta mês a mês
-        var accumulated = goals.ToDictionary(g => g.Id, _ => 0m);
-
-        cursor = new DateTime(oldestCreation.Year, oldestCreation.Month, 1);
-        while (cursor <= today)
-        {
-            var available = monthlyBudgets[(cursor.Year, cursor.Month)];
-
-            // Metas ativas neste mês (criadas até este mês e não concluídas)
-            var activeGoals = goals
-                .Where(g =>
-                    new DateTime(g.CreatedAt.Year, g.CreatedAt.Month, 1) <= cursor &&
-                    accumulated[g.Id] < g.TargetAmount)
-                .ToList();
-
-            if (activeGoals.Count == 0 || available <= 0)
+            if (goal.LinkedCategoryId.HasValue)
             {
-                cursor = cursor.AddMonths(1);
-                continue;
-            }
+                // Progresso baseado nas transações vinculadas à categoria da meta
+                accumulatedAmount = await transactionRepository
+                    .GetTotalByCategoryAsync(goal.LinkedCategoryId.Value, cancellationToken);
 
-            var totalCommitted = activeGoals.Sum(g => g.MonthlyContribution);
-
-            if (available >= totalCommitted)
-            {
-                // Cada meta recebe o valor planeado
-                foreach (var goal in activeGoals)
-                {
-                    var toAdd = Math.Min(
-                        goal.MonthlyContribution,
-                        goal.TargetAmount - accumulated[goal.Id]);
-                    accumulated[goal.Id] += toAdd;
-                }
+                // Recebido = soma real das transações do mês atual (não o planejado)
+                receivedThisMonth = await transactionRepository
+                    .GetTotalByCategoryAndMonthAsync(
+                        goal.LinkedCategoryId.Value,
+                        now.Month,
+                        now.Year,
+                        cancellationToken);
             }
             else
             {
-                // Distribuição proporcional
-                foreach (var goal in activeGoals)
-                {
-                    var proportion = goal.MonthlyContribution / totalCommitted;
-                    var toAdd = Math.Min(
-                        available * proportion,
-                        goal.TargetAmount - accumulated[goal.Id]);
-                    accumulated[goal.Id] += toAdd;
-                }
+                // Comportamento legado
+                accumulatedAmount = await CalculateLegacyProgressAsync(
+                    goal, userId, today, cancellationToken);
+
+                // Legado: recebido = planejado (comportamento original)
+                receivedThisMonth = goal.MonthlyContribution;
             }
 
-            cursor = cursor.AddMonths(1);
-        }
-
-        // Calcula o mês atual
-        var currentAvailable = monthlyBudgets[(today.Year, today.Month)];
-        var currentActiveGoals = goals
-            .Where(g =>
-                new DateTime(g.CreatedAt.Year, g.CreatedAt.Month, 1) <= today &&
-                accumulated[g.Id] < g.TargetAmount)
-            .ToList();
-
-        var totalCommittedNow = currentActiveGoals.Sum(g => g.MonthlyContribution);
-
-        // Monta os resultados
-        var results = goals.Select(goal =>
-        {
-            var acc = Math.Round(accumulated[goal.Id], 2);
+            var acc = Math.Round(accumulatedAmount, 2);
             var isCompleted = acc >= goal.TargetAmount;
             var progress = goal.TargetAmount > 0
                 ? Math.Min(100, Math.Round((acc / goal.TargetAmount) * 100, 1))
                 : 0;
 
-            // Contribuição planeada e recebida no mês atual
-            decimal plannedThisMonth = 0;
-            decimal receivedThisMonth = 0;
+            // Planejado = contribuição mensal definida pelo utilizador
+            var plannedThisMonth = isCompleted ? 0 : goal.MonthlyContribution;
 
-            if (!isCompleted && new DateTime(goal.CreatedAt.Year, goal.CreatedAt.Month, 1) <= today)
-            {
-                plannedThisMonth = goal.MonthlyContribution;
+            // Recebido = 0 se meta concluída
+            if (isCompleted) receivedThisMonth = 0;
 
-                if (currentAvailable >= totalCommittedNow)
-                    receivedThisMonth = goal.MonthlyContribution;
-                else if (totalCommittedNow > 0)
-                    receivedThisMonth = Math.Round(
-                        currentAvailable * (goal.MonthlyContribution / totalCommittedNow), 2);
-            }
-
-            // Projeção de conclusão
             int? monthsToComplete = null;
             if (!isCompleted && goal.MonthlyContribution > 0)
             {
                 var remaining = goal.TargetAmount - acc;
-                var avgContribution = receivedThisMonth > 0
-                    ? receivedThisMonth
-                    : goal.MonthlyContribution;
-                monthsToComplete = (int)Math.Ceiling((double)(remaining / avgContribution));
+                monthsToComplete = (int)Math.Ceiling((double)(remaining / goal.MonthlyContribution));
             }
 
-            // Status
             var status = isCompleted ? "Completed"
                 : today > new DateTime(goal.Deadline.Year, goal.Deadline.Month, 1) ? "Overdue"
-                : receivedThisMonth < plannedThisMonth ? "Behind"
                 : "OnTrack";
 
-            return new GoalProgressResultDto(
+            results.Add(new GoalProgressResultDto(
                 Id: goal.Id,
                 Name: goal.Name,
                 Emoji: goal.Emoji,
@@ -149,17 +87,53 @@ public class GoalProgressService(
                 Deadline: goal.Deadline,
                 AccumulatedAmount: acc,
                 PlannedThisMonth: plannedThisMonth,
-                ReceivedThisMonth: receivedThisMonth,
+                ReceivedThisMonth: Math.Round(receivedThisMonth, 2),
                 ProgressPercentage: progress,
                 IsCompleted: isCompleted,
                 MonthsToComplete: monthsToComplete,
-                Status: status);
-        }).ToList();
+                Status: status,
+                LinkedCategoryId: goal.LinkedCategoryId));
+        }
+
+        var totalCommittedNow = results.Where(r => !r.IsCompleted).Sum(r => r.PlannedThisMonth);
+        var totalReceivedNow = results.Where(r => !r.IsCompleted).Sum(r => r.ReceivedThisMonth);
+        var totalAccumulated = results.Sum(r => r.AccumulatedAmount);
+        var difference = totalCommittedNow - totalReceivedNow;
 
         return new GoalsSummaryResultDto(
-            AvailableThisMonth: Math.Round(currentAvailable, 2),
+            AvailableThisMonth: Math.Round(totalAccumulated, 2),
             CommittedThisMonth: Math.Round(totalCommittedNow, 2),
-            Difference: Math.Round(currentAvailable - totalCommittedNow, 2),
+            Difference: Math.Round(difference, 2),
             Goals: results);
+    }
+
+    private async Task<decimal> CalculateLegacyProgressAsync(
+        FinanceFlow.Domain.Entities.Goal goal,
+        Guid userId,
+        DateTime today,
+        CancellationToken cancellationToken)
+    {
+        var oldestCreation = goal.CreatedAt;
+        var accumulated = 0m;
+
+        var cursor = new DateTime(oldestCreation.Year, oldestCreation.Month, 1);
+        while (cursor <= today)
+        {
+            var (income, expense, _) = await transactionRepository
+                .GetMonthlySummaryAsync(userId, cursor.Month, cursor.Year, cancellationToken);
+
+            var available = Math.Max(0, income - expense);
+            if (available > 0 && accumulated < goal.TargetAmount)
+            {
+                var toAdd = Math.Min(
+                    goal.MonthlyContribution,
+                    goal.TargetAmount - accumulated);
+                accumulated += toAdd;
+            }
+
+            cursor = cursor.AddMonths(1);
+        }
+
+        return accumulated;
     }
 }

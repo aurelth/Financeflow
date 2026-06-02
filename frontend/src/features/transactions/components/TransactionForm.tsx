@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { isLikelyTransfer } from '@/lib/transferUtils'
 import { X, Paperclip, FileText, Image, RefreshCw, ArrowLeftRight } from 'lucide-react'
 import AttachmentViewer from './AttachmentViewer'
-import { useCategories } from '../../categories/api/useCategories'
+import { useCategories, useGoalCategories } from '../../categories/api/useCategories'
 import {
   useCreateTransaction,
   useUpdateTransaction,
@@ -65,51 +65,69 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
   const [form, setForm] = useState<CreateTransactionRequest>(
     transaction
       ? {
-        amount: transaction.amount,
-        type: transaction.type,
-        date: transaction.date.split('T')[0],
-        description: transaction.description,
-        status: transaction.status,
-        isRecurring: transaction.isRecurring,
+        amount:         transaction.amount,
+        type:           transaction.type,
+        date:           transaction.date.split('T')[0],
+        description:    transaction.description,
+        status:         transaction.status,
+        isRecurring:    transaction.isRecurring,
         recurrenceType: transaction.recurrenceType,
-        categoryId: transaction.categoryId,
-        subcategoryId: transaction.subcategoryId,
-        tags: transaction.tags,
+        categoryId:     transaction.categoryId,
+        subcategoryId:  transaction.subcategoryId,
+        tags:           transaction.tags,
       }
       : defaultForm
   )
 
-  const [tagInput, setTagInput] = useState('')
-  const [attachment, setAttachment] = useState<File | null>(null)
+  const [tagInput, setTagInput]                         = useState('')
+  const [attachment, setAttachment]                     = useState<File | null>(null)
   const [currentAttachmentPath, setCurrentAttachmentPath] = useState<string | null>(transaction?.attachmentPath ?? null)
   const [currentAttachmentName, setCurrentAttachmentName] = useState<string | null>(transaction?.attachmentName ?? null)
-  const [showPropagateModal, setShowPropagateModal] = useState(false)
+  const [showPropagateModal, setShowPropagateModal]     = useState(false)
 
   const attachmentInputRef = useRef<HTMLInputElement>(null)
 
-  const { data: categories = [] } = useCategories()
+  const { data: categories = [] }     = useCategories()
+  const { data: goalCategories = [] } = useGoalCategories()
+
   const createTransaction = useCreateTransaction()
   const updateTransaction = useUpdateTransaction(transaction?.id ?? '')
-  const uploadAttachment = useUploadAttachment(transaction?.id ?? '')
-  const removeAttachment = useRemoveAttachment(transaction?.id ?? '')
+  const uploadAttachment  = useUploadAttachment(transaction?.id ?? '')
+  const removeAttachment  = useRemoveAttachment(transaction?.id ?? '')
+  
+  const filteredCategories = useMemo(() => {
+    let base: typeof categories = []
 
-  // Filtra categorias pelo tipo — Transfer inclui todas as categorias
-  const filteredCategories = form.type === TransactionType.Transfer
-    ? categories
-    : categories.filter(c => c.type === form.type)
+    if (form.type === TransactionType.Transfer) {
+      base = categories
+    } else if (form.type === TransactionType.Expense) {
+      base = [...categories.filter(c => c.type === form.type), ...goalCategories]
+    } else {
+      base = categories.filter(c => c.type === form.type)
+    }
 
-  const selectedCategory = categories.find(c => c.id === form.categoryId)
-  const subcategories = selectedCategory?.subcategories ?? []
-  const initialType = useRef(form.type)
+    // Se estiver editando e a categoria atual não estiver na lista, adiciona
+    if (form.categoryId && !base.find(c => c.id === form.categoryId)) {
+      const current = [...categories, ...goalCategories].find(c => c.id === form.categoryId)
+      if (current) base = [current, ...base]
+    }
+
+    return base
+  }, [form.type, form.categoryId, categories, goalCategories])
+
+  const selectedCategory = [...categories, ...goalCategories].find(c => c.id === form.categoryId)
+  const subcategories    = selectedCategory?.subcategories ?? []
+  const initialType      = useRef(form.type)
 
   useEffect(() => {
     if (form.type === initialType.current) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm(f => ({ ...f, categoryId: '', subcategoryId: null }))
   }, [form.type])
 
-  const amountAlterado = transaction && form.amount !== transaction.amount
-  const descricaoAlterada = transaction && form.description !== transaction.description
-  const categoriaAlterada = transaction && form.categoryId !== transaction.categoryId
+  const amountAlterado       = transaction && form.amount       !== transaction.amount
+  const descricaoAlterada    = transaction && form.description  !== transaction.description
+  const categoriaAlterada    = transaction && form.categoryId   !== transaction.categoryId
   const subcategoriaAlterada = transaction && form.subcategoryId !== transaction.subcategoryId
 
   const devePerguntar = isEditing
@@ -162,7 +180,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
 
   const isPending =
     createTransaction.isPending || updateTransaction.isPending ||
-    uploadAttachment.isPending || removeAttachment.isPending
+    uploadAttachment.isPending  || removeAttachment.isPending
 
   return (
     <>
@@ -184,11 +202,11 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
               className="p-1.5 rounded-lg transition-all"
               style={{ color: 'var(--ff-text-muted)' }}
               onMouseEnter={e => {
-                e.currentTarget.style.color = 'var(--ff-text-primary)'
+                e.currentTarget.style.color      = 'var(--ff-text-primary)'
                 e.currentTarget.style.background = 'var(--ff-bg-elevated)'
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.color = 'var(--ff-text-muted)'
+                e.currentTarget.style.color      = 'var(--ff-text-muted)'
                 e.currentTarget.style.background = 'transparent'
               }}
             >
@@ -199,7 +217,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
           {/* Body */}
           <div className="px-6 py-5 space-y-4">
 
-            {/* Tipo — agora com 3 opções */}
+            {/* Tipo */}
             <div className="grid grid-cols-3 gap-2">
               {[TransactionType.Expense, TransactionType.Income, TransactionType.Transfer].map(t => (
                 <button
@@ -248,10 +266,10 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                 placeholder="0,00"
                 style={inputStyle}
                 onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
+                onBlur={e => (e.target.style.borderColor  = 'var(--ff-border)')}
               />
             </div>
-            
+
             {/* Descrição */}
             <div>
               <label style={labelStyle}>Descrição</label>
@@ -262,9 +280,8 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                 placeholder="Ex: Almoço, Salário, Transferência..."
                 style={inputStyle}
                 onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
+                onBlur={e => (e.target.style.borderColor  = 'var(--ff-border)')}
               />
-              {/* Sugestão de marcar como transferência */}
               {isLikelyTransfer(form.description) && form.type !== TransactionType.Transfer && (
                 <button
                   type="button"
@@ -290,7 +307,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                   style={inputStyle}
                   onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
-                  onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
+                  onBlur={e => (e.target.style.borderColor  = 'var(--ff-border)')}
                 />
               </div>
               <div>
@@ -300,7 +317,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   onChange={e => setForm(f => ({ ...f, status: Number(e.target.value) as TransactionStatus }))}
                   style={inputStyle}
                   onFocus={e => (e.currentTarget.style.borderColor = 'var(--ff-emerald)')}
-                  onBlur={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
+                  onBlur={e => (e.currentTarget.style.borderColor  = 'var(--ff-border)')}
                 >
                   <option value={TransactionStatus.Paid}>Pago</option>
                   <option value={TransactionStatus.Pending}>Pendente</option>
@@ -317,10 +334,17 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                 value={form.categoryId}
                 onChange={categoryId => setForm(f => ({ ...f, categoryId, subcategoryId: null }))}
               />
+              {selectedCategory?.isGoalCategory && (
+                <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: 'var(--ff-emerald)' }}>
+                  🎯 Esta despesa será contabilizada no progresso da meta
+                </p>
+              )}
             </div>
 
-            {/* Subcategoria — oculta para Transfer */}
-            {subcategories.length > 0 && form.type !== TransactionType.Transfer && (
+            {/* Subcategoria — oculta para Transfer e categorias de meta */}
+            {subcategories.length > 0
+              && form.type !== TransactionType.Transfer
+              && !selectedCategory?.isGoalCategory && (
               <div>
                 <label style={labelStyle}>Subcategoria</label>
                 <select
@@ -328,7 +352,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   onChange={e => setForm(f => ({ ...f, subcategoryId: e.target.value || null }))}
                   style={inputStyle}
                   onFocus={e => (e.currentTarget.style.borderColor = 'var(--ff-emerald)')}
-                  onBlur={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
+                  onBlur={e => (e.currentTarget.style.borderColor  = 'var(--ff-border)')}
                 >
                   <option value="">Nenhuma</option>
                   {subcategories.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -345,7 +369,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                     checked={form.isRecurring}
                     onChange={e => setForm(f => ({
                       ...f,
-                      isRecurring: e.target.checked,
+                      isRecurring:    e.target.checked,
                       recurrenceType: e.target.checked ? RecurrenceType.Monthly : RecurrenceType.None,
                     }))}
                     style={{ accentColor: 'var(--ff-emerald)', width: 16, height: 16 }}
@@ -360,7 +384,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                     onChange={e => setForm(f => ({ ...f, recurrenceType: Number(e.target.value) as RecurrenceType }))}
                     style={inputStyle}
                     onFocus={e => (e.currentTarget.style.borderColor = 'var(--ff-emerald)')}
-                    onBlur={e => (e.currentTarget.style.borderColor = 'var(--ff-border)')}
+                    onBlur={e => (e.currentTarget.style.borderColor  = 'var(--ff-border)')}
                   >
                     <option value={RecurrenceType.Daily}>Diária</option>
                     <option value={RecurrenceType.Weekly}>Semanal</option>
@@ -448,11 +472,11 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm transition-colors"
                   style={{ border: '1px dashed var(--ff-border)', color: 'var(--ff-text-muted)' }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.color = 'var(--ff-text-secondary)'
+                    e.currentTarget.style.color       = 'var(--ff-text-secondary)'
                     e.currentTarget.style.borderColor = 'var(--ff-emerald)'
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.color = 'var(--ff-text-muted)'
+                    e.currentTarget.style.color       = 'var(--ff-text-muted)'
                     e.currentTarget.style.borderColor = 'var(--ff-border)'
                   }}
                 >
@@ -481,7 +505,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   placeholder="Adicionar tag..."
                   style={inputStyle}
                   onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
-                  onBlur={e => (e.target.style.borderColor = 'var(--ff-border)')}
+                  onBlur={e => (e.target.style.borderColor  = 'var(--ff-border)')}
                 />
                 <button
                   onClick={addTag}
@@ -501,8 +525,8 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                       className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg"
                       style={{
                         background: 'var(--ff-bg-elevated)',
-                        color: 'var(--ff-text-secondary)',
-                        border: '1px solid var(--ff-border)',
+                        color:      'var(--ff-text-secondary)',
+                        border:     '1px solid var(--ff-border)',
                       }}
                     >
                       {tag}
@@ -590,9 +614,9 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                 disabled={isPending}
                 className="w-full px-4 py-3 rounded-xl text-sm font-medium transition-colors text-left disabled:opacity-50"
                 style={{
-                  border: '1px solid rgba(16,185,129,0.3)',
+                  border:     '1px solid rgba(16,185,129,0.3)',
                   background: 'rgba(16,185,129,0.05)',
-                  color: 'var(--ff-text-primary)',
+                  color:      'var(--ff-text-primary)',
                 }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(16,185,129,0.1)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'rgba(16,185,129,0.05)')}

@@ -4,6 +4,7 @@ using FinanceFlow.Application.UseCases.Categories.Commands.DeleteCategory;
 using FinanceFlow.Application.UseCases.Categories.Commands.UpdateCategory;
 using FinanceFlow.Application.UseCases.Categories.Queries.GetCategories;
 using FinanceFlow.Application.UseCases.Categories.Queries.GetCategoryById;
+using FinanceFlow.Application.UseCases.Categories.Queries.GetGoalCategories;
 using FinanceFlow.Application.UseCases.Subcategories.Commands.CreateSubcategory;
 using FinanceFlow.Application.UseCases.Subcategories.Commands.DeleteSubcategory;
 using FinanceFlow.Application.UseCases.Subcategories.Commands.UpdateSubcategory;
@@ -25,6 +26,16 @@ public class CategoriesController(IMediator mediator) : BaseController(mediator)
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var query = new GetCategoriesQuery(CurrentUserId);
+        var result = await Mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Lista as categorias de metas do utilizador para o formulário de transação.</summary>
+    [HttpGet("goals")]
+    [ProducesResponseType(typeof(IEnumerable<CategoryDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetGoalCategories(CancellationToken cancellationToken)
+    {
+        var query = new GetGoalCategoriesQuery(CurrentUserId);
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);
     }

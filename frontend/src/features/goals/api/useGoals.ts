@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
@@ -7,12 +8,24 @@ import type {
   CreateGoalRequest,
   UpdateGoalRequest,
 } from '../types/goal.types'
+import type { PagedResult, Transaction } from '@/features/transactions/types/transaction.types'
 
 export const useGoals = () =>
   useQuery({
     queryKey: ['goals'],
     queryFn:  () =>
       api.get<GoalsSummaryResultDto>('/api/goals').then(r => r.data),
+    staleTime: 0,
+  })
+
+export const useGoalContributions = (categoryId: string | null) =>
+  useQuery({
+    queryKey: ['goal-contributions', categoryId],
+    queryFn:  () =>
+      api.get<PagedResult<Transaction>>(
+        `/api/transactions?categoryId=${categoryId}&pageSize=50&page=1`
+      ).then(r => r.data),
+    enabled:   !!categoryId,
     staleTime: 0,
   })
 
@@ -24,6 +37,8 @@ export const useCreateGoal = () => {
       api.post<GoalProgressResultDto>('/api/goals', data).then(r => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['goals'] })
+      qc.invalidateQueries({ queryKey: ['categories'] })
+      qc.invalidateQueries({ queryKey: ['categories', 'goals'] })
       toast.success('Meta criada com sucesso!')
     },
     onError: (err: any) => {
@@ -46,6 +61,8 @@ export const useUpdateGoal = (id: string) => {
       api.put<GoalProgressResultDto>(`/api/goals/${id}`, data).then(r => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['goals'] })
+      qc.invalidateQueries({ queryKey: ['categories'] })
+      qc.invalidateQueries({ queryKey: ['categories', 'goals'] })
       toast.success('Meta atualizada com sucesso!')
     },
     onError: (err: any) => {
@@ -68,6 +85,8 @@ export const useDeleteGoal = () => {
       api.delete(`/api/goals/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['goals'] })
+      qc.invalidateQueries({ queryKey: ['categories'] })
+      qc.invalidateQueries({ queryKey: ['categories', 'goals'] })
       toast.success('Meta removida com sucesso!')
     },
     onError: (err: any) => {

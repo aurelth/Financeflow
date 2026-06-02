@@ -33,5 +33,11 @@ public class GoalConfiguration : IEntityTypeConfiguration<Goal>
             .WithMany()
             .HasForeignKey(g => g.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(g => g.LinkedCategory)
+            .WithMany()
+            .HasForeignKey(g => g.LinkedCategoryId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
     }
 }

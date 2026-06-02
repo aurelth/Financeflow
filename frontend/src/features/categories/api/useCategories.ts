@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
@@ -177,3 +178,11 @@ export const useDeleteSubcategory = (categoryId: string) => {
     },
   })
 }
+
+export const useGoalCategories = () =>
+  useQuery({
+    queryKey: ['categories', 'goals'],
+    queryFn:  () => api.get<Category[]>('/api/categories/goals')
+      .then(r => r.data.map(normalizeCategory)),
+    staleTime: 5 * 60 * 1000,
+  })

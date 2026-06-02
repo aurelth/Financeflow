@@ -15,6 +15,7 @@ const mockCategory: Category = {
   isDefault:     false,
   isActive:      true,
   isOwner:       true,
+  isGoalCategory: false, 
   subcategories: [],
 }
 

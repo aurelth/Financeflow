@@ -18,6 +18,7 @@ vi.mock('@/features/transactions/api/useTransactions', () => ({
 
 vi.mock('@/features/categories/api/useCategories', () => ({
   useCategories: () => ({ data: mockCategories, isLoading: false }),
+  useGoalCategories: () => ({ data: [], isLoading: false }),
 }))
 
 const mockCategories = [
@@ -30,6 +31,7 @@ const mockCategories = [
     isDefault:     true,
     isActive:      true,
     isOwner:       false,
+    isGoalCategory: false,
     subcategories: [],
   },
   {
@@ -41,6 +43,7 @@ const mockCategories = [
     isDefault:     true,
     isActive:      true,
     isOwner:       false,
+    isGoalCategory: false,
     subcategories: [],
   },
 ]

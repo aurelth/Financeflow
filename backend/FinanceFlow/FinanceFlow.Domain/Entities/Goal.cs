@@ -9,4 +9,7 @@ public class Goal : BaseEntity
     public string Emoji { get; set; } = "🎯";
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
+
+    public Guid? LinkedCategoryId { get; set; }
+    public Category? LinkedCategory { get; set; }
 }

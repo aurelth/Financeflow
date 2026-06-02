@@ -8,6 +8,8 @@ public class Category : BaseEntity
     public TransactionType Type { get; set; }
     public bool IsDefault { get; set; } = false;
     public bool IsActive { get; set; } = true;
+    public bool IsGoalCategory { get; set; } = false;    
+    public bool IsArchived { get; set; } = false;
 
     public Guid? UserId { get; set; }   // null = categoria padrão do sistema
     public User? User { get; set; }

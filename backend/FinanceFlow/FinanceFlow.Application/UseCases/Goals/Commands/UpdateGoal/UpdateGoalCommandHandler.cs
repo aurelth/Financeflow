@@ -9,6 +9,7 @@ namespace FinanceFlow.Application.UseCases.Goals.Commands.UpdateGoal;
 
 public class UpdateGoalCommandHandler(
     IGoalRepository goalRepository,
+    ICategoryRepository categoryRepository,
     IGoalProgressService goalProgressService) : IRequestHandler<UpdateGoalCommand, GoalProgressResultDto>
 {
     public async Task<GoalProgressResultDto> Handle(
@@ -18,12 +19,27 @@ public class UpdateGoalCommandHandler(
         var goal = await goalRepository.GetByIdAsync(request.Id, request.UserId, cancellationToken)
             ?? throw new NotFoundException(nameof(Goal), request.Id);
 
-        // Modificado — Goal é class, não record, atualiza propriedades diretamente
+        var nameChanged = goal.Name != request.Name;
+        var emojiChanged = goal.Emoji != request.Emoji;
+
         goal.Name = request.Name;
         goal.TargetAmount = request.TargetAmount;
         goal.MonthlyContribution = request.MonthlyContribution;
         goal.Deadline = request.Deadline;
         goal.Emoji = request.Emoji;
+
+        if ((nameChanged || emojiChanged) && goal.LinkedCategoryId.HasValue)
+        {
+            var category = await categoryRepository.GetByIdForUpdateAsync(
+                goal.LinkedCategoryId.Value, request.UserId, cancellationToken);
+
+            if (category is not null)
+            {
+                category.Name = $"Meta: {request.Name}";
+                category.Icon = request.Emoji;
+                await categoryRepository.UpdateAsync(category, cancellationToken);
+            }
+        }
 
         await goalRepository.UpdateAsync(goal, cancellationToken);
 

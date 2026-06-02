@@ -9,12 +9,30 @@ namespace FinanceFlow.Application.UseCases.Goals.Commands.CreateGoal;
 
 public class CreateGoalCommandHandler(
     IGoalRepository goalRepository,
+    ICategoryRepository categoryRepository,
     IGoalProgressService goalProgressService) : IRequestHandler<CreateGoalCommand, GoalProgressResultDto>
 {
     public async Task<GoalProgressResultDto> Handle(
         CreateGoalCommand request,
         CancellationToken cancellationToken)
-    {
+    {        
+        var category = new Category
+        {
+            Id = Guid.NewGuid(),
+            UserId = request.UserId,
+            Name = $"Meta: {request.Name}",
+            Icon = request.Emoji,
+            Color = "#6366f1",
+            Type = TransactionType.Expense,
+            IsDefault = false,
+            IsActive = true,
+            IsGoalCategory = true,
+            IsArchived = false,
+            CreatedAt = DateTime.UtcNow,
+        };
+
+        await categoryRepository.AddAsync(category, cancellationToken);
+
         var goal = new Goal
         {
             Id = Guid.NewGuid(),
@@ -24,12 +42,12 @@ public class CreateGoalCommandHandler(
             MonthlyContribution = request.MonthlyContribution,
             Deadline = request.Deadline,
             Emoji = request.Emoji,
+            LinkedCategoryId = category.Id,
             CreatedAt = DateTime.UtcNow,
         };
 
         await goalRepository.AddAsync(goal, cancellationToken);
-
-        // Recalcula o progresso e retorna o resultado atualizado
+        
         var summary = await goalProgressService.CalculateAsync(request.UserId, cancellationToken);
         var result = summary.Goals.FirstOrDefault(g => g.Id == goal.Id)
             ?? throw new NotFoundException(nameof(Goal), goal.Id);
