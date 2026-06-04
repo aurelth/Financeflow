@@ -22,6 +22,7 @@ vi.mock('@/features/imports/api/useImports', () => ({
 
 vi.mock('@/features/categories/api/useCategories', () => ({
     useCategories: () => ({ data: mockCategories }),
+    useGoalCategories: () => ({ data: [] }),
 }))
 
 const mockCategories = [
@@ -30,10 +31,11 @@ const mockCategories = [
         name: 'Alimentação',
         icon: 'utensils',
         color: '#f59e0b',
-        type: 'Expense',
+        type: 2,
         isDefault: true,
         isActive: true,
         isOwner: false,
+        isGoalCategory: false,
         subcategories: [],
     },
     {
@@ -41,10 +43,11 @@ const mockCategories = [
         name: 'Salário',
         icon: 'briefcase',
         color: '#22c55e',
-        type: 'Income',
+        type: 1,
         isDefault: true,
         isActive: true,
         isOwner: false,
+        isGoalCategory: false,
         subcategories: [],
     },
 ]
