@@ -14,16 +14,15 @@ public class FinancialContextService(
     ILogger<FinancialContextService> logger) : IFinancialContextService
 {
     public async Task<string> BuildContextAsync(
-        Guid userId,
-        CancellationToken cancellationToken = default)
+    Guid userId,
+    int month,
+    int year,
+    CancellationToken cancellationToken = default)
     {
-        var now = DateTime.UtcNow;
-        var month = now.Month;
-        var year = now.Year;
+        logger.LogInformation(
+            "Construindo contexto financeiro para utilizador {UserId} — {Month}/{Year}.",
+            userId, month, year);
 
-        logger.LogInformation("Construindo contexto financeiro para utilizador {UserId}.", userId);
-
-        // Execução sequencial — EF Core não suporta queries paralelas no mesmo DbContext
         var (totalIncome, totalExpense, lastTen) =
             await transactionRepository.GetMonthlySummaryAsync(userId, month, year, cancellationToken);
 
@@ -33,16 +32,15 @@ public class FinancialContextService(
         var budgets =
             await budgetRepository.GetByUserAndPeriodAsync(userId, month, year, cancellationToken);
 
-        // Score de saúde financeira
         var healthScore =
             await healthScoreService.CalculateAsync(userId, month, year, cancellationToken);
 
-        // Metas financeiras
         var goalsSummary =
             await goalProgressService.CalculateAsync(userId, cancellationToken);
 
         var balance = totalIncome - totalExpense;
-        var monthName = new DateTime(year, month, 1).ToString("MMMM", new System.Globalization.CultureInfo("pt-BR"));
+        var monthName = new DateTime(year, month, 1)
+            .ToString("MMMM", new System.Globalization.CultureInfo("pt-BR"));
 
         var sb = new StringBuilder();
         sb.AppendLine($"=== CONTEXTO FINANCEIRO — {monthName.ToUpper()} DE {year} ===");
@@ -66,25 +64,18 @@ public class FinancialContextService(
         sb.AppendLine("## TOP 5 CATEGORIAS DE DESPESA");
         var categoriesList = topCategories.ToList();
         if (categoriesList.Count == 0)
-        {
-            sb.AppendLine("- Nenhuma despesa registada este mês.");
-        }
+            sb.AppendLine("- Nenhuma despesa registada neste mês.");
         else
-        {
             foreach (var (categoryName, totalAmount) in categoriesList)
                 sb.AppendLine($"- {categoryName}: R$ {totalAmount:N2}");
-        }
         sb.AppendLine();
 
         // Orçamentos
         sb.AppendLine("## ORÇAMENTOS DO MÊS");
         var budgetsList = budgets.ToList();
         if (budgetsList.Count == 0)
-        {
             sb.AppendLine("- Nenhum orçamento configurado.");
-        }
         else
-        {
             foreach (var budget in budgetsList)
             {
                 var spent = categoriesList
@@ -96,19 +87,16 @@ public class FinancialContextService(
                 var status = percentage >= 100 ? "EXCEDIDO" : percentage >= 80 ? "ATENÇÃO" : "OK";
                 sb.AppendLine($"- {budget.Category?.Name}: R$ {spent:N2} / R$ {budget.LimitAmount:N2} ({percentage:N0}%) [{status}]");
             }
-        }
         sb.AppendLine();
 
         // Metas financeiras
         sb.AppendLine("## METAS FINANCEIRAS");
         var goalsList = goalsSummary.Goals.ToList();
         if (goalsList.Count == 0)
-        {
             sb.AppendLine("- Nenhuma meta financeira definida.");
-        }
         else
         {
-            sb.AppendLine($"- Poupança disponível este mês: R$ {goalsSummary.AvailableThisMonth:N2}");
+            sb.AppendLine($"- Total acumulado em todas as metas: R$ {goalsSummary.AvailableThisMonth:N2}");
             sb.AppendLine($"- Total comprometido com metas: R$ {goalsSummary.CommittedThisMonth:N2}");
             sb.AppendLine($"- Diferença: R$ {goalsSummary.Difference:N2}");
             sb.AppendLine();
@@ -131,17 +119,13 @@ public class FinancialContextService(
         sb.AppendLine("## ÚLTIMAS 10 TRANSAÇÕES");
         var lastTenList = lastTen.ToList();
         if (lastTenList.Count == 0)
-        {
-            sb.AppendLine("- Nenhuma transação registada este mês.");
-        }
+            sb.AppendLine("- Nenhuma transação registada neste mês.");
         else
-        {
             foreach (var t in lastTenList)
             {
                 var tipo = t.Type == TransactionType.Income ? "Receita" : "Despesa";
                 sb.AppendLine($"- {t.Date:dd/MM}: [{tipo}] {t.Description} — R$ {t.Amount:N2} ({t.Category?.Name})");
             }
-        }
 
         return sb.ToString();
     }

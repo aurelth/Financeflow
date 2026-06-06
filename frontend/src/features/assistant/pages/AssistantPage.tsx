@@ -6,8 +6,8 @@ const SUGGESTED_QUESTIONS = [
   'Quanto gastei este mês?',
   'Estou dentro do meu orçamento?',
   'Quais são minhas maiores despesas?',
-  'Como está meu saldo atual?',
-  'Em quais categorias gastei mais?',
+  'Como estão minhas metas financeiras?',
+  'Como foram minhas finanças no mês passado?',
 ]
 
 export default function AssistantPage() {
