@@ -22,7 +22,7 @@ public class SendMessageCommandHandlerTests
         var command = new SendMessageCommand(UserId, "Quanto gastei este mês?");
 
         _financialContextService
-            .Setup(s => s.BuildContextAsync(UserId, default))
+            .Setup(s => s.BuildContextAsync(UserId, It.IsAny<int>(), It.IsAny<int>(), default))
             .ReturnsAsync("=== CONTEXTO FINANCEIRO ===\nDespesas: R$ 500,00");
 
         _anthropicService
@@ -40,7 +40,7 @@ public class SendMessageCommandHandlerTests
         result.Reply.Should().Be("Você gastou R$ 500,00 este mês.");
 
         _financialContextService.Verify(s =>
-            s.BuildContextAsync(UserId, default), Times.Once);
+            s.BuildContextAsync(UserId, It.IsAny<int>(), It.IsAny<int>(), default), Times.Once);
 
         _anthropicService.Verify(s =>
             s.SendMessageAsync(
@@ -57,7 +57,7 @@ public class SendMessageCommandHandlerTests
         var command = new SendMessageCommand(UserId, "Pergunta qualquer");
 
         _financialContextService
-            .Setup(s => s.BuildContextAsync(UserId, default))
+            .Setup(s => s.BuildContextAsync(UserId, It.IsAny<int>(), It.IsAny<int>(), default))
             .ReturnsAsync("=== CONTEXTO ===");
 
         _anthropicService
@@ -82,7 +82,7 @@ public class SendMessageCommandHandlerTests
         var contextoEsperado = "=== CONTEXTO FINANCEIRO ===\nOrçamentos: OK";
 
         _financialContextService
-            .Setup(s => s.BuildContextAsync(UserId, default))
+            .Setup(s => s.BuildContextAsync(UserId, It.IsAny<int>(), It.IsAny<int>(), default))
             .ReturnsAsync(contextoEsperado);
 
         _anthropicService
@@ -104,5 +104,32 @@ public class SendMessageCommandHandlerTests
                     m.Contains("Estou no limite do orçamento?")),
                 default),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_DeveIdentificarMesNaMensagem_QuandoUtilizadorMencionaMes()
+    {
+        // Arrange
+        var command = new SendMessageCommand(UserId, "Como foram as minhas finanças em abril?");
+
+        _financialContextService
+            .Setup(s => s.BuildContextAsync(UserId, 4, It.IsAny<int>(), default))
+            .ReturnsAsync("=== CONTEXTO FINANCEIRO — ABRIL ===");
+
+        _anthropicService
+            .Setup(s => s.SendMessageAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                default))
+            .ReturnsAsync("Em abril as suas finanças estavam equilibradas.");
+
+        // Act
+        var result = await CreateHandler().Handle(command, default);
+
+        // Assert — verifica que o mês 4 (abril) foi extraído corretamente
+        result.Reply.Should().Be("Em abril as suas finanças estavam equilibradas.");
+
+        _financialContextService.Verify(s =>
+            s.BuildContextAsync(UserId, 4, It.IsAny<int>(), default), Times.Once);
     }
 }
