@@ -13,6 +13,7 @@ const mockUser: UserProfile = {
   language:  'pt-BR',
   createdAt: '2026-01-01T00:00:00Z',
   role:      'User',
+  avatarUrl: null,
 }
 
 const mockAdmin: UserProfile = {

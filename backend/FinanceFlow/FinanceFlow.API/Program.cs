@@ -62,6 +62,17 @@ using (var scope = app.Services.CreateScope())
     await DbSeeder.SeedAsync(context, logger, app.Configuration);
 }
 
+// Serve avatares estáticos
+var avatarStoragePath = builder.Configuration["Avatar:StoragePath"] ?? "storage/avatars";
+var avatarFullPath = Path.Combine(Directory.GetCurrentDirectory(), avatarStoragePath);
+Directory.CreateDirectory(avatarFullPath);
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(avatarFullPath),
+    RequestPath = "/uploads/avatars"
+});
+
 app.Run();
 
 public partial class Program { }

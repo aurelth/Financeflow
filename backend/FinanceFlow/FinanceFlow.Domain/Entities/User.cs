@@ -13,6 +13,7 @@ public class User : BaseEntity
     public string Timezone { get; set; } = "America/Sao_Paulo";
     public string Language { get; set; } = "pt-BR";
     public UserRole Role { get; set; } = UserRole.User;
+    public string? AvatarPath { get; set; }
 
     // Navegação
     public ICollection<Category> Categories { get; set; } = [];

@@ -15,6 +15,7 @@ import type {
   UserProfile,
 } from '../types/auth.types'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getApiError = (err: any, fallback: string): string => {
   const errors = err?.response?.data?.errors
   if (errors) return Object.values(errors).flat().join(' ')
@@ -32,6 +33,7 @@ export const useRegister = () => {
       toast.success('Conta criada com sucesso! Faça login para continuar.')
       navigate('/login')
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       toast.error(getApiError(err, 'Erro ao criar conta. Tente novamente.'))
     },
@@ -48,7 +50,6 @@ export const useLogin = () => {
       api.post<AuthResponse>('/api/auth/login', data).then(r => r.data),
     onSuccess: data => {
       setUser(data.user, data.accessToken)
-      // Aplica idioma do perfil com prioridade máxima
       if (data.user.language) {
         i18n.changeLanguage(data.user.language)
         localStorage.setItem('ff_language', data.user.language)
@@ -56,6 +57,7 @@ export const useLogin = () => {
       toast.success(`Bem-vindo, ${data.user.name}!`)
       navigate('/dashboard')
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       toast.error(getApiError(err, 'Email ou senha incorreto.'))
     },
@@ -100,7 +102,6 @@ export const useUpdateProfile = () => {
       api.put<UserProfile>('/api/users/profile', data).then(r => r.data),
     onSuccess: data => {
       updateUser(data)
-      // Aplica idioma actualizado imediatamente
       if (data.language) {
         i18n.changeLanguage(data.language)
         localStorage.setItem('ff_language', data.language)
@@ -108,6 +109,7 @@ export const useUpdateProfile = () => {
       qc.invalidateQueries({ queryKey: ['user', 'profile'] })
       toast.success('Perfil atualizado com sucesso!')
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       toast.error(getApiError(err, 'Erro ao atualizar perfil. Tente novamente.'))
     },
@@ -122,6 +124,7 @@ export const useChangePassword = () =>
     onSuccess: () => {
       toast.success('Senha alterada com sucesso!')
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       toast.error(getApiError(err, 'Erro ao alterar senha. Tente novamente.'))
     },
@@ -135,6 +138,7 @@ export const useForgotPassword = () =>
     onSuccess: () => {
       toast.success('Se o email existir, receberá um link em breve.')
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       toast.error(getApiError(err, 'Erro ao processar solicitação. Tente novamente.'))
     },
@@ -151,8 +155,57 @@ export const useResetPassword = () => {
       toast.success('Senha redefinida com sucesso! Faça login para continuar.')
       navigate('/login')
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       toast.error(getApiError(err, 'Token inválido ou expirado.'))
+    },
+  })
+}
+
+// Upload Avatar
+export const useUploadAvatar = () => {
+  const { updateUser } = useAuthStore()
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: (file: File) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      return api.post<{ avatarUrl: string }>('/api/profile/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }).then(r => r.data)
+    },
+    onSuccess: async () => {
+      // Busca o perfil atualizado e sincroniza o store
+      const profile = await api.get<UserProfile>('/api/users/profile').then(r => r.data)
+      updateUser(profile)
+      qc.invalidateQueries({ queryKey: ['user', 'profile'] })
+      toast.success('Foto de perfil atualizada!')
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any) => {
+      toast.error(getApiError(err, 'Erro ao atualizar foto. Tente novamente.'))
+    },
+  })
+}
+
+// Delete Avatar
+export const useDeleteAvatar = () => {
+  const { updateUser } = useAuthStore()
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => api.delete('/api/profile/avatar'),
+    onSuccess: async () => {
+      // Busca o perfil atualizado e sincroniza o store
+      const profile = await api.get<UserProfile>('/api/users/profile').then(r => r.data)
+      updateUser(profile)
+      qc.invalidateQueries({ queryKey: ['user', 'profile'] })
+      toast.success('Foto de perfil removida!')
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any) => {
+      toast.error(getApiError(err, 'Erro ao remover foto. Tente novamente.'))
     },
   })
 }

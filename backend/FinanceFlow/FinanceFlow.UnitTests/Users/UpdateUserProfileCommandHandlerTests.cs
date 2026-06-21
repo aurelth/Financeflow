@@ -33,7 +33,7 @@ public class UpdateUserProfileCommandHandlerTests
         // Arrange
         var userId = Guid.NewGuid();
         var user = new User { Id = userId, Currency = "BRL", Timezone = "America/Sao_Paulo", Language = "pt-BR" };
-        var dto = new UserProfileDto(userId, "Aurel", "a@a.com", "123", "Male", "USD", "America/New_York", "en-US", DateTime.UtcNow, "User");
+        var dto = new UserProfileDto(userId, "Aurel", "a@a.com", "123", "Male", "USD", "America/New_York", "en-US", DateTime.UtcNow, "User", AvatarUrl: null);
 
         SetupUser(userId, user);
         SetupMapper(user, dto);
@@ -55,7 +55,7 @@ public class UpdateUserProfileCommandHandlerTests
         // Arrange
         var userId = Guid.NewGuid();
         var user = new User { Id = userId, Currency = "BRL", Timezone = "America/Sao_Paulo", Language = "pt-BR" };
-        var dto = new UserProfileDto(userId, "Aurel", "a@a.com", "123", "Male", "BRL", "America/Sao_Paulo", "pt-BR", DateTime.UtcNow, "User");
+        var dto = new UserProfileDto(userId, "Aurel", "a@a.com", "123", "Male", "BRL", "America/Sao_Paulo", "pt-BR", DateTime.UtcNow, "User", AvatarUrl: null);
 
         SetupUser(userId, user);
         SetupMapper(user, dto);
@@ -94,7 +94,7 @@ public class UpdateUserProfileCommandHandlerTests
         // Arrange
         var userId = Guid.NewGuid();
         var user = new User { Id = userId, Currency = "BRL", Timezone = "America/Sao_Paulo", Language = "pt-BR" };
-        var dto = new UserProfileDto(userId, "Aurel", "a@a.com", "123", "Male", "EUR", "Europe/Paris", "fr-FR", DateTime.UtcNow, "User");
+        var dto = new UserProfileDto(userId, "Aurel", "a@a.com", "123", "Male", "EUR", "Europe/Paris", "fr-FR", DateTime.UtcNow, "User", AvatarUrl: null);
 
         SetupUser(userId, user);
         SetupMapper(user, dto);
