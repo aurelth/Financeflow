@@ -10,5 +10,6 @@ public record UserProfileDto(
     string Timezone,
     string Language,
     DateTime CreatedAt,
-     string Role
+    string Role,
+    string? AvatarUrl
 );

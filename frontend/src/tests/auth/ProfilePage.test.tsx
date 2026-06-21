@@ -7,8 +7,9 @@ import ProfilePage from '@/features/auth/pages/ProfilePage'
 
 const mockUpdateProfile  = vi.fn()
 const mockChangePassword = vi.fn()
+const mockUploadAvatar   = vi.fn()
+const mockDeleteAvatar   = vi.fn()
 
-// Mock do react-i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
@@ -51,6 +52,7 @@ const mockProfile = {
   language:  'pt-BR',
   createdAt: '2026-01-01T00:00:00Z',
   role:      'User',
+  avatarUrl: null, // Adicionado
 }
 
 vi.mock('@/features/auth/api/useAuth', () => ({
@@ -64,6 +66,14 @@ vi.mock('@/features/auth/api/useAuth', () => ({
   }),
   useChangePassword: () => ({
     mutate:    mockChangePassword,
+    isPending: false,
+  }),
+  useUploadAvatar: () => ({ // Adicionado
+    mutate:    mockUploadAvatar,
+    isPending: false,
+  }),
+  useDeleteAvatar: () => ({ // Adicionado
+    mutate:    mockDeleteAvatar,
     isPending: false,
   }),
 }))
@@ -163,7 +173,6 @@ describe('ProfilePage', () => {
     })
   })
 
-  // Testes de idioma
   it('deve renderizar o seletor de idioma com 4 opções', () => {
     renderPage()
     const languageSelect = screen.getByLabelText(/idioma/i)
@@ -176,5 +185,16 @@ describe('ProfilePage', () => {
     renderPage()
     const languageSelect = screen.getByLabelText(/idioma/i) as HTMLSelectElement
     expect(languageSelect.value).toBe('pt-BR')
+  })
+
+  it('deve exibir secção de foto de perfil', () => {
+    renderPage()
+    expect(screen.getByText('Foto de perfil')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /alterar foto/i })).toBeInTheDocument()
+  })
+
+  it('deve exibir iniciais do nome quando não há avatar', () => {
+    renderPage()
+    expect(screen.getByText('AT')).toBeInTheDocument()
   })
 })

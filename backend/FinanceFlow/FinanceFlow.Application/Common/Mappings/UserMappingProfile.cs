@@ -12,6 +12,8 @@ public class UserMappingProfile : Profile
             .ForCtorParam(nameof(UserProfileDto.Gender),
                 opt => opt.MapFrom(src => src.Gender.ToString()))
             .ForCtorParam(nameof(UserProfileDto.Role),
-                opt => opt.MapFrom(src => src.Role.ToString()));
+                opt => opt.MapFrom(src => src.Role.ToString()))
+            .ForCtorParam(nameof(UserProfileDto.AvatarUrl),
+                opt => opt.MapFrom(src => src.AvatarPath));
     }
 }

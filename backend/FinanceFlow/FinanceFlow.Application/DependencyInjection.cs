@@ -35,6 +35,7 @@ public static class DependencyInjection
         // Serviços de análise financeira
         services.AddScoped<IFinancialContextService, FinancialContextService>();
         services.AddScoped<IHealthScoreService, HealthScoreService>();
+        services.AddScoped<IAvatarService, AvatarService>();
 
         //Goals
         services.AddScoped<IGoalProgressService, GoalProgressService>();

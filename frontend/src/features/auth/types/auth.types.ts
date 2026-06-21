@@ -9,6 +9,7 @@ export interface UserProfile {
   language:  string
   createdAt: string
   role:      'User' | 'Admin'
+  avatarUrl: string | null
 }
 
 export interface AuthResponse {

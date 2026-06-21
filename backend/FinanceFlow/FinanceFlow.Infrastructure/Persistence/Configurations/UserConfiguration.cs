@@ -54,5 +54,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
                .HasConversion<string>()
                .HasMaxLength(10)
                .HasDefaultValue(UserRole.User);
+
+        builder.Property(u => u.AvatarPath)
+       .HasMaxLength(500)
+       .IsRequired(false);
     }
 }

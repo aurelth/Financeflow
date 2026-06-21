@@ -44,7 +44,6 @@ export default function Sidebar() {
   const location   = useLocation()
   const { isOpen, close } = useSidebarStore()
 
-  // Fecha sidebar ao navegar em mobile
   useEffect(() => {
     close()
   }, [location.pathname])
@@ -54,13 +53,15 @@ export default function Sidebar() {
     { to: '/transactions', icon: ArrowLeftRight,  label: t('nav.transactions') },
     { to: '/categories',   icon: Tag,             label: t('nav.categories')   },
     { to: '/budgets',      icon: PiggyBank,       label: t('nav.budgets')      },
-    { to: '/goals',        icon: Target,          label: t('nav.goals') },
+    { to: '/goals',        icon: Target,          label: t('nav.goals')        },
     { to: '/comparison',   icon: GitCompare,      label: t('nav.comparison')   },
     { to: '/reports',      icon: BarChart3,       label: t('nav.reports')      },
     { to: '/exports',      icon: FileText,        label: t('nav.exports')      },
     { to: '/imports',      icon: Upload,          label: t('nav.imports')      },
-    { to: '/health-score', icon: HeartPulse,      label: t('nav.healthScore')  },    
+    { to: '/health-score', icon: HeartPulse,      label: t('nav.healthScore')  },
   ]
+
+  const apiUrl = import.meta.env.VITE_API_URL ?? ''
 
   const sidebarContent = (
     <aside
@@ -145,8 +146,50 @@ export default function Sidebar() {
         )}
       </nav>
 
-      {/* Configurações */}
-      <div className="p-4" style={{ borderTop: '1px solid var(--ff-border)' }}>
+      {/* Perfil e Configurações */}
+      <div className="p-4 space-y-1" style={{ borderTop: '1px solid var(--ff-border)' }}>
+
+        {/* Perfil com avatar */}
+        <NavLink
+          to="/profile"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
+          style={({ isActive }) =>
+            isActive
+              ? { background: 'var(--ff-emerald-subtle)', color: 'var(--ff-emerald)' }
+              : { color: 'var(--ff-text-muted)' }
+          }
+          onMouseEnter={e => {
+            e.currentTarget.style.color      = 'var(--ff-text-secondary)'
+            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+          }}
+          onMouseLeave={e => {
+            if (window.location.pathname !== '/profile') {
+              e.currentTarget.style.color      = 'var(--ff-text-muted)'
+              e.currentTarget.style.background = 'transparent'
+            }
+          }}
+        >
+          <div
+            className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold flex-shrink-0"
+            style={{
+              background: user?.avatarUrl ? 'transparent' : 'var(--ff-emerald)',
+              color:      'var(--ff-emerald-subtle)',
+              border:     '1px solid var(--ff-border)',
+            }}
+          >
+            {user?.avatarUrl
+              ? <img
+                  src={`${apiUrl}/uploads/avatars/${user.avatarUrl}`}
+                  alt={user.name}
+                  className="w-full h-full object-cover"
+                />
+              : user?.name?.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+            }
+          </div>
+          <span className="truncate">{user?.name ?? 'Perfil'}</span>
+        </NavLink>
+
+        {/* Configurações */}
         <NavLink
           to="/settings"
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
