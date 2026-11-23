@@ -1,5 +1,7 @@
 export type BankImportStatus = 'Pending' | 'Processing' | 'Completed' | 'Failed'
 
+import type { AccountResolution } from '@/features/accounts/types/account.types'
+
 export type TransactionType = 'Income' | 'Expense'
 
 export interface BankImportDto {
@@ -12,6 +14,10 @@ export interface BankImportDto {
   errors: number
   errorMessage: string | null
   createdAt: string
+  accountId?: string
+  accountName?: string | null
+  // Só vem preenchido na resposta do upload
+  accountResolution?: AccountResolution | null
 }
 
 export interface BankImportTransactionDto {

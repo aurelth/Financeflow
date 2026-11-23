@@ -54,6 +54,9 @@ export const useCreateTransaction = () => {
       if (data.subcategoryId)
         formData.append('subcategoryId', data.subcategoryId)
 
+      if (data.accountId)
+        formData.append('accountId', data.accountId)
+
       data.tags.forEach(tag => formData.append('tags', tag))
 
       if (attachment)

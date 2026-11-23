@@ -19,7 +19,7 @@ public class GetWeeklyComparisonQueryHandler(
     {
         var cacheKey = $"dashboard:weekly-comparison:{request.UserId}:{request.Year}:{request.Month}";
 
-        return await cache.GetOrSetAsync(cacheKey, async () =>
+        async Task<IEnumerable<WeeklyComparisonDto>> ComputeAsync()
         {
             var dateFrom = new DateTime(request.Year, request.Month, 1);
             var dateTo = dateFrom.AddMonths(1).AddDays(-1);
@@ -37,6 +37,7 @@ public class GetWeeklyComparisonQueryHandler(
                 amountMin: null,
                 amountMax: null,
                 search: null,
+                accountId: request.AccountId,
                 cancellationToken: cancellationToken);
 
             var filtered = transactions
@@ -66,6 +67,11 @@ public class GetWeeklyComparisonQueryHandler(
                     Expenses: weekTx.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount));
             });
 
-        }, CacheTtl, cancellationToken);
+        }
+
+        // Visões filtradas por conta não usam cache: a invalidação é por chave exata (usuário/mês)
+        return request.AccountId.HasValue
+            ? await ComputeAsync()
+            : await cache.GetOrSetAsync(cacheKey, ComputeAsync, CacheTtl, cancellationToken);
     }
 }

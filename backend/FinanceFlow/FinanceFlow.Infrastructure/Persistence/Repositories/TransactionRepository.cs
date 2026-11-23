@@ -20,12 +20,14 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
         decimal? amountMin,
         decimal? amountMax,
         string? search,
+        Guid? accountId,
         CancellationToken cancellationToken = default)
     {
         var query = context.Transactions
             .IgnoreQueryFilters()
             .Include(t => t.Category)
             .Include(t => t.Subcategory)
+            .Include(t => t.Account)
             .Where(t =>
                 t.UserId == userId &&
                 t.DeletedAt == null);
@@ -57,6 +59,9 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(t => t.Description.Contains(search));
 
+        if (accountId.HasValue)
+            query = query.Where(t => t.AccountId == accountId.Value);
+
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
@@ -78,6 +83,7 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
             .IgnoreQueryFilters()
             .Include(t => t.Category)
             .Include(t => t.Subcategory)
+            .Include(t => t.Account)
             .Where(t =>
                 t.Id == id &&
                 t.UserId == userId &&

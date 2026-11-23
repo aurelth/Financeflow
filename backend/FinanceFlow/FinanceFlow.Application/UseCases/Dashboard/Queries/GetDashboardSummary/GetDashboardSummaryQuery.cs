@@ -6,5 +6,6 @@ namespace FinanceFlow.Application.UseCases.Dashboard.Queries.GetDashboardSummary
 public record GetDashboardSummaryQuery(
     Guid UserId,
     int Month,
-    int Year
+    int Year,
+    Guid? AccountId = null
 ) : IRequest<DashboardSummaryDto>;

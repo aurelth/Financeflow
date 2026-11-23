@@ -38,7 +38,7 @@ public class GetWeeklyComparisonQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((new List<Transaction>(), 0));
 
         var query = new GetWeeklyComparisonQuery(UserId, Month: 3, Year: 2026);
@@ -71,7 +71,7 @@ public class GetWeeklyComparisonQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((transactions, transactions.Count));
 
         var query = new GetWeeklyComparisonQuery(UserId, Month: 3, Year: 2026);
@@ -101,7 +101,7 @@ public class GetWeeklyComparisonQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((transactions, transactions.Count));
 
         var query = new GetWeeklyComparisonQuery(UserId, Month: 3, Year: 2026);

@@ -19,5 +19,6 @@ public record UpdateTransactionCommand(
     string[] Tags,
     bool PropagateToFuture = false,
     string? AttachmentPath = null,
-    string? AttachmentName = null
+    string? AttachmentName = null,
+    Guid? AccountId = null
 ) : IRequest<TransactionDto>;

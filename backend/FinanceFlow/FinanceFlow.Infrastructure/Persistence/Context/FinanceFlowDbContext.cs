@@ -17,6 +17,7 @@ public class FinanceFlowDbContext(DbContextOptions<FinanceFlowDbContext> options
     public DbSet<BankImport> BankImports => Set<BankImport>();
     public DbSet<BankImportTransaction> BankImportTransactions => Set<BankImportTransaction>();
     public DbSet<Goal> Goals => Set<Goal>();
+    public DbSet<Account> Accounts => Set<Account>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,6 +38,7 @@ public class FinanceFlowDbContext(DbContextOptions<FinanceFlowDbContext> options
         modelBuilder.Entity<BankImport>().HasQueryFilter(b => b.DeletedAt == null);
         modelBuilder.Entity<BankImportTransaction>().HasQueryFilter(t => t.DeletedAt == null);
         modelBuilder.Entity<Goal>().HasQueryFilter(g => g.DeletedAt == null);
+        modelBuilder.Entity<Account>().HasQueryFilter(a => a.DeletedAt == null);
     }
 
     public override Task<int> SaveChangesAsync(

@@ -12,5 +12,6 @@ public record CreateTransactionRequestDto(
     RecurrenceType RecurrenceType,
     Guid CategoryId,
     Guid? SubcategoryId,
-    string[] Tags
+    string[] Tags,
+    Guid? AccountId = null
 );

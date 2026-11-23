@@ -1,0 +1,77 @@
+{
+  "page": {
+    "title": "Accounts",
+    "subtitle": "Organize your money by account and track each balance",
+    "new": "New account",
+    "showArchived": "Show archived",
+    "totalBalance": "Total balance",
+    "activeAccounts_one": "{{count}} active account",
+    "activeAccounts_other": "{{count}} active accounts"
+  },
+  "empty": {
+    "title": "No accounts found",
+    "description": "Create an account to separate your transactions by bank, wallet or card."
+  },
+  "card": {
+    "default": "Main",
+    "archived": "Archived",
+    "balance": "Current balance",
+    "recognized": "Recognized in OFX statements",
+    "notRecognized": "Will be recognized on the first OFX statement imported",
+    "last4": "ending {{last4}}",
+    "edit": "Edit",
+    "archive": "Archive",
+    "restore": "Restore"
+  },
+  "types": {
+    "Checking": "Checking account",
+    "Savings": "Savings",
+    "CreditCard": "Credit card",
+    "Cash": "Cash",
+    "Investment": "Investments"
+  },
+  "form": {
+    "createTitle": "New account",
+    "editTitle": "Edit account",
+    "name": "Name",
+    "namePlaceholder": "E.g. Chase, Wallet, Savings",
+    "type": "Type",
+    "bankName": "Bank (optional)",
+    "bankNamePlaceholder": "E.g. Chase",
+    "initialBalance": "Opening balance",
+    "initialBalanceDate": "Balance valid since",
+    "initialBalanceHint": "Transactions before this date are not part of the balance.",
+    "color": "Color",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "nameRequired": "Enter the account name.",
+    "close": "Close"
+  },
+  "archiveDialog": {
+    "title": "Archive account",
+    "message": "The account \"{{name}}\" will no longer appear in lists, but its whole transaction history is kept.",
+    "confirm": "Archive",
+    "cancel": "Cancel"
+  },
+  "select": {
+    "label": "Account",
+    "allAccounts": "All accounts",
+    "chooseAccount": "Choose account"
+  },
+  "import": {
+    "question": "Which account is this statement from?",
+    "hint": "If the file was recognized before, the right account is used automatically.",
+    "auto": "Recognize automatically",
+    "recognized": "Account recognized from the file: {{name}}",
+    "learned": "Account {{name}} linked to this bank. Next statements will be recognized automatically.",
+    "defaulted": "No account provided — we used {{name}}. You can pick another one before importing.",
+    "account": "Account: {{name}}"
+  },
+  "toast": {
+    "created": "Account created successfully!",
+    "updated": "Account updated successfully!",
+    "archived": "Account archived.",
+    "restored": "Account restored."
+  }
+}

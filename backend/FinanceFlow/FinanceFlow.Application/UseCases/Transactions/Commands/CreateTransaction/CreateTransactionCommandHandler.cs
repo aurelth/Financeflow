@@ -14,6 +14,7 @@ namespace FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransacti
 public class CreateTransactionCommandHandler(
     ITransactionRepository transactionRepository,
     ICategoryRepository categoryRepository,
+    IAccountRepository accountRepository,
     IEventPublisher eventPublisher,
     IAttachmentService attachmentService,
     IConfiguration configuration,
@@ -32,6 +33,14 @@ public class CreateTransactionCommandHandler(
         if (category.Type != request.Type)
             throw new ValidationException(
                 "O tipo da transação não coincide com o tipo da categoria.");
+
+        var account = request.AccountId.HasValue
+            ? await accountRepository.GetByIdAsync(request.AccountId.Value, request.UserId, cancellationToken)
+                ?? throw new NotFoundException(nameof(Account), request.AccountId.Value)
+            : await accountRepository.GetOrCreateDefaultAsync(request.UserId, cancellationToken);
+
+        if (account.IsArchived)
+            throw new ValidationException("Não é possível lançar em uma conta arquivada.");
 
         // Processa o anexo se fornecido
         string? attachmentPath = null;
@@ -63,6 +72,7 @@ public class CreateTransactionCommandHandler(
             Status = request.Status,
             IsRecurring = request.IsRecurring,
             RecurrenceType = request.RecurrenceType,
+            AccountId = account.Id,
             CategoryId = request.CategoryId,
             SubcategoryId = request.SubcategoryId,
             Tags = JsonSerializer.Serialize(request.Tags),
@@ -132,6 +142,7 @@ public class CreateTransactionCommandHandler(
                 IsRecurring = true,
                 RecurrenceType = origem.RecurrenceType,
                 RecurrenceGroupId = origem.RecurrenceGroupId,
+                AccountId = origem.AccountId,
                 CategoryId = origem.CategoryId,
                 SubcategoryId = origem.SubcategoryId,
                 Tags = JsonSerializer.Serialize(tags),

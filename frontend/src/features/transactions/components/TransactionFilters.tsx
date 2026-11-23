@@ -3,6 +3,7 @@ import { TransactionType } from '../../categories/types/category.types'
 import { TransactionStatus, type GetTransactionsQuery } from '../types/transaction.types'
 import type { Category } from '../../categories/types/category.types'
 import CategorySelect from './CategorySelect'
+import AccountSelect from '@/features/accounts/components/AccountSelect'
 
 interface TransactionFiltersProps {
   filters:    GetTransactionsQuery
@@ -85,6 +86,15 @@ export default function TransactionFilters({ filters, categories, onChange, onCl
           onChange={categoryId => onChange({ ...filters, categoryId: categoryId || undefined, subcategoryId: undefined })}
           nullable
           nullLabel="Todas as categorias"
+        />
+
+        {/* Conta — oculta quando só existe uma */}
+        <AccountSelect
+          value={filters.accountId ?? ''}
+          onChange={accountId => onChange({ ...filters, accountId: accountId || undefined })}
+          emptyOption="all"
+          hideWhenSingle
+          style={inputStyle}
         />
 
         {/* Data início */}

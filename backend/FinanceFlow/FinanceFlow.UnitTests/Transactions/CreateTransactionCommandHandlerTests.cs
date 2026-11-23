@@ -15,6 +15,7 @@ public class CreateTransactionCommandHandlerTests
 {
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
+    private readonly Mock<IAccountRepository> _accountRepository = new();
     private readonly Mock<IEventPublisher> _eventPublisher = new();
     private readonly Mock<IAttachmentService> _attachmentService = new();
     private readonly Mock<IConfiguration> _configuration = new();
@@ -51,6 +52,11 @@ public class CreateTransactionCommandHandlerTests
                 It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
+        // Sem accountId no comando, o handler usa a "Conta principal" do usuário
+        _accountRepository
+            .Setup(r => r.GetOrCreateDefaultAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => Account.CreateDefault(UserId));
+
         // Cache não lança exceção por padrão
         _cache
             .Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -60,6 +66,7 @@ public class CreateTransactionCommandHandlerTests
     private CreateTransactionCommandHandler CreateHandler() =>
         new(_transactionRepository.Object,
             _categoryRepository.Object,
+            _accountRepository.Object,
             _eventPublisher.Object,
             _attachmentService.Object,
             _configuration.Object,
@@ -529,5 +536,88 @@ public class CreateTransactionCommandHandlerTests
                 It.Is<string>(k => k.Contains($"{UserId}:2026:4")),
                 default),
             Times.AtLeastOnce);
+    }
+
+    // ── Conta do lançamento ───────────────────────────────────────────────
+
+    private CreateTransactionCommand CommandWithAccount(Guid? accountId) => new(
+        UserId: UserId,
+        Amount: 50m,
+        Type: TransactionType.Expense,
+        Date: DateTime.UtcNow,
+        Description: "Mercado",
+        Status: TransactionStatus.Paid,
+        IsRecurring: false,
+        RecurrenceType: RecurrenceType.None,
+        CategoryId: CategoryId,
+        SubcategoryId: null,
+        Tags: [],
+        AccountId: accountId);
+
+    [Fact]
+    public async Task Handle_DeveGravarNaContaEscolhida_QuandoAccountIdInformado()
+    {
+        // Arrange
+        var account = new Account { Id = Guid.NewGuid(), UserId = UserId, Name = "Nubank" };
+        _categoryRepository.Setup(r => r.GetByIdAsync(CategoryId, UserId, default)).ReturnsAsync(ValidCategory);
+        _accountRepository.Setup(r => r.GetByIdAsync(account.Id, UserId, default)).ReturnsAsync(account);
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
+            .ReturnsAsync(new Transaction { Id = Guid.NewGuid(), UserId = UserId, Category = ValidCategory, Tags = "[]" });
+
+        // Act
+        await CreateHandler().Handle(CommandWithAccount(account.Id), default);
+
+        // Assert
+        _transactionRepository.Verify(r =>
+            r.AddAsync(It.Is<Transaction>(t => t.AccountId == account.Id), default), Times.Once);
+        _accountRepository.Verify(r =>
+            r.GetOrCreateDefaultAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_DeveLancarNotFound_QuandoContaNaoPertenceAoUsuario()
+    {
+        // Arrange
+        _categoryRepository.Setup(r => r.GetByIdAsync(CategoryId, UserId, default)).ReturnsAsync(ValidCategory);
+
+        // Act
+        var act = async () => await CreateHandler().Handle(CommandWithAccount(Guid.NewGuid()), default);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>();
+        _transactionRepository.Verify(r => r.AddAsync(It.IsAny<Transaction>(), default), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_DeveRecusarLancamento_QuandoContaEstaArquivada()
+    {
+        // Arrange
+        var archived = new Account { Id = Guid.NewGuid(), UserId = UserId, Name = "Antiga", IsArchived = true };
+        _categoryRepository.Setup(r => r.GetByIdAsync(CategoryId, UserId, default)).ReturnsAsync(ValidCategory);
+        _accountRepository.Setup(r => r.GetByIdAsync(archived.Id, UserId, default)).ReturnsAsync(archived);
+
+        // Act
+        var act = async () => await CreateHandler().Handle(CommandWithAccount(archived.Id), default);
+
+        // Assert
+        await act.Should().ThrowAsync<ValidationException>();
+        _transactionRepository.Verify(r => r.AddAsync(It.IsAny<Transaction>(), default), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_DeveUsarContaPrincipal_QuandoAccountIdNaoInformado()
+    {
+        // Arrange
+        _categoryRepository.Setup(r => r.GetByIdAsync(CategoryId, UserId, default)).ReturnsAsync(ValidCategory);
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
+            .ReturnsAsync(new Transaction { Id = Guid.NewGuid(), UserId = UserId, Category = ValidCategory, Tags = "[]" });
+
+        // Act
+        await CreateHandler().Handle(CommandWithAccount(null), default);
+
+        // Assert
+        _accountRepository.Verify(r => r.GetOrCreateDefaultAsync(UserId, It.IsAny<CancellationToken>()), Times.Once);
     }
 }

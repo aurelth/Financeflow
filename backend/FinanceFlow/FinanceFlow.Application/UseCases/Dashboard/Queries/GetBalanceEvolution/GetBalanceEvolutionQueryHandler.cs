@@ -19,7 +19,7 @@ public class GetBalanceEvolutionQueryHandler(
     {
         var cacheKey = $"dashboard:balance-evolution:{request.UserId}:{request.Year}:{request.Month}";
 
-        return await cache.GetOrSetAsync(cacheKey, async () =>
+        async Task<IEnumerable<BalanceEvolutionDto>> ComputeAsync()
         {
             var dateFrom = new DateTime(request.Year, request.Month, 1);
             var dateTo = dateFrom.AddMonths(1).AddDays(-1);
@@ -40,6 +40,7 @@ public class GetBalanceEvolutionQueryHandler(
                 amountMin: null,
                 amountMax: null,
                 search: null,
+                accountId: request.AccountId,
                 cancellationToken: cancellationToken);
 
             var byDay = transactions
@@ -72,6 +73,11 @@ public class GetBalanceEvolutionQueryHandler(
 
             return result;
 
-        }, CacheTtl, cancellationToken);
+        }
+
+        // Visões filtradas por conta não usam cache: a invalidação é por chave exata (usuário/mês)
+        return request.AccountId.HasValue
+            ? await ComputeAsync()
+            : await cache.GetOrSetAsync(cacheKey, ComputeAsync, CacheTtl, cancellationToken);
     }
 }

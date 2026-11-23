@@ -45,6 +45,7 @@ public class GetProjectionsQueryHandler(
                 amountMin: null,
                 amountMax: null,
                 search: null,
+                accountId: null,
                 cancellationToken: cancellationToken);
 
             var confirmed = transactions

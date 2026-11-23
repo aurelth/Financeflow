@@ -38,6 +38,7 @@ export interface WeeklyComparison {
 export interface DashboardQuery {
   month: number
   year:  number
+  accountId?: string
 }
 
 // Comparativo histórico

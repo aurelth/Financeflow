@@ -13,6 +13,7 @@ import ptBRImports      from '@/locales/pt-BR/imports.json'
 import ptBRSettings     from '@/locales/pt-BR/settings.json'
 import ptBRAdmin        from '@/locales/pt-BR/admin.json'
 import ptBROnboarding   from '@/locales/pt-BR/onboarding.json'
+import ptBRAccounts     from '@/locales/pt-BR/accounts.json'
 
 import enUSCommon       from '@/locales/en-US/common.json'
 import enUSAuth         from '@/locales/en-US/auth.json'
@@ -25,6 +26,7 @@ import enUSImports      from '@/locales/en-US/imports.json'
 import enUSSettings     from '@/locales/en-US/settings.json'
 import enUSAdmin        from '@/locales/en-US/admin.json'
 import enUSOnboarding   from '@/locales/en-US/onboarding.json'
+import enUSAccounts     from '@/locales/en-US/accounts.json'
 
 import esESCommon       from '@/locales/es-ES/common.json'
 import esESAuth         from '@/locales/es-ES/auth.json'
@@ -37,6 +39,7 @@ import esESImports      from '@/locales/es-ES/imports.json'
 import esESSettings     from '@/locales/es-ES/settings.json'
 import esESAdmin        from '@/locales/es-ES/admin.json'
 import esESOnboarding   from '@/locales/es-ES/onboarding.json'
+import esESAccounts     from '@/locales/es-ES/accounts.json'
 
 import frFRCommon       from '@/locales/fr-FR/common.json'
 import frFRAuth         from '@/locales/fr-FR/auth.json'
@@ -49,6 +52,7 @@ import frFRImports      from '@/locales/fr-FR/imports.json'
 import frFRSettings     from '@/locales/fr-FR/settings.json'
 import frFRAdmin        from '@/locales/fr-FR/admin.json'
 import frFROnboarding   from '@/locales/fr-FR/onboarding.json'
+import frFRAccounts     from '@/locales/fr-FR/accounts.json'
 
 export const SUPPORTED_LANGUAGES = ['pt-BR', 'en-US', 'es-ES', 'fr-FR'] as const
 export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]
@@ -77,6 +81,7 @@ i18n
         settings:     ptBRSettings,
         admin:        ptBRAdmin,
         onboarding:   ptBROnboarding,
+        accounts:     ptBRAccounts,
       },
       'en-US': {
         common:       enUSCommon,
@@ -90,6 +95,7 @@ i18n
         settings:     enUSSettings,
         admin:        enUSAdmin,
         onboarding:   enUSOnboarding,
+        accounts:     enUSAccounts,
       },
       'es-ES': {
         common:       esESCommon,
@@ -103,6 +109,7 @@ i18n
         settings:     esESSettings,
         admin:        esESAdmin,
         onboarding:   esESOnboarding,
+        accounts:     esESAccounts,
       },
       'fr-FR': {
         common:       frFRCommon,
@@ -116,6 +123,7 @@ i18n
         settings:     frFRSettings,
         admin:        frFRAdmin,
         onboarding:   frFROnboarding,
+        accounts:     frFRAccounts,
       },
     },
     detection: {
@@ -128,7 +136,7 @@ i18n
     defaultNS: 'common',
     ns: [
       'common', 'auth', 'dashboard', 'transactions', 'categories',
-      'budgets', 'reports', 'imports', 'settings', 'admin', 'onboarding',
+      'budgets', 'reports', 'imports', 'settings', 'admin', 'onboarding', 'accounts',
     ],
     interpolation: {
       escapeValue: false,

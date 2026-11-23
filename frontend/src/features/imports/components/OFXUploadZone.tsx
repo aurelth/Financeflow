@@ -1,12 +1,20 @@
 import { useCallback, useState } from 'react'
 import { Upload, FileText, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import AccountSelect from '@/features/accounts/components/AccountSelect'
+import { useAccounts } from '@/features/accounts/api/useAccounts'
 
 interface Props {
-  onFileSelect: (file: File) => void
+  onFileSelect: (file: File, accountId?: string) => void
   isLoading: boolean
 }
 
 export default function OFXUploadZone({ onFileSelect, isLoading }: Props) {
+  const { t } = useTranslation('accounts')
+  // '' = reconhecer automaticamente (OFX → conta já aprendida → conta principal)
+  const [accountId, setAccountId]   = useState('')
+  const { data: accounts = [] }     = useAccounts()
+  const showAccountQuestion         = accounts.length > 1
   const [dragging, setDragging]     = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [error, setError]           = useState<string | null>(null)
@@ -34,7 +42,7 @@ export default function OFXUploadZone({ onFileSelect, isLoading }: Props) {
   }
 
   function handleUpload() {
-    if (selectedFile) onFileSelect(selectedFile)
+    if (selectedFile) onFileSelect(selectedFile, accountId || undefined)
   }
 
   function handleClear() {
@@ -84,6 +92,22 @@ export default function OFXUploadZone({ onFileSelect, isLoading }: Props) {
       {/* Erro */}
       {error && (
         <p className="text-xs px-1" style={{ color: '#f87171' }}>{error}</p>
+      )}
+
+      {/* Qual conta? — só aparece quando há mais de uma conta */}
+      {selectedFile && !error && showAccountQuestion && (
+        <div className="space-y-1.5">
+          <label htmlFor="ofx-account" className="text-xs font-medium" style={{ color: 'var(--ff-text-secondary)' }}>
+            {t('import.question')}
+          </label>
+          <AccountSelect
+            id="ofx-account"
+            value={accountId}
+            onChange={setAccountId}
+            emptyOption="auto"
+          />
+          <p className="text-xs" style={{ color: 'var(--ff-text-muted)' }}>{t('import.hint')}</p>
+        </div>
       )}
 
       {/* Arquivo selecionado */}

@@ -20,6 +20,7 @@ public class ImportsController(IMediator mediator) : BaseController(mediator)
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UploadOFX(
         IFormFile? file,
+        [FromForm] Guid? accountId,
         CancellationToken cancellationToken)
     {
         if (file is null || file.Length == 0)
@@ -33,7 +34,8 @@ public class ImportsController(IMediator mediator) : BaseController(mediator)
         var command = new UploadOFXCommand(
             UserId: CurrentUserId,
             FileStream: stream,
-            FileName: file.FileName);
+            FileName: file.FileName,
+            AccountId: accountId);
 
         var result = await Mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetPreview), new { id = result.Id }, result);

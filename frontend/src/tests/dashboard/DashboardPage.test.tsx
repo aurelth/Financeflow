@@ -56,6 +56,10 @@ vi.mock('@/features/dashboard/api/useDashboard', () => ({
   useWeeklyComparison:   () => ({ data: mockWeeklyComparison,   isLoading: false }),
 }))
 
+vi.mock('@/features/accounts/api/useAccounts', () => ({
+  useAccounts: () => ({ data: [] }),
+}))
+
 vi.mock('@/features/budgets/api/useBudgets', () => ({
   useBudgetSummary: () => ({ data: mockBudgetSummaries, isLoading: false }),
 }))

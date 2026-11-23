@@ -107,6 +107,7 @@ public class GetPeriodComparisonQueryHandler(
             amountMin: null,
             amountMax: null,
             search: null,
+            accountId: null,
             cancellationToken: cancellationToken);
 
         var filtered = transactions

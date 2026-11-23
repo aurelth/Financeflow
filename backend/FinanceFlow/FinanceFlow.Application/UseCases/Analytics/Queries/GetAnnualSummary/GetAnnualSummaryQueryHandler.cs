@@ -43,6 +43,7 @@ public class GetAnnualSummaryQueryHandler(
                 amountMin: null,
                 amountMax: null,
                 search: null,
+                accountId: null,
                 cancellationToken: cancellationToken);
 
             // Filtra apenas transações confirmadas

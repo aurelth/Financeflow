@@ -35,6 +35,7 @@ public class GetReportByTagQueryHandler(
                 amountMin: null,
                 amountMax: null,
                 search: null,
+                accountId: null,
                 cancellationToken: cancellationToken);
 
             var confirmed = transactions

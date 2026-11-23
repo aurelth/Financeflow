@@ -5,6 +5,18 @@ import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import ImportsPage from '@/features/imports/pages/ImportsPage'
 import type { BankImportDto } from '@/features/imports/types/imports.types'
+import type { Account } from '@/features/accounts/types/account.types'
+import { toast } from 'sonner'
+import { makeAccount, nubank } from './../accounts/fixtures'
+
+vi.mock('sonner', () => ({
+    toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
+}))
+
+let mockAccounts: Account[] = []
+vi.mock('@/features/accounts/api/useAccounts', () => ({
+    useAccounts: () => ({ data: mockAccounts }),
+}))
 
 const mockNavigate = vi.fn()
 const mockUploadMutate = vi.fn()
@@ -64,6 +76,7 @@ describe('ImportsPage', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         mockImportsList = [...mockImports] // Reset da lista antes de cada teste
+        mockAccounts = [makeAccount()]
     })
 
     it('deve renderizar o título da página', () => {
@@ -167,7 +180,74 @@ describe('ImportsPage', () => {
 
         await user.click(screen.getByRole('button', { name: /enviar/i }))
 
-        expect(mockUploadMutate).toHaveBeenCalledWith(file, expect.any(Object))
+        expect(mockUploadMutate).toHaveBeenCalledWith({ file, accountId: undefined }, expect.any(Object))
+    })
+
+    describe('escolha da conta no upload', () => {
+        const selectFile = async (user: ReturnType<typeof userEvent.setup>) => {
+            const input = document.getElementById('ofx-input') as HTMLInputElement
+            const file = new File(['ofx content'], 'extrato.ofx', { type: 'application/octet-stream' })
+            await user.upload(input, file)
+            return file
+        }
+
+        it('não deve perguntar a conta quando o utilizador só tem uma', async () => {
+            renderPage()
+            const user = userEvent.setup()
+
+            await selectFile(user)
+
+            expect(screen.queryByText('import.question')).not.toBeInTheDocument()
+        })
+
+        it('deve perguntar a conta quando há mais de uma e enviar a escolhida', async () => {
+            mockAccounts = [makeAccount(), nubank]
+            renderPage()
+            const user = userEvent.setup()
+
+            const file = await selectFile(user)
+
+            expect(screen.getByText('import.question')).toBeInTheDocument()
+            await user.selectOptions(screen.getByLabelText('import.question'), 'acc-2')
+            await user.click(screen.getByRole('button', { name: /enviar/i }))
+
+            expect(mockUploadMutate).toHaveBeenCalledWith({ file, accountId: 'acc-2' }, expect.any(Object))
+        })
+
+        it('deve enviar sem conta quando o utilizador deixa em "Reconhecer automaticamente"', async () => {
+            mockAccounts = [makeAccount(), nubank]
+            renderPage()
+            const user = userEvent.setup()
+
+            const file = await selectFile(user)
+            await user.click(screen.getByRole('button', { name: /enviar/i }))
+
+            expect(mockUploadMutate).toHaveBeenCalledWith({ file, accountId: undefined }, expect.any(Object))
+        })
+
+        it.each([
+            ['Recognized', 'import.recognized'],
+            ['Learned',    'import.learned'],
+            ['Defaulted',  'import.defaulted'],
+        ] as const)('deve avisar como a conta foi decidida (%s)', async (resolution, expectedKey) => {
+            mockUploadMutate.mockImplementation((_vars, options) =>
+                options.onSuccess({ id: 'imp-9', accountName: 'Nubank', accountResolution: resolution }))
+            renderPage()
+            const user = userEvent.setup()
+
+            await selectFile(user)
+            await user.click(screen.getByRole('button', { name: /enviar/i }))
+
+            expect(toast.info).toHaveBeenCalledWith(expectedKey)
+            expect(mockNavigate).toHaveBeenCalledWith('/imports/imp-9/preview')
+        })
+
+        it('deve mostrar o nome da conta no histórico', () => {
+            mockImportsList = [{ ...mockImports[0], accountName: 'Nubank' }]
+            renderPage()
+
+            expect(screen.getByText(/5 transações · Nubank/)).toBeInTheDocument()
+        })
     })
 
     it('deve exibir botão de excluir para cada importação', () => {

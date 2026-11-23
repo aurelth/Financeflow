@@ -9,6 +9,8 @@ interface TransactionTableProps {
   transactions: Transaction[]
   onEdit:       (transaction: Transaction) => void
   onDelete:     (transaction: Transaction) => void
+  // Mostra o nome da conta sob a descrição (útil quando o utilizador tem mais de uma conta)
+  showAccount?: boolean
 }
 
 const statusConfig: Record<TransactionStatus, { label: string; bg: string; color: string; border: string }> = {
@@ -58,7 +60,7 @@ function getAmountColor(type: TransactionType): string {
   return 'var(--ff-expense)'
 }
 
-export default function TransactionTable({ transactions, onEdit, onDelete }: TransactionTableProps) {
+export default function TransactionTable({ transactions, onEdit, onDelete, showAccount = false }: TransactionTableProps) {
   if (transactions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
@@ -146,6 +148,11 @@ export default function TransactionTable({ transactions, onEdit, onDelete }: Tra
                       </span>
                     )}
                   </div>
+                  {showAccount && tx.accountName && (
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
+                      {tx.accountName}
+                    </p>
+                  )}
                   {tx.tags.length > 0 && (
                     <div className="flex gap-1 mt-1 flex-wrap">
                       {tx.tags.map(tag => (

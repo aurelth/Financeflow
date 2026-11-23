@@ -13,5 +13,6 @@ public record GetTransactionsQueryDto(
     TransactionStatus? Status = null,
     decimal? AmountMin = null,
     decimal? AmountMax = null,
-    string? Search = null
+    string? Search = null,
+    Guid? AccountId = null
 );

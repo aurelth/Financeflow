@@ -40,9 +40,10 @@ public class RegisterUserCommandHandler(
                 });
 
         // Cria o utilizador
+        var userId = Guid.NewGuid();
         var user = new User
         {
-            Id = Guid.NewGuid(),
+            Id = userId,
             Name = request.Name.Trim(),
             Email = request.Email.Trim().ToLowerInvariant(),
             PasswordHash = passwordService.Hash(request.Password),
@@ -51,6 +52,8 @@ public class RegisterUserCommandHandler(
             Currency = request.Currency ?? "BRL",
             Timezone = request.Timezone ?? "America/Sao_Paulo",
             CreatedAt = DateTime.UtcNow,
+            // Todo usuário nasce com a "Conta principal"
+            Accounts = [Account.CreateDefault(userId, request.Currency)],
             // Cria preferências de notificação padrão via navigation property
             NotificationPreferences = new UserNotificationPreferences
             {

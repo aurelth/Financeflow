@@ -1,0 +1,77 @@
+{
+  "page": {
+    "title": "Cuentas",
+    "subtitle": "Organiza tu dinero por cuenta y sigue el saldo de cada una",
+    "new": "Nueva cuenta",
+    "showArchived": "Mostrar archivadas",
+    "totalBalance": "Saldo total",
+    "activeAccounts_one": "{{count}} cuenta activa",
+    "activeAccounts_other": "{{count}} cuentas activas"
+  },
+  "empty": {
+    "title": "No se encontraron cuentas",
+    "description": "Crea una cuenta para separar tus movimientos por banco, cartera o tarjeta."
+  },
+  "card": {
+    "default": "Principal",
+    "archived": "Archivada",
+    "balance": "Saldo actual",
+    "recognized": "Reconocida en extractos OFX",
+    "notRecognized": "Se reconocerá en el primer extracto OFX importado",
+    "last4": "terminada en {{last4}}",
+    "edit": "Editar",
+    "archive": "Archivar",
+    "restore": "Reactivar"
+  },
+  "types": {
+    "Checking": "Cuenta corriente",
+    "Savings": "Ahorros",
+    "CreditCard": "Tarjeta de crédito",
+    "Cash": "Efectivo",
+    "Investment": "Inversiones"
+  },
+  "form": {
+    "createTitle": "Nueva cuenta",
+    "editTitle": "Editar cuenta",
+    "name": "Nombre",
+    "namePlaceholder": "Ej: Santander, Cartera, Ahorros",
+    "type": "Tipo",
+    "bankName": "Banco (opcional)",
+    "bankNamePlaceholder": "Ej: Santander",
+    "initialBalance": "Saldo inicial",
+    "initialBalanceDate": "Saldo válido desde",
+    "initialBalanceHint": "Los movimientos anteriores a esta fecha no entran en el saldo.",
+    "color": "Color",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "nameRequired": "Indica el nombre de la cuenta.",
+    "close": "Cerrar"
+  },
+  "archiveDialog": {
+    "title": "Archivar cuenta",
+    "message": "La cuenta \"{{name}}\" dejará de aparecer en las listas, pero se conserva todo el historial de movimientos.",
+    "confirm": "Archivar",
+    "cancel": "Cancelar"
+  },
+  "select": {
+    "label": "Cuenta",
+    "allAccounts": "Todas las cuentas",
+    "chooseAccount": "Elegir cuenta"
+  },
+  "import": {
+    "question": "¿De qué cuenta es este extracto?",
+    "hint": "Si el archivo ya fue reconocido antes, se usa la cuenta correcta automáticamente.",
+    "auto": "Reconocer automáticamente",
+    "recognized": "Cuenta reconocida por el archivo: {{name}}",
+    "learned": "Cuenta {{name}} vinculada a este banco. Los próximos extractos se reconocerán solos.",
+    "defaulted": "No se indicó cuenta — usamos {{name}}. Puedes elegir otra antes de importar.",
+    "account": "Cuenta: {{name}}"
+  },
+  "toast": {
+    "created": "¡Cuenta creada con éxito!",
+    "updated": "¡Cuenta actualizada con éxito!",
+    "archived": "Cuenta archivada.",
+    "restored": "Cuenta reactivada."
+  }
+}

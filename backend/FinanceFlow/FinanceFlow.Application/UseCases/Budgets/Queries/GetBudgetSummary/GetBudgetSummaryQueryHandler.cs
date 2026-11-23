@@ -33,6 +33,7 @@ public class GetBudgetSummaryQueryHandler(
             amountMin: null,
             amountMax: null,
             search: null,
+            accountId: null,
             cancellationToken: cancellationToken);
 
         var spentByCategory = transactions

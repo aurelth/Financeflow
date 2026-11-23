@@ -19,7 +19,7 @@ public class GetDashboardSummaryQueryHandler(
     {
         var cacheKey = $"dashboard:summary:{request.UserId}:{request.Year}:{request.Month}";
 
-        return await cache.GetOrSetAsync(cacheKey, async () =>
+        async Task<DashboardSummaryDto> ComputeAsync()
         {
             var dateFrom = new DateTime(request.Year, request.Month, 1);
             var dateTo = dateFrom.AddMonths(1).AddDays(-1);
@@ -37,6 +37,7 @@ public class GetDashboardSummaryQueryHandler(
                 amountMin: null,
                 amountMax: null,
                 search: null,
+                accountId: request.AccountId,
                 cancellationToken: cancellationToken);
 
             var totalIncome = transactions
@@ -65,6 +66,11 @@ public class GetDashboardSummaryQueryHandler(
                 Month: request.Month,
                 Year: request.Year);
 
-        }, CacheTtl, cancellationToken);
+        }
+
+        // Visões filtradas por conta não usam cache: a invalidação é por chave exata (usuário/mês)
+        return request.AccountId.HasValue
+            ? await ComputeAsync()
+            : await cache.GetOrSetAsync(cacheKey, ComputeAsync, CacheTtl, cancellationToken);
     }
 }

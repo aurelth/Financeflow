@@ -70,7 +70,7 @@ public class GetBalanceEvolutionQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((transactions, transactions.Count));
 
         var query = new GetBalanceEvolutionQuery(UserId, Month: 1, Year: 2026);
@@ -114,7 +114,7 @@ public class GetBalanceEvolutionQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((transactions, transactions.Count));
 
         var query = new GetBalanceEvolutionQuery(UserId, Month: 1, Year: 2026);
@@ -158,7 +158,7 @@ public class GetBalanceEvolutionQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((transactions, transactions.Count));
 
         var query = new GetBalanceEvolutionQuery(UserId, Month: 1, Year: 2026);

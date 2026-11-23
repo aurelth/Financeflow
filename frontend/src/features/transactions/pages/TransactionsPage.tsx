@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, Receipt } from 'lucide-react'
 import { useTransactions }           from '../api/useTransactions'
 import { useCategories }             from '../../categories/api/useCategories'
+import { useAccounts }               from '@/features/accounts/api/useAccounts'
 import TransactionTable              from '../components/TransactionTable'
 import TransactionFilters            from '../components/TransactionFilters'
 import TransactionForm               from '../components/TransactionForm'
@@ -31,6 +32,7 @@ export default function TransactionsPage() {
 
   const { data, isLoading }       = useTransactions(filters)
   const { data: categories = [] } = useCategories()
+  const { data: accounts = [] }   = useAccounts()
 
   const transactions = data?.items      ?? []
   const totalPages   = data?.totalPages ?? 1
@@ -104,6 +106,7 @@ export default function TransactionsPage() {
           transactions={transactions}
           onEdit={handleEdit}
           onDelete={tx => setDeletingTx(tx)}
+          showAccount={accounts.length > 1}
         />
       )}
 

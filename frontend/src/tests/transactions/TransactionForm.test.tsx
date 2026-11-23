@@ -6,8 +6,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import TransactionForm from '@/features/transactions/components/TransactionForm'
 import { TransactionType } from '@/features/categories/types/category.types'
 import { TransactionStatus, RecurrenceType, type Transaction } from '@/features/transactions/types/transaction.types'
+import type { Account } from '@/features/accounts/types/account.types'
+import { makeAccount, nubank } from '../accounts/fixtures'
 
 const mockMutate = vi.fn()
+
+let mockAccounts: Account[] = []
+vi.mock('@/features/accounts/api/useAccounts', () => ({
+  useAccounts: () => ({ data: mockAccounts }),
+}))
 
 vi.mock('@/features/transactions/api/useTransactions', () => ({
   useCreateTransaction: () => ({ mutate: mockMutate, isPending: false }),
@@ -50,6 +57,8 @@ const mockTransaction: Transaction = {
   attachmentPath: null,
   attachmentName: null,
   tags: [],
+  accountId: 'acc-1',
+  accountName: 'Conta principal',
   categoryId: 'cat-1',
   categoryName: 'Moradia',
   categoryIcon: 'house',
@@ -85,6 +94,10 @@ const renderForm = (transaction?: Transaction, onClose = vi.fn()) => {
 }
 
 describe('TransactionForm', () => {
+  beforeEach(() => {
+    mockAccounts = [makeAccount()]
+  })
+
   beforeEach(() => vi.clearAllMocks())
 
   it('deve renderizar o título correto no modo criação', () => {
@@ -367,6 +380,44 @@ describe('TransactionForm', () => {
 
     await waitFor(() => {
       expect(screen.queryByText('Transação recorrente')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('seletor de conta', () => {
+    it('não deve exibir o seletor quando o utilizador só tem uma conta', () => {
+      renderForm()
+      expect(screen.queryByLabelText('Conta')).not.toBeInTheDocument()
+    })
+
+    it('deve exibir o seletor com a conta principal selecionada quando há mais de uma conta', () => {
+      mockAccounts = [makeAccount(), nubank]
+      renderForm()
+
+      expect(screen.getByLabelText('Conta')).toHaveValue('acc-1')
+    })
+
+    it('deve enviar a conta escolhida ao criar', async () => {
+      mockAccounts = [makeAccount(), nubank]
+      renderForm()
+      const user = userEvent.setup()
+
+      await user.selectOptions(screen.getByLabelText('Conta'), 'acc-2')
+      await user.type(screen.getByPlaceholderText('0,00'), '50')
+      await user.click(screen.getByText('Selecionar categoria'))
+      await user.click(screen.getByText('Moradia'))
+      await user.click(screen.getByRole('button', { name: 'Criar' }))
+
+      expect(mockMutate).toHaveBeenCalledWith(
+        { data: expect.objectContaining({ accountId: 'acc-2' }), attachment: undefined },
+        expect.any(Object),
+      )
+    })
+
+    it('deve mostrar a conta atual da transação ao editar', () => {
+      mockAccounts = [makeAccount(), nubank]
+      renderForm({ ...mockTransaction, accountId: 'acc-2', accountName: 'Nubank' })
+
+      expect(screen.getByLabelText('Conta')).toHaveValue('acc-2')
     })
   })
 })

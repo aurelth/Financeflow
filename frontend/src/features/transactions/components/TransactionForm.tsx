@@ -11,6 +11,8 @@ import {
 } from '../api/useTransactions'
 import { TransactionType } from '../../categories/types/category.types'
 import CategorySelect from './CategorySelect'
+import AccountSelect from '@/features/accounts/components/AccountSelect'
+import { useAccounts } from '@/features/accounts/api/useAccounts'
 import {
   TransactionStatus,
   RecurrenceType,
@@ -75,6 +77,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
         categoryId:     transaction.categoryId,
         subcategoryId:  transaction.subcategoryId,
         tags:           transaction.tags,
+        accountId:      transaction.accountId,
       }
       : defaultForm
   )
@@ -89,6 +92,12 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
 
   const { data: categories = [] }     = useCategories()
   const { data: goalCategories = [] } = useGoalCategories()
+  const { data: accounts = [] }       = useAccounts()
+
+  // Sem escolha explícita o back-end usa a conta principal; o select reflete isso
+  const defaultAccountId  = accounts.find(a => a.isDefault)?.id ?? ''
+  const selectedAccountId = form.accountId ?? defaultAccountId
+  const showAccountSelect = accounts.length > 1 || (!!transaction && !!transaction.accountId && accounts.every(a => a.id !== transaction.accountId))
 
   const createTransaction = useCreateTransaction()
   const updateTransaction = useUpdateTransaction(transaction?.id ?? '')
@@ -325,6 +334,20 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                 </select>
               </div>
             </div>
+
+            {/* Conta — só aparece quando o utilizador tem mais de uma conta */}
+            {showAccountSelect && (
+              <div>
+                <label htmlFor="transaction-account" style={labelStyle}>Conta</label>
+                <AccountSelect
+                  id="transaction-account"
+                  value={selectedAccountId}
+                  currentAccountId={transaction?.accountId}
+                  onChange={accountId => setForm(f => ({ ...f, accountId }))}
+                  style={{ ...inputStyle, fontSize: '14px' }}
+                />
+              </div>
+            )}
 
             {/* Categoria */}
             <div>

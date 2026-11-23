@@ -33,7 +33,7 @@ public class GetAnnualSummaryQueryHandlerTests
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(),
                 It.IsAny<TransactionType?>(), It.IsAny<TransactionStatus?>(),
                 It.IsAny<decimal?>(), It.IsAny<decimal?>(),
-                It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<string?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((transactions, transactions.Count()));
 
     [Fact]

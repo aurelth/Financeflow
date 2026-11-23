@@ -16,6 +16,7 @@ import {
   useWeeklyComparison,
 } from "../api/useDashboard";
 import { useBudgetSummary } from "@/features/budgets/api/useBudgets";
+import AccountSelect from "@/features/accounts/components/AccountSelect";
 import { useTransactions } from "@/features/transactions/api/useTransactions";
 import LineChartCard from "../components/LineChartCard";
 import PieChartCard from "../components/PieChartCard";
@@ -93,6 +94,9 @@ function SummaryCard({
 export default function DashboardPage() {
   const { t } = useTranslation("onboarding");
   const [period, setPeriod] = useState(getCurrentPeriod);
+  // Filtro opcional por conta ('' = todas). O orçamento continua global.
+  const [accountId, setAccountId] = useState("");
+  const dashboardQuery = { ...period, accountId: accountId || undefined };
   const { markAsSeen } = useOnboarding();
 
   const monthLabel = new Date(period.year, period.month - 1).toLocaleString(
@@ -110,13 +114,13 @@ export default function DashboardPage() {
     .toISOString()
     .split("T")[0];
 
-  const { data: summary, isLoading: l1 } = useDashboardSummary(period);
+  const { data: summary, isLoading: l1 } = useDashboardSummary(dashboardQuery);
   const { data: balanceEvolution = [], isLoading: l2 } =
-    useBalanceEvolution(period);
+    useBalanceEvolution(dashboardQuery);
   const { data: expensesByCategory = [], isLoading: l3 } =
-    useExpensesByCategory(period);
+    useExpensesByCategory(dashboardQuery);
   const { data: weeklyComparison = [], isLoading: l4 } =
-    useWeeklyComparison(period);
+    useWeeklyComparison(dashboardQuery);
   const { data: budgetSummaries = [], isLoading: l5 } =
     useBudgetSummary(period);
   const { data: transactionsData, isLoading: l6 } = useTransactions({
@@ -124,6 +128,7 @@ export default function DashboardPage() {
     pageSize: 5,
     dateFrom,
     dateTo,
+    accountId: accountId || undefined,
   });
 
   const isLoading = l1 || l2 || l3 || l4 || l5 || l6;
@@ -192,6 +197,16 @@ export default function DashboardPage() {
         <PdfExportButton
           defaultMonth={period.month}
           defaultYear={period.year}
+        />
+      </div>
+
+      {/* Filtro por conta — oculto quando só existe uma */}
+      <div className="max-w-xs">
+        <AccountSelect
+          value={accountId}
+          onChange={setAccountId}
+          emptyOption="all"
+          hideWhenSingle
         />
       </div>
 
