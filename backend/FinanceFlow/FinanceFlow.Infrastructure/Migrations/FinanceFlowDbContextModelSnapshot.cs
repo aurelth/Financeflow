@@ -22,10 +22,98 @@ namespace FinanceFlow.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.Account", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccountKeyHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("AccountLast4")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("BankId")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("BankName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(9)
+                        .HasColumnType("nvarchar(9)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)")
+                        .HasDefaultValue("BRL");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("InitialBalance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("InitialBalanceDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Accounts_UserId_Default")
+                        .HasFilter("[IsDefault] = 1 AND [DeletedAt] IS NULL");
+
+                    b.HasIndex("UserId", "BankId", "AccountKeyHash")
+                        .IsUnique()
+                        .HasFilter("[AccountKeyHash] IS NOT NULL AND [DeletedAt] IS NULL");
+
+                    b.ToTable("Accounts", (string)null);
+                });
+
             modelBuilder.Entity("FinanceFlow.Domain.Entities.BankImport", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AccountId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -67,6 +155,8 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("UserId");
 
@@ -458,6 +548,9 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
 
@@ -527,6 +620,8 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.HasIndex("SubcategoryId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("AccountId", "Date");
 
                     b.ToTable("Transactions", (string)null);
                 });
@@ -658,13 +753,32 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.ToTable("UserNotificationPreferences", (string)null);
                 });
 
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.Account", b =>
+                {
+                    b.HasOne("FinanceFlow.Domain.Entities.User", "User")
+                        .WithMany("Accounts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FinanceFlow.Domain.Entities.BankImport", b =>
                 {
+                    b.HasOne("FinanceFlow.Domain.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("FinanceFlow.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Account");
 
                     b.Navigation("User");
                 });
@@ -787,6 +901,12 @@ namespace FinanceFlow.Infrastructure.Migrations
 
             modelBuilder.Entity("FinanceFlow.Domain.Entities.Transaction", b =>
                 {
+                    b.HasOne("FinanceFlow.Domain.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("FinanceFlow.Domain.Entities.Category", "Category")
                         .WithMany("Transactions")
                         .HasForeignKey("CategoryId")
@@ -803,6 +923,8 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Account");
 
                     b.Navigation("Category");
 
@@ -843,6 +965,8 @@ namespace FinanceFlow.Infrastructure.Migrations
 
             modelBuilder.Entity("FinanceFlow.Domain.Entities.User", b =>
                 {
+                    b.Navigation("Accounts");
+
                     b.Navigation("Budgets");
 
                     b.Navigation("Categories");

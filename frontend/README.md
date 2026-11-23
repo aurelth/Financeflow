@@ -302,6 +302,10 @@ git push origin develop
 | v0.28.0 | Observabilidade (OpenTelemetry, Grafana, Prometheus) | ✅ Concluído |
 | v0.29.0 | CI/CD E2E | ✅ Concluído |
 | v0.30.0 | Mobile (React Native) | ✅ Concluído |
+| v0.31.0 | Contas (múltiplas contas, saldo por conta, conta no upload de OFX) | ✅ Concluído |
+| v0.32.0 | Deduplicação por conta e FITID | 🔜 Planejado |
+| v0.33.0 | Transferências entre contas (pareamento automático) | 🔜 Planejado |
+| v0.34.0 | Saldo e conciliação com o extrato | 🔜 Planejado |
 
 ---
 

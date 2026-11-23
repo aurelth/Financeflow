@@ -25,6 +25,7 @@ import ReportsPage from '@/features/reports/pages/ReportsPage'
 import AssistantPage from '@/features/assistant/pages/AssistantPage'
 import HealthScorePage from '@/features/healthscore/pages/HealthScorePage'
 import GoalsPage from '@/features/goals/pages/GoalsPage'
+import AccountsPage from '@/features/accounts/pages/AccountsPage'
 
 export default function AppRouter() {
   return (
@@ -46,6 +47,7 @@ export default function AppRouter() {
           <Route element={<AppLayout />}>
             <Route path="/dashboard"            element={<DashboardPage />} />
             <Route path="/transactions"         element={<TransactionsPage />} />
+            <Route path="/accounts"             element={<AccountsPage />} />
             <Route path="/categories"           element={<CategoriesPage />} />
             <Route path="/budgets"              element={<BudgetsPage />} />
             <Route path="/comparison"           element={<ComparisonPage />} />

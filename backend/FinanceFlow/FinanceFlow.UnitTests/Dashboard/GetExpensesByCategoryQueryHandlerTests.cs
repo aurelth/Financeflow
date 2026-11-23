@@ -50,7 +50,7 @@ public class GetExpensesByCategoryQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(),
-                null, null, TransactionType.Expense, null, null, null, null, default))
+                null, null, TransactionType.Expense, null, null, null, null, null, default))
             .ReturnsAsync((transactions, transactions.Count));
 
         var query = new GetExpensesByCategoryQuery(UserId, Month: 3, Year: 2026);
@@ -76,7 +76,7 @@ public class GetExpensesByCategoryQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(),
-                null, null, TransactionType.Expense, null, null, null, null, default))
+                null, null, TransactionType.Expense, null, null, null, null, null, default))
             .ReturnsAsync((new List<Transaction>(), 0));
 
         var query = new GetExpensesByCategoryQuery(UserId, Month: 3, Year: 2026);

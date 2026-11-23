@@ -6,5 +6,6 @@ namespace FinanceFlow.Application.UseCases.Dashboard.Queries.GetBalanceEvolution
 public record GetBalanceEvolutionQuery(
     Guid UserId,
     int Month,
-    int Year
+    int Year,
+    Guid? AccountId = null
 ) : IRequest<IEnumerable<BalanceEvolutionDto>>;

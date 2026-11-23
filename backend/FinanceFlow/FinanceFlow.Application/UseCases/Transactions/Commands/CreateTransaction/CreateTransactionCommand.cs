@@ -16,6 +16,8 @@ public record CreateTransactionCommand(
     Guid CategoryId,
     Guid? SubcategoryId,    
     string[] Tags,
+    // Conta (opcional: sem ela, usa a "Conta principal")
+    Guid? AccountId = null,
     // Anexo opcional
     string? AttachmentName = null,
     Stream? AttachmentStream = null,

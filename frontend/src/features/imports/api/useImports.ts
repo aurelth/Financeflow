@@ -40,13 +40,20 @@ export function useImportPreview(id: string | null) {
   })
 }
 
+export interface UploadOFXVariables {
+  file: File
+  accountId?: string
+}
+
 // POST /api/imports/ofx
 export function useUploadOFX() {
   const queryClient = useQueryClient()
-  return useMutation<BankImportDto, Error, File>({
-    mutationFn: async (file: File) => {
+  return useMutation<BankImportDto, Error, UploadOFXVariables>({
+    mutationFn: async ({ file, accountId }) => {
       const formData = new FormData()
       formData.append('file', file)
+      // Sem accountId o back-end reconhece a conta pelo OFX ou usa a conta principal
+      if (accountId) formData.append('accountId', accountId)
       const { data } = await axios.post(`${API_URL}/api/imports/ofx`, formData, {
         headers: {
           ...getAuthHeaders(),
@@ -57,6 +64,8 @@ export function useUploadOFX() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['imports'] })
+      // O backend pode ter vinculado a chave do banco à conta escolhida
+      queryClient.invalidateQueries({ queryKey: ['accounts'] })
     },
   })
 }
@@ -75,6 +84,9 @@ export function useConfirmImport(id: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['imports'] })
+      queryClient.invalidateQueries({ queryKey: ['accounts'] })
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
     },
   })
 }

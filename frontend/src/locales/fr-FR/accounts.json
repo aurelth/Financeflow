@@ -1,0 +1,77 @@
+{
+  "page": {
+    "title": "Comptes",
+    "subtitle": "Organisez votre argent par compte et suivez le solde de chacun",
+    "new": "Nouveau compte",
+    "showArchived": "Afficher les archivés",
+    "totalBalance": "Solde total",
+    "activeAccounts_one": "{{count}} compte actif",
+    "activeAccounts_other": "{{count}} comptes actifs"
+  },
+  "empty": {
+    "title": "Aucun compte trouvé",
+    "description": "Créez un compte pour séparer vos opérations par banque, portefeuille ou carte."
+  },
+  "card": {
+    "default": "Principal",
+    "archived": "Archivé",
+    "balance": "Solde actuel",
+    "recognized": "Reconnu dans les relevés OFX",
+    "notRecognized": "Sera reconnu lors du premier relevé OFX importé",
+    "last4": "se terminant par {{last4}}",
+    "edit": "Modifier",
+    "archive": "Archiver",
+    "restore": "Réactiver"
+  },
+  "types": {
+    "Checking": "Compte courant",
+    "Savings": "Épargne",
+    "CreditCard": "Carte de crédit",
+    "Cash": "Espèces",
+    "Investment": "Investissements"
+  },
+  "form": {
+    "createTitle": "Nouveau compte",
+    "editTitle": "Modifier le compte",
+    "name": "Nom",
+    "namePlaceholder": "Ex : BNP, Portefeuille, Épargne",
+    "type": "Type",
+    "bankName": "Banque (facultatif)",
+    "bankNamePlaceholder": "Ex : BNP",
+    "initialBalance": "Solde initial",
+    "initialBalanceDate": "Solde valable depuis",
+    "initialBalanceHint": "Les opérations antérieures à cette date ne sont pas comptées dans le solde.",
+    "color": "Couleur",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "cancel": "Annuler",
+    "nameRequired": "Indiquez le nom du compte.",
+    "close": "Fermer"
+  },
+  "archiveDialog": {
+    "title": "Archiver le compte",
+    "message": "Le compte « {{name}} » n'apparaîtra plus dans les listes, mais tout l'historique des opérations est conservé.",
+    "confirm": "Archiver",
+    "cancel": "Annuler"
+  },
+  "select": {
+    "label": "Compte",
+    "allAccounts": "Tous les comptes",
+    "chooseAccount": "Choisir un compte"
+  },
+  "import": {
+    "question": "De quel compte provient ce relevé ?",
+    "hint": "Si le fichier a déjà été reconnu, le bon compte est utilisé automatiquement.",
+    "auto": "Reconnaître automatiquement",
+    "recognized": "Compte reconnu à partir du fichier : {{name}}",
+    "learned": "Compte {{name}} lié à cette banque. Les prochains relevés seront reconnus automatiquement.",
+    "defaulted": "Aucun compte indiqué — nous avons utilisé {{name}}. Vous pouvez en choisir un autre avant d'importer.",
+    "account": "Compte : {{name}}"
+  },
+  "toast": {
+    "created": "Compte créé avec succès !",
+    "updated": "Compte mis à jour avec succès !",
+    "archived": "Compte archivé.",
+    "restored": "Compte réactivé."
+  }
+}

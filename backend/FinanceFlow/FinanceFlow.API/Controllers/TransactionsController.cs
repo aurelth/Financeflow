@@ -39,7 +39,8 @@ public class TransactionsController(
             Status: filters.Status,
             AmountMin: filters.AmountMin,
             AmountMax: filters.AmountMax,
-            Search: filters.Search);
+            Search: filters.Search,
+            AccountId: filters.AccountId);
 
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);
@@ -73,6 +74,7 @@ public class TransactionsController(
         [FromForm] string categoryId,
         [FromForm] string? subcategoryId,
         [FromForm] string[] tags,
+        [FromForm] string? accountId,
         IFormFile? attachment,
         CancellationToken cancellationToken)
     {
@@ -99,6 +101,7 @@ public class TransactionsController(
             CategoryId: Guid.Parse(categoryId),
             SubcategoryId: subcategoryId != null ? Guid.Parse(subcategoryId) : null,
             Tags: tags,
+            AccountId: string.IsNullOrWhiteSpace(accountId) ? null : Guid.Parse(accountId),
             AttachmentStream: attachmentStream,
             AttachmentFileName: attachmentFileName,
             AttachmentContentType: attachmentContentType);
@@ -134,7 +137,8 @@ public class TransactionsController(
             CategoryId: request.CategoryId,
             SubcategoryId: request.SubcategoryId,
             Tags: request.Tags,
-            PropagateToFuture: request.PropagateToFuture);
+            PropagateToFuture: request.PropagateToFuture,
+            AccountId: request.AccountId);
 
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
@@ -270,7 +274,8 @@ public class TransactionsController(
             Status: filters.Status,
             AmountMin: filters.AmountMin,
             AmountMax: filters.AmountMax,
-            Search: filters.Search);
+            Search: filters.Search,
+            AccountId: filters.AccountId);
 
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);

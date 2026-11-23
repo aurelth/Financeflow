@@ -1,11 +1,13 @@
 using System.Security.Cryptography;
 using System.Text;
+using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs.Imports;
 using FinanceFlow.Application.Events;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
+using FinanceFlow.Domain.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 
@@ -15,6 +17,8 @@ public class UploadOFXCommandHandler(
     IBankImportRepository bankImportRepository,
     IOFXParserService ofxParserService,
     ICategoryRepository categoryRepository,
+    IAccountRepository accountRepository,
+    IAccountKeyHasher accountKeyHasher,
     IEventPublisher eventPublisher,
     IConfiguration configuration)
     : IRequestHandler<UploadOFXCommand, BankImportDto>
@@ -38,6 +42,9 @@ public class UploadOFXCommandHandler(
         // Parsing do OFX
         var parseResult = ofxParserService.Parse(request.FileStream);
 
+        // Define a conta da importação (escolhida, reconhecida pelo OFX ou "Conta principal")
+        var (account, resolution) = await ResolveAccountAsync(request, parseResult, cancellationToken);
+
         // Busca categorias padrão para sugestão automática
         var defaultCategories = await categoryRepository.GetAllDefaultAsync(cancellationToken);
         var categoryList = defaultCategories.ToList();
@@ -46,6 +53,7 @@ public class UploadOFXCommandHandler(
         var bankImport = new BankImport
         {
             UserId = request.UserId,
+            AccountId = account.Id,
             FileName = request.FileName,
             Status = BankImportStatus.Pending,
             TotalRecords = parseResult.Transactions.Count(),
@@ -54,7 +62,6 @@ public class UploadOFXCommandHandler(
         // Mapeia as transações extraídas
         foreach (var t in parseResult.Transactions)
         {
-            Console.WriteLine($"FitId: {t.FitId} | Type: '{t.Type}' | Amount: {t.Amount}");
             var hash = ComputeHash(t.Date, t.Amount, t.Description, t.Type);
 
             // Usa o TRNTYPE do OFX para determinar o tipo, com fallback para o valor
@@ -101,7 +108,73 @@ public class UploadOFXCommandHandler(
             Duplicates: 0,
             Errors: 0,
             ErrorMessage: null,
-            CreatedAt: bankImport.CreatedAt);
+            CreatedAt: bankImport.CreatedAt,
+            AccountId: account.Id,
+            AccountName: account.Name,
+            AccountResolution: resolution);
+    }
+
+    // Prioridade: conta escolhida pelo usuário > conta reconhecida pelo OFX > "Conta principal"
+    private async Task<(Account Account, string Resolution)> ResolveAccountAsync(
+        UploadOFXCommand request,
+        OFXParseResult parseResult,
+        CancellationToken cancellationToken)
+    {
+        var bankId = string.IsNullOrWhiteSpace(parseResult.BankId) ? null : parseResult.BankId.Trim();
+        var hasKey = !string.IsNullOrWhiteSpace(parseResult.AccountId);
+        var key = hasKey
+            ? accountKeyHasher.ComputeKey(request.UserId, bankId, parseResult.AccountId)
+            : null;
+
+        if (request.AccountId.HasValue)
+        {
+            var chosen = await accountRepository.GetByIdAsync(
+                request.AccountId.Value, request.UserId, cancellationToken)
+                ?? throw new NotFoundException(nameof(Account), request.AccountId.Value);
+
+            if (chosen.IsArchived)
+                throw new ValidationException("Não é possível importar para uma conta arquivada.");
+
+            if (key is null)
+                return (chosen, AccountResolutions.Provided);
+
+            var owner = await accountRepository.GetByKeyAsync(
+                request.UserId, bankId, key, cancellationToken);
+
+            // O arquivo já pertence a outra conta do usuário: evita importar na conta errada
+            if (owner is not null && owner.Id != chosen.Id)
+                throw new ValidationException(
+                    $"Este arquivo pertence à conta \"{owner.Name}\". Selecione essa conta para importar.");
+
+            if (string.IsNullOrEmpty(chosen.AccountKeyHash))
+            {
+                chosen.AccountKeyHash = key;
+                chosen.BankId ??= bankId;
+                chosen.AccountLast4 = accountKeyHasher.Last4(parseResult.AccountId);
+                await accountRepository.UpdateAsync(chosen, cancellationToken);
+                return (chosen, AccountResolutions.Learned);
+            }
+
+            return (chosen, AccountResolutions.Provided);
+        }
+
+        if (key is not null)
+        {
+            var recognized = await accountRepository.GetByKeyAsync(
+                request.UserId, bankId, key, cancellationToken);
+
+            if (recognized is not null)
+            {
+                if (recognized.IsArchived)
+                    throw new ValidationException(
+                        $"A conta \"{recognized.Name}\" está arquivada. Reative-a para importar este arquivo.");
+
+                return (recognized, AccountResolutions.Recognized);
+            }
+        }
+
+        var fallback = await accountRepository.GetOrCreateDefaultAsync(request.UserId, cancellationToken);
+        return (fallback, AccountResolutions.Defaulted);
     }
 
     private static string ComputeHash(DateTime date, decimal amount, string description, string type)

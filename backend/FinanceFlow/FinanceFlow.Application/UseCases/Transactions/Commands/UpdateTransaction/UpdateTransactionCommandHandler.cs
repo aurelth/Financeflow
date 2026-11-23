@@ -12,6 +12,7 @@ namespace FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransacti
 public class UpdateTransactionCommandHandler(
     ITransactionRepository transactionRepository,
     ICategoryRepository categoryRepository,
+    IAccountRepository accountRepository,
     ICacheService cache,
     IMapper mapper)
     : IRequestHandler<UpdateTransactionCommand, TransactionDto>
@@ -31,6 +32,19 @@ public class UpdateTransactionCommandHandler(
         if (category.Type != request.Type)
             throw new ValidationException(
                 "O tipo da transação não coincide com o tipo da categoria.");
+
+        // Troca de conta (opcional): a conta precisa ser do usuário e não estar arquivada
+        if (request.AccountId.HasValue && request.AccountId.Value != transaction.AccountId)
+        {
+            var account = await accountRepository.GetByIdAsync(
+                request.AccountId.Value, request.UserId, cancellationToken)
+                ?? throw new NotFoundException(nameof(Account), request.AccountId.Value);
+
+            if (account.IsArchived)
+                throw new ValidationException("Não é possível mover a transação para uma conta arquivada.");
+
+            transaction.AccountId = account.Id;
+        }
 
         // Verifica se Amount, Description, CategoryId ou SubcategoryId foram alterados
         var amountAlterado = transaction.Amount != request.Amount;
@@ -58,6 +72,7 @@ public class UpdateTransactionCommandHandler(
         transaction.Tags = JsonSerializer.Serialize(request.Tags);
         transaction.Category = null!;
         transaction.Subcategory = null;
+        transaction.Account = null!;
 
         if (request.AttachmentPath != null)
             transaction.AttachmentPath = request.AttachmentPath;

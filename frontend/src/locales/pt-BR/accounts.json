@@ -1,0 +1,77 @@
+{
+  "page": {
+    "title": "Contas",
+    "subtitle": "Organize seu dinheiro por conta e acompanhe o saldo de cada uma",
+    "new": "Nova conta",
+    "showArchived": "Mostrar arquivadas",
+    "totalBalance": "Saldo total",
+    "activeAccounts_one": "{{count}} conta ativa",
+    "activeAccounts_other": "{{count}} contas ativas"
+  },
+  "empty": {
+    "title": "Nenhuma conta encontrada",
+    "description": "Crie uma conta para separar seus lançamentos por banco, carteira ou cartão."
+  },
+  "card": {
+    "default": "Principal",
+    "archived": "Arquivada",
+    "balance": "Saldo atual",
+    "recognized": "Reconhecida nos extratos OFX",
+    "notRecognized": "Será reconhecida no primeiro extrato OFX importado",
+    "last4": "final {{last4}}",
+    "edit": "Editar",
+    "archive": "Arquivar",
+    "restore": "Reativar"
+  },
+  "types": {
+    "Checking": "Conta corrente",
+    "Savings": "Poupança",
+    "CreditCard": "Cartão de crédito",
+    "Cash": "Dinheiro",
+    "Investment": "Investimentos"
+  },
+  "form": {
+    "createTitle": "Nova conta",
+    "editTitle": "Editar conta",
+    "name": "Nome",
+    "namePlaceholder": "Ex: Nubank, Itaú, Carteira",
+    "type": "Tipo",
+    "bankName": "Banco (opcional)",
+    "bankNamePlaceholder": "Ex: Nubank",
+    "initialBalance": "Saldo inicial",
+    "initialBalanceDate": "Saldo válido desde",
+    "initialBalanceHint": "Lançamentos anteriores a esta data não entram no saldo.",
+    "color": "Cor",
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "cancel": "Cancelar",
+    "nameRequired": "Informe o nome da conta.",
+    "close": "Fechar"
+  },
+  "archiveDialog": {
+    "title": "Arquivar conta",
+    "message": "A conta \"{{name}}\" deixará de aparecer nas listas, mas todo o histórico de lançamentos será mantido.",
+    "confirm": "Arquivar",
+    "cancel": "Cancelar"
+  },
+  "select": {
+    "label": "Conta",
+    "allAccounts": "Todas as contas",
+    "chooseAccount": "Escolher conta"
+  },
+  "import": {
+    "question": "Qual conta é este extrato?",
+    "hint": "Se o arquivo já foi reconhecido antes, a conta certa é usada automaticamente.",
+    "auto": "Reconhecer automaticamente",
+    "recognized": "Conta reconhecida pelo arquivo: {{name}}",
+    "learned": "Conta {{name}} vinculada a este banco. Os próximos extratos serão reconhecidos sozinhos.",
+    "defaulted": "Nenhuma conta informada — usamos {{name}}. Você pode escolher outra antes de importar.",
+    "account": "Conta: {{name}}"
+  },
+  "toast": {
+    "created": "Conta criada com sucesso!",
+    "updated": "Conta atualizada com sucesso!",
+    "archived": "Conta arquivada.",
+    "restored": "Conta reativada."
+  }
+}

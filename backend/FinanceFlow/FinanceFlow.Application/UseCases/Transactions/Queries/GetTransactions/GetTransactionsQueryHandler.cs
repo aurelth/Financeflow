@@ -27,6 +27,7 @@ public class GetTransactionsQueryHandler(
             amountMin: request.AmountMin,
             amountMax: request.AmountMax,
             search: request.Search,
+            accountId: request.AccountId,
             cancellationToken: cancellationToken);
 
         var dtos = mapper.Map<IEnumerable<TransactionDto>>(items);

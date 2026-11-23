@@ -47,6 +47,8 @@ public static class DependencyInjection
         services.AddScoped<INotificationPreferencesRepository, NotificationPreferencesRepository>();
         services.AddScoped<IBankImportRepository, BankImportRepository>();
         services.AddScoped<IGoalRepository, GoalRepository>();
+        services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddSingleton<IAccountKeyHasher, AccountKeyHasher>();
 
         // Caching
         services.AddScoped<ICacheService, RedisCacheService>();

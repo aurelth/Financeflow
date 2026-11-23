@@ -5,6 +5,7 @@ import OFXUploadZone from '../components/OFXUploadZone'
 import type { BankImportDto, BankImportStatus } from '../types/imports.types'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 function StatusBadge({ status }: { status: BankImportStatus }) {
   const map: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
@@ -65,7 +66,7 @@ function ImportHistoryRow({ item, onPreview, onDelete, isDeleting }: ImportHisto
             {item.fileName}
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
-            {date} · {item.totalRecords} transações
+            {date} · {item.totalRecords} transações{item.accountName ? ` · ${item.accountName}` : ''}
           </p>
         </div>
       </div>
@@ -123,18 +124,27 @@ function ImportHistoryRow({ item, onPreview, onDelete, isDeleting }: ImportHisto
 
 export default function ImportsPage() {
   const navigate                                    = useNavigate()
+  const { t }                                       = useTranslation('accounts')
   const { data: imports = [], isLoading, refetch } = useImports()
   const { mutate: upload, isPending }              = useUploadOFX()
   const { mutate: deleteImport, isPending: isDeleting } = useDeleteImport()
   const [uploading, setUploading]                  = useState(false)
   const [deletingId, setDeletingId]                = useState<string | null>(null)
 
-  function handleFileSelect(file: File) {
+  function handleFileSelect(file: File, accountId?: string) {
     setUploading(true)
-    upload(file, {
+    upload({ file, accountId }, {
       onSuccess: (result) => {
         setUploading(false)
         toast.success('Arquivo enviado! Processando...')
+        const name = result.accountName ?? ''
+        // Informa como a conta foi decidida, para o utilizador poder corrigir antes de confirmar
+        if (result.accountResolution === 'Recognized')
+          toast.info(t('import.recognized', { name }))
+        else if (result.accountResolution === 'Learned')
+          toast.info(t('import.learned', { name }))
+        else if (result.accountResolution === 'Defaulted')
+          toast.info(t('import.defaulted', { name }))
         navigate(`/imports/${result.id}/preview`)
       },
       onError: () => {

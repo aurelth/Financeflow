@@ -22,5 +22,7 @@ public record TransactionDto(
     Guid? SubcategoryId,
     string? SubcategoryName,
     DateTime CreatedAt,
-    DateTime? UpdatedAt
+    DateTime? UpdatedAt,
+    Guid AccountId = default,
+    string? AccountName = null
 );

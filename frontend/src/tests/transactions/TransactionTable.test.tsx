@@ -20,6 +20,8 @@ const mockTransactions = [
     attachmentPath: null,
     attachmentName: null,
     tags: ['alimentação'],
+    accountId: 'acc-1',
+    accountName: 'Conta principal',
     categoryId: 'cat-1',
     categoryName: 'Alimentação',
     categoryIcon: '🍔',
@@ -42,6 +44,8 @@ const mockTransactions = [
     attachmentPath: 'attachments/user/file.pdf',
     attachmentName: null,
     tags: [],
+    accountId: 'acc-1',
+    accountName: 'Conta principal',
     categoryId: 'cat-2',
     categoryName: 'Trabalho',
     categoryIcon: '💼',
@@ -53,7 +57,7 @@ const mockTransactions = [
   },
 ]
 
-const renderTable = (onEdit = vi.fn(), onDelete = vi.fn()) => {
+const renderTable = (onEdit = vi.fn(), onDelete = vi.fn(), showAccount = false) => {
   const qc = new QueryClient()
   return render(
     <QueryClientProvider client={qc}>
@@ -61,12 +65,23 @@ const renderTable = (onEdit = vi.fn(), onDelete = vi.fn()) => {
         transactions={mockTransactions}
         onEdit={onEdit}
         onDelete={onDelete}
+        showAccount={showAccount}
       />
     </QueryClientProvider>
   )
 }
 
 describe('TransactionTable', () => {
+  it('não deve mostrar o nome da conta por padrão', () => {
+    renderTable()
+    expect(screen.queryByText('Conta principal')).not.toBeInTheDocument()
+  })
+
+  it('deve mostrar o nome da conta de cada lançamento quando showAccount está ligado', () => {
+    renderTable(vi.fn(), vi.fn(), true)
+    expect(screen.getAllByText('Conta principal')).toHaveLength(mockTransactions.length)
+  })
+
   it('deve renderizar as transações', () => {
     renderTable()
     expect(screen.getByText('Mercado')).toBeInTheDocument()

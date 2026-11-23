@@ -23,6 +23,7 @@ public class BankImportRepository(FinanceFlowDbContext context) : IBankImportRep
         Guid userId,
         CancellationToken cancellationToken = default) =>
         await context.BankImports
+            .Include(b => b.Account)
             .Where(b => b.UserId == userId)
             .OrderByDescending(b => b.CreatedAt)
             .AsNoTracking()

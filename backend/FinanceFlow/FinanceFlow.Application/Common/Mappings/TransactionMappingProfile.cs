@@ -20,6 +20,9 @@ public class TransactionMappingProfile : Profile
             .ForCtorParam(nameof(TransactionDto.SubcategoryName),
                 opt => opt.MapFrom(src =>
                     src.Subcategory != null ? src.Subcategory.Name : null))
+            .ForCtorParam(nameof(TransactionDto.AccountName),
+                opt => opt.MapFrom(src =>
+                    src.Account != null ? src.Account.Name : null))
             .ForCtorParam(nameof(TransactionDto.Tags),
                 opt => opt.MapFrom(src =>
                     JsonSerializer.Deserialize<string[]>(

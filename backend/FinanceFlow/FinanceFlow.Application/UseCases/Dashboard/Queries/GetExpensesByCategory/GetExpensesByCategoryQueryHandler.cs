@@ -19,7 +19,7 @@ public class GetExpensesByCategoryQueryHandler(
     {
         var cacheKey = $"dashboard:expenses-by-category:{request.UserId}:{request.Year}:{request.Month}";
 
-        return await cache.GetOrSetAsync(cacheKey, async () =>
+        async Task<IEnumerable<ExpensesByCategoryDto>> ComputeAsync()
         {
             var dateFrom = new DateTime(request.Year, request.Month, 1);
             var dateTo = dateFrom.AddMonths(1).AddDays(-1);
@@ -37,6 +37,7 @@ public class GetExpensesByCategoryQueryHandler(
                 amountMin: null,
                 amountMax: null,
                 search: null,
+                accountId: request.AccountId,
                 cancellationToken: cancellationToken);
 
             var expenses = transactions.Where(t => t.Status != TransactionStatus.Scheduled).ToList();
@@ -63,6 +64,11 @@ public class GetExpensesByCategoryQueryHandler(
                 })
                 .OrderByDescending(x => x.Total);
 
-        }, CacheTtl, cancellationToken);
+        }
+
+        // Visões filtradas por conta não usam cache: a invalidação é por chave exata (usuário/mês)
+        return request.AccountId.HasValue
+            ? await ComputeAsync()
+            : await cache.GetOrSetAsync(cacheKey, ComputeAsync, CacheTtl, cancellationToken);
     }
 }

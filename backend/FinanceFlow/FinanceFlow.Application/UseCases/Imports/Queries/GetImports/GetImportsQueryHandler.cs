@@ -24,6 +24,8 @@ public class GetImportsQueryHandler(
             Duplicates: b.Duplicates,
             Errors: b.Errors,
             ErrorMessage: b.ErrorMessage,
-            CreatedAt: b.CreatedAt));
+            CreatedAt: b.CreatedAt,
+            AccountId: b.AccountId,
+            AccountName: b.Account?.Name));
     }
 }

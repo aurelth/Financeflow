@@ -23,6 +23,11 @@ public class BankImportConfiguration : IEntityTypeConfiguration<BankImport>
         builder.Property(b => b.ErrorMessage)
                .HasMaxLength(1000);
 
+        builder.HasOne(b => b.Account)
+               .WithMany()
+               .HasForeignKey(b => b.AccountId)
+               .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne(b => b.User)
                .WithMany()
                .HasForeignKey(b => b.UserId)

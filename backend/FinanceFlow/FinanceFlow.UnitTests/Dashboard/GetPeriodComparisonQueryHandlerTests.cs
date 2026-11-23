@@ -68,14 +68,14 @@ public class GetPeriodComparisonQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.Is<DateTime>(d => d.Month == 1), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((jan, jan.Count));
 
         _transactionRepository
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.Is<DateTime>(d => d.Month == 2), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((fev, fev.Count));
 
         var query = new GetPeriodComparisonQuery(UserId, new[]
@@ -119,14 +119,14 @@ public class GetPeriodComparisonQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.Is<DateTime>(d => d.Month == 1), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((jan, jan.Count));
 
         _transactionRepository
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.Is<DateTime>(d => d.Month == 2), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((fev, fev.Count));
 
         var query = new GetPeriodComparisonQuery(UserId, new[]
@@ -154,7 +154,7 @@ public class GetPeriodComparisonQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((new List<Transaction>(), 0));
 
         var query = new GetPeriodComparisonQuery(UserId, new[]
@@ -180,7 +180,7 @@ public class GetPeriodComparisonQueryHandlerTests
             .Setup(r => r.GetPagedByUserAsync(
                 UserId, 1, int.MaxValue,
                 It.IsAny<DateTime>(), It.IsAny<DateTime>(),
-                null, null, null, null, null, null, null, default))
+                null, null, null, null, null, null, null, null, default))
             .ReturnsAsync((new List<Transaction>(), 0));
 
         var query = new GetPeriodComparisonQuery(UserId, new[]

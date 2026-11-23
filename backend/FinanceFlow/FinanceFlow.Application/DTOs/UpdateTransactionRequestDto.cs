@@ -13,5 +13,6 @@ public record UpdateTransactionRequestDto(
     Guid CategoryId,
     Guid? SubcategoryId,
     string[] Tags,
-    bool PropagateToFuture = false
+    bool PropagateToFuture = false,
+    Guid? AccountId = null
 );

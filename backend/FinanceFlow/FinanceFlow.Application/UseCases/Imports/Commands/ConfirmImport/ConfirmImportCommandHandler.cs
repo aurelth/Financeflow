@@ -72,6 +72,7 @@ public class ConfirmImportCommandHandler(
                 var transaction = new Transaction
                 {
                     UserId = request.UserId,
+                    AccountId = bankImport.AccountId,
                     Amount = importTransaction.Amount,
                     Type = transactionType,
                     Date = importTransaction.Date,

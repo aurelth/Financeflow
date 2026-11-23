@@ -127,6 +127,7 @@ public static class DbSeeder
             Timezone = "America/Sao_Paulo",
             Role = UserRole.Admin,
             CreatedAt = DateTime.UtcNow,
+            Accounts = [Account.CreateDefault(Guid.Empty, "BRL")],
             NotificationPreferences = new UserNotificationPreferences
             {
                 BudgetWarningEnabled = true,

@@ -31,6 +31,8 @@ export interface Transaction {
   attachmentPath: string | null
   attachmentName:  string | null
   tags:           string[]
+  accountId:      string
+  accountName:    string | null
   categoryId:     string
   categoryName:   string
   categoryIcon:   string
@@ -64,6 +66,7 @@ export interface CreateTransactionRequest {
   categoryId:     string
   subcategoryId:  string | null
   tags:           string[]
+  accountId?:     string
 }
 
 export interface UpdateTransactionRequest {
@@ -77,6 +80,7 @@ export interface UpdateTransactionRequest {
   categoryId:     string
   subcategoryId:  string | null
   tags:           string[]
+  accountId?:     string
   propagateToFuture: boolean
 }
 
@@ -87,6 +91,7 @@ export interface GetTransactionsQuery {
   dateTo?:        string
   categoryId?:    string
   subcategoryId?: string
+  accountId?:     string
   type?:          TransactionType
   status?:        TransactionStatus
   amountMin?:     number

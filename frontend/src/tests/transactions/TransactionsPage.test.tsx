@@ -16,6 +16,10 @@ vi.mock('@/features/transactions/api/useTransactions', () => ({
   useRemoveAttachment:  () => ({ mutate: vi.fn(), isPending: false }),
 }))
 
+vi.mock('@/features/accounts/api/useAccounts', () => ({
+  useAccounts: () => ({ data: [] }),
+}))
+
 vi.mock('@/features/categories/api/useCategories', () => ({
   useCategories: () => ({ data: mockCategories, isLoading: false }),
   useGoalCategories: () => ({ data: [], isLoading: false }),

@@ -17,6 +17,7 @@ public interface ITransactionRepository
         decimal? amountMin,
         decimal? amountMax,
         string? search,
+        Guid? accountId,
         CancellationToken cancellationToken = default);
 
     Task<Transaction?> GetByIdAsync(

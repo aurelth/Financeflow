@@ -6,6 +6,8 @@ public class BankImport : BaseEntity
 {
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
+    public Guid AccountId { get; set; }
+    public Account Account { get; set; } = null!;
     public string FileName { get; set; } = string.Empty;
     public BankImportStatus Status { get; set; } = BankImportStatus.Pending;
     public int TotalRecords { get; set; } = 0;

@@ -25,6 +25,8 @@ const mockTransaction: Transaction = {
   attachmentPath:    null,
   attachmentName:    null,
   tags:              [],
+  accountId: 'acc-1',
+  accountName: 'Conta principal',
   categoryId:        'cat-1',
   categoryName:      'Alimentação',
   categoryIcon:      '🍔',
