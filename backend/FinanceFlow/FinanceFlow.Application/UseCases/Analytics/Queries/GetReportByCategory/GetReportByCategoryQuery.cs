@@ -8,5 +8,6 @@ public record GetReportByCategoryQuery(
     Guid UserId,
     DateTime From,
     DateTime To,
-    TransactionType? Type
+    TransactionType? Type,
+    Guid? AccountId = null
 ) : IRequest<ReportByCategoryDto>;

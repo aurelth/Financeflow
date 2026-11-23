@@ -21,14 +21,14 @@ public class GetPeriodComparisonQueryHandler(
         var periodsKey = string.Join("_", periods.Select(p => $"{p.Year}-{p.Month:00}"));
         var cacheKey = $"dashboard:period-comparison:{request.UserId}:{periodsKey}";
 
-        return await cache.GetOrSetAsync(cacheKey, async () =>
+        async Task<PeriodComparisonDto> ComputeAsync()
         {
             // Execução sequencial para evitar conflito no DbContext
             var results = new List<PeriodResult>();
             foreach (var p in periods)
             {
                 var result = await FetchPeriodDataAsync(
-                    request.UserId, p.Month, p.Year, cancellationToken);
+                    request.UserId, p.Month, p.Year, request.AccountId, cancellationToken);
                 results.Add(result);
             }
 
@@ -82,13 +82,19 @@ public class GetPeriodComparisonQueryHandler(
                 Periods: periodDtos,
                 CategoryComparisons: categoryComparisons);
 
-        }, CacheTtl, cancellationToken);
+        }
+
+        // Visões filtradas por conta não usam cache: a invalidação é por chave exata (sem conta)
+        return request.AccountId.HasValue
+            ? await ComputeAsync()
+            : await cache.GetOrSetAsync(cacheKey, ComputeAsync, CacheTtl, cancellationToken);
     }
 
     private async Task<PeriodResult> FetchPeriodDataAsync(
     Guid userId,
     int month,
     int year,
+    Guid? accountId,
     CancellationToken cancellationToken)
     {
         var dateFrom = new DateTime(year, month, 1);
@@ -107,7 +113,7 @@ public class GetPeriodComparisonQueryHandler(
             amountMin: null,
             amountMax: null,
             search: null,
-            accountId: null,
+            accountId: accountId,
             cancellationToken: cancellationToken);
 
         var filtered = transactions

@@ -22,7 +22,8 @@ public class OFXParserService : IOFXParserService
 
         var transactions = document.Transactions?
             .Select(t => new OFXTransaction(
-                FitId: t.TransactionID ?? Guid.NewGuid().ToString(),
+                // Sem FITID o valor fica vazio: um Guid aleatório faria o mesmo lançamento parecer novo a cada importação
+                FitId: (t.TransactionID ?? string.Empty).Trim(),
                 Date: t.Date,
                 Amount: t.Amount,
                 Description: t.Memo ?? t.Name ?? string.Empty,

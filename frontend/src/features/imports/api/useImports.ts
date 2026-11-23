@@ -37,6 +37,31 @@ export function useImportPreview(id: string | null) {
       return data
     },
     enabled: !!id,
+    // O Worker processa o arquivo (detecção de duplicatas) logo após o upload
+    refetchInterval: (query) => {
+      const status = query.state.data?.status
+      return status === 'Pending' || status === 'Processing' ? 2000 : false
+    },
+  })
+}
+
+// PUT /api/imports/{id}/account — troca a conta e refaz a detecção de duplicatas
+export function useChangeImportAccount(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation<BankImportDto, Error, string>({
+    mutationFn: async (accountId) => {
+      const { data } = await axios.put(
+        `${API_URL}/api/imports/${id}/account`,
+        { accountId },
+        { headers: getAuthHeaders() }
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['imports'] })
+      // A conta pode ter passado a reconhecer o arquivo (chave do banco aprendida)
+      queryClient.invalidateQueries({ queryKey: ['accounts'] })
+    },
   })
 }
 

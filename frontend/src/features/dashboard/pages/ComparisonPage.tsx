@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { GitCompare, Loader2 } from 'lucide-react'
 import { usePeriodComparison } from '../api/useDashboard'
+import AccountSelect from '@/features/accounts/components/AccountSelect'
 import PeriodSelector from '../components/PeriodSelector'
 import PeriodSummaryCards from '../components/PeriodSummaryCards'
 import ComparisonBarChart from '../components/ComparisonBarChart'
@@ -23,13 +24,15 @@ function getCurrentAndPrevious(): Period[] {
 
 export default function ComparisonPage() {
   const [periods, setPeriods] = useState<Period[]>(getCurrentAndPrevious)
+  // '' = todas as contas
+  const [accountId, setAccountId] = useState('')
 
   const periodsQuery = periods.map(p =>
     `${p.year}-${String(p.month).padStart(2, '0')}`
   )
 
   const { data, isLoading } = usePeriodComparison(
-    { periods: periodsQuery },
+    { periods: periodsQuery, accountId: accountId || undefined },
     periods.length > 0
   )
 
@@ -44,6 +47,16 @@ export default function ComparisonPage() {
         <p className="text-sm mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
           Compare até 3 períodos e analise a evolução das suas finanças
         </p>
+      </div>
+
+      {/* Filtro por conta — oculto quando só existe uma */}
+      <div className="max-w-xs">
+        <AccountSelect
+          value={accountId}
+          onChange={setAccountId}
+          emptyOption="all"
+          hideWhenSingle
+        />
       </div>
 
       {/* Seletor de períodos */}

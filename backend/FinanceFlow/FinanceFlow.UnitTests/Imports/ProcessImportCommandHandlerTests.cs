@@ -1,3 +1,4 @@
+using FinanceFlow.Application.Services;
 using FinanceFlow.Application.UseCases.Imports.Commands.ProcessImport;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Enums;
@@ -10,95 +11,81 @@ namespace FinanceFlow.UnitTests.Imports;
 public class ProcessImportCommandHandlerTests
 {
     private readonly Mock<IBankImportRepository> _bankImportRepository = new();
+    private readonly Mock<IImportDeduplicationService> _deduplicationService = new();
 
     private ProcessImportCommandHandler CreateHandler() =>
-        new(_bankImportRepository.Object);
+        new(_bankImportRepository.Object, _deduplicationService.Object);
 
     [Fact]
-    public async Task Handle_DeveMarcarDuplicatas_QuandoHashJaExiste()
+    public async Task Handle_DeveGravarQuantidadeDeDuplicatas_EConcluirImportacao()
     {
         // Arrange
         var userId = Guid.NewGuid();
         var importId = Guid.NewGuid();
-
-        var transaction = new BankImportTransaction
-        {
-            Id = Guid.NewGuid(),
-            Hash = "abc123",
-            Type = TransactionType.Expense,
-        };
 
         var bankImport = new BankImport
         {
             Id = importId,
             UserId = userId,
             Status = BankImportStatus.Pending,
-            Transactions = [transaction],
+            Transactions = [new BankImportTransaction { Id = Guid.NewGuid(), Hash = "abc123" }],
         };
 
         _bankImportRepository
             .Setup(r => r.GetByIdAsync(importId, userId, default))
             .ReturnsAsync(bankImport);
 
-        _bankImportRepository
-            .Setup(r => r.HashExistsAsync(userId, "abc123", default))
-            .ReturnsAsync(true);
-
-        var command = new ProcessImportCommand(importId, userId);
+        _deduplicationService
+            .Setup(s => s.DetectAsync(bankImport, default))
+            .ReturnsAsync(1);
 
         // Act
-        await CreateHandler().Handle(command, default);
+        await CreateHandler().Handle(new ProcessImportCommand(importId, userId), default);
 
         // Assert
-        transaction.IsDuplicate.Should().BeTrue();
-        transaction.IsSelected.Should().BeFalse();
         bankImport.Duplicates.Should().Be(1);
         bankImport.Status.Should().Be(BankImportStatus.Completed);
-
-        _bankImportRepository.Verify(r =>
-            r.UpdateAsync(bankImport, default), Times.AtLeastOnce);
+        _bankImportRepository.Verify(r => r.UpdateAsync(bankImport, default), Times.AtLeastOnce);
     }
 
+    // As duplicatas permanecem no staging para o usuário revisar ("importar mesmo assim")
     [Fact]
-    public async Task Handle_NaoDeveMarcarDuplicata_QuandoHashNaoExiste()
+    public async Task Handle_NaoDeveRemoverLinhasDuplicadasDoStaging()
     {
         // Arrange
         var userId = Guid.NewGuid();
         var importId = Guid.NewGuid();
 
-        var transaction = new BankImportTransaction
-        {
-            Id = Guid.NewGuid(),
-            Hash = "novo123",
-            Type = TransactionType.Expense,
-        };
+        var duplicada = new BankImportTransaction { Id = Guid.NewGuid(), Hash = "dup" };
+        var nova = new BankImportTransaction { Id = Guid.NewGuid(), Hash = "nova" };
 
         var bankImport = new BankImport
         {
             Id = importId,
             UserId = userId,
             Status = BankImportStatus.Pending,
-            Transactions = [transaction],
+            Transactions = [duplicada, nova],
         };
 
         _bankImportRepository
             .Setup(r => r.GetByIdAsync(importId, userId, default))
             .ReturnsAsync(bankImport);
 
-        _bankImportRepository
-            .Setup(r => r.HashExistsAsync(userId, "novo123", default))
-            .ReturnsAsync(false);
-
-        var command = new ProcessImportCommand(importId, userId);
+        _deduplicationService
+            .Setup(s => s.DetectAsync(bankImport, default))
+            .Callback<BankImport, CancellationToken>((_, _) =>
+            {
+                duplicada.IsDuplicate = true;
+                duplicada.IsSelected = false;
+            })
+            .ReturnsAsync(1);
 
         // Act
-        await CreateHandler().Handle(command, default);
+        await CreateHandler().Handle(new ProcessImportCommand(importId, userId), default);
 
         // Assert
-        transaction.IsDuplicate.Should().BeFalse();
-        transaction.IsSelected.Should().BeTrue();
-        bankImport.Duplicates.Should().Be(0);
-        bankImport.Status.Should().Be(BankImportStatus.Completed);
+        bankImport.Transactions.Should().HaveCount(2);
+        bankImport.Transactions.Should().Contain(duplicada);
     }
 
     [Fact]
@@ -112,13 +99,13 @@ public class ProcessImportCommandHandlerTests
             .Setup(r => r.GetByIdAsync(importId, userId, default))
             .ReturnsAsync((BankImport?)null);
 
-        var command = new ProcessImportCommand(importId, userId);
-
         // Act
-        await CreateHandler().Handle(command, default);
+        await CreateHandler().Handle(new ProcessImportCommand(importId, userId), default);
 
         // Assert
         _bankImportRepository.Verify(r =>
             r.UpdateAsync(It.IsAny<BankImport>(), default), Times.Never);
+        _deduplicationService.Verify(s =>
+            s.DetectAsync(It.IsAny<BankImport>(), default), Times.Never);
     }
 }

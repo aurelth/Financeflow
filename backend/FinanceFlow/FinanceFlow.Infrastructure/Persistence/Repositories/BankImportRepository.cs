@@ -1,5 +1,6 @@
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
+using FinanceFlow.Domain.ValueObjects;
 using FinanceFlow.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ public class BankImportRepository(FinanceFlowDbContext context) : IBankImportRep
         Guid userId,
         CancellationToken cancellationToken = default) =>
         await context.BankImports
+            .Include(b => b.Account)
             .Include(b => b.Transactions)
                 .ThenInclude(t => t.SuggestedCategory)
             .FirstOrDefaultAsync(b =>
@@ -45,17 +47,68 @@ public class BankImportRepository(FinanceFlowDbContext context) : IBankImportRep
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> HashExistsAsync(
+    public async Task<IReadOnlyList<ImportedTransactionKey>> GetImportedKeysAsync(
         Guid userId,
-        string hash,
+        Guid accountId,
+        IReadOnlyCollection<string> hashes,
+        IReadOnlyCollection<string> externalIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (hashes.Count == 0 && externalIds.Count == 0)
+            return [];
+
+        var hashList = hashes.ToList();
+        var idList = externalIds.ToList();
+
+        return await context.Transactions
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(t =>
+                t.UserId == userId &&
+                t.AccountId == accountId &&
+                t.DeletedAt == null &&
+                ((t.ImportHash != null && hashList.Contains(t.ImportHash)) ||
+                 (t.ExternalId != null && idList.Contains(t.ExternalId))))
+            .Select(t => new ImportedTransactionKey(t.Id, t.ImportHash, t.ExternalId, t.Amount))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Transaction>> GetManualCandidatesAsync(
+        Guid userId,
+        Guid accountId,
+        DateTime from,
+        DateTime to,
         CancellationToken cancellationToken = default) =>
         await context.Transactions
             .IgnoreQueryFilters()
-            .AnyAsync(t =>
+            .AsNoTracking()
+            .Where(t =>
                 t.UserId == userId &&
-                t.ImportHash == hash &&
-                t.DeletedAt == null,
-                cancellationToken);
+                t.AccountId == accountId &&
+                t.DeletedAt == null &&
+                t.ImportHash == null &&
+                t.ExternalId == null &&
+                t.Type != TransactionType.Transfer &&
+                t.Date >= from &&
+                t.Date <= to)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<Transaction>> GetTransactionsByIdsAsync(
+        Guid userId,
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids.Count == 0)
+            return [];
+
+        var idList = ids.ToList();
+
+        return await context.Transactions
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(t => t.UserId == userId && idList.Contains(t.Id))
+            .ToListAsync(cancellationToken);
+    }
 
     public async Task DeleteAsync(
         Guid id,

@@ -22,6 +22,7 @@ public class AnalyticsController(IMediator mediator) : BaseController(mediator)
         [FromQuery] DateTime from,
         [FromQuery] DateTime to,
         [FromQuery] string groupBy = "month",
+        [FromQuery] Guid? accountId = null,
         CancellationToken cancellationToken = default)
     {
         if (from > to)
@@ -33,7 +34,7 @@ public class AnalyticsController(IMediator mediator) : BaseController(mediator)
         if (groupBy == "day" && (to - from).TotalDays > 90)
             return BadRequest("O agrupamento por dia suporta no máximo 90 dias.");
 
-        var query = new GetCashFlowQuery(CurrentUserId, from, to, groupBy);
+        var query = new GetCashFlowQuery(CurrentUserId, from, to, groupBy, accountId);
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);
     }
@@ -44,12 +45,13 @@ public class AnalyticsController(IMediator mediator) : BaseController(mediator)
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetAnnualSummary(
         [FromQuery] int year,
+        [FromQuery] Guid? accountId = null,
         CancellationToken cancellationToken = default)
     {
         if (year < 2000 || year > DateTime.UtcNow.Year + 1)
             return BadRequest("Ano inválido.");
 
-        var query = new GetAnnualSummaryQuery(CurrentUserId, year);
+        var query = new GetAnnualSummaryQuery(CurrentUserId, year, accountId);
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);
     }
@@ -62,12 +64,13 @@ public class AnalyticsController(IMediator mediator) : BaseController(mediator)
         [FromQuery] DateTime from,
         [FromQuery] DateTime to,
         [FromQuery] TransactionType? type = null,
+        [FromQuery] Guid? accountId = null,
         CancellationToken cancellationToken = default)
     {
         if (from > to)
             return BadRequest("A data de início não pode ser posterior à data de fim.");
 
-        var query = new GetReportByCategoryQuery(CurrentUserId, from, to, type);
+        var query = new GetReportByCategoryQuery(CurrentUserId, from, to, type, accountId);
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);
     }
@@ -79,12 +82,13 @@ public class AnalyticsController(IMediator mediator) : BaseController(mediator)
     public async Task<IActionResult> GetByTag(
         [FromQuery] DateTime from,
         [FromQuery] DateTime to,
+        [FromQuery] Guid? accountId = null,
         CancellationToken cancellationToken = default)
     {
         if (from > to)
             return BadRequest("A data de início não pode ser posterior à data de fim.");
 
-        var query = new GetReportByTagQuery(CurrentUserId, from, to);
+        var query = new GetReportByTagQuery(CurrentUserId, from, to, accountId);
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);
     }
@@ -96,6 +100,7 @@ public class AnalyticsController(IMediator mediator) : BaseController(mediator)
     public async Task<IActionResult> GetProjections(
         [FromQuery] int monthsBack = 12,
         [FromQuery] int monthsAhead = 3,
+        [FromQuery] Guid? accountId = null,
         CancellationToken cancellationToken = default)
     {
         if (monthsBack < 3 || monthsBack > 24)
@@ -104,7 +109,7 @@ public class AnalyticsController(IMediator mediator) : BaseController(mediator)
         if (monthsAhead < 1 || monthsAhead > 6)
             return BadRequest("O parâmetro monthsAhead deve estar entre 1 e 6.");
 
-        var query = new GetProjectionsQuery(CurrentUserId, monthsBack, monthsAhead);
+        var query = new GetProjectionsQuery(CurrentUserId, monthsBack, monthsAhead, accountId);
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);
     }

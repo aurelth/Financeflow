@@ -183,6 +183,32 @@ public class AnalyticsEndpointsTests(FinanceFlowWebApplicationFactory factory)
         result.NetBalance.Should().Be(0);
     }
 
+    // Filtro por conta (Fase 31)
+
+    [Fact]
+    public async Task GetByCategory_DeveRetornar200_QuandoFiltradoPorConta()
+    {
+        var client = CreateClient();
+        await AuthenticateAsync(client, "category.account@teste.com");
+
+        var response = await client.GetAsync(
+            $"/api/analytics/by-category?from=2026-01-01&to=2026-03-31&accountId={Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetAnnualSummary_DeveRetornar200_QuandoFiltradoPorConta()
+    {
+        var client = CreateClient();
+        await AuthenticateAsync(client, "annual.account@teste.com");
+
+        var response = await client.GetAsync(
+            $"/api/analytics/annual-summary?year=2026&accountId={Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
     // GET /api/analytics/by-category
 
     [Fact]

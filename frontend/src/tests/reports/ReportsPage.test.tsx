@@ -69,12 +69,27 @@ const mockProjections = {
     ],
 }
 
+const mockUseCashFlow = vi.fn((..._args: unknown[]) => ({ data: mockCashFlow, isLoading: false }))
+const mockUseAnnualSummary = vi.fn((..._args: unknown[]) => ({ data: mockAnnualSummary, isLoading: false }))
+const mockUseReportByCategory = vi.fn((..._args: unknown[]) => ({ data: mockByCategory, isLoading: false }))
+const mockUseReportByTag = vi.fn((..._args: unknown[]) => ({ data: mockByTag, isLoading: false }))
+const mockUseProjections = vi.fn((..._args: unknown[]) => ({ data: mockProjections, isLoading: false }))
+
 vi.mock('@/features/reports/api/useAnalytics', () => ({
-    useCashFlow: () => ({ data: mockCashFlow, isLoading: false }),
-    useAnnualSummary: () => ({ data: mockAnnualSummary, isLoading: false }),
-    useReportByCategory: () => ({ data: mockByCategory, isLoading: false }),
-    useReportByTag: () => ({ data: mockByTag, isLoading: false }),
-    useProjections: () => ({ data: mockProjections, isLoading: false }),
+    useCashFlow: (...args: unknown[]) => mockUseCashFlow(...args),
+    useAnnualSummary: (...args: unknown[]) => mockUseAnnualSummary(...args),
+    useReportByCategory: (...args: unknown[]) => mockUseReportByCategory(...args),
+    useReportByTag: (...args: unknown[]) => mockUseReportByTag(...args),
+    useProjections: (...args: unknown[]) => mockUseProjections(...args),
+}))
+
+vi.mock('@/features/accounts/api/useAccounts', () => ({
+    useAccounts: () => ({
+        data: [
+            { id: 'acc-1', name: 'Nubank', isArchived: false },
+            { id: 'acc-2', name: 'Itaú', isArchived: false },
+        ],
+    }),
 }))
 
 // ── Helper ────────────────────────────────────────────────────────────────────
@@ -238,6 +253,67 @@ describe('ReportsPage', () => {
         await waitFor(() => {
             expect(screen.queryByText('De')).not.toBeInTheDocument()
             expect(screen.queryByText('Até')).not.toBeInTheDocument()
+        })
+    })
+
+    describe('filtro por conta', () => {
+        const lastParams = (mock: { mock: { calls: unknown[][] } }) =>
+            mock.mock.calls[mock.mock.calls.length - 1][0] as { accountId?: string }
+
+        it('deve consultar todas as contas por defeito', () => {
+            renderPage()
+            expect(lastParams(mockUseCashFlow).accountId).toBeUndefined()
+        })
+
+        it('deve enviar a conta escolhida ao fluxo de caixa', async () => {
+            renderPage()
+            const user = userEvent.setup()
+
+            await user.selectOptions(screen.getByRole('combobox', { name: 'select.label' }), 'acc-2')
+
+            await waitFor(() => {
+                expect(lastParams(mockUseCashFlow).accountId).toBe('acc-2')
+            })
+        })
+
+        it('deve manter a conta escolhida ao trocar de tab', async () => {
+            renderPage()
+            const user = userEvent.setup()
+
+            await user.selectOptions(screen.getByRole('combobox', { name: 'select.label' }), 'acc-1')
+            await user.click(screen.getByText('Por Categoria'))
+            await user.click(screen.getByText('Por Tag'))
+
+            await waitFor(() => {
+                expect(lastParams(mockUseReportByCategory).accountId).toBe('acc-1')
+                expect(lastParams(mockUseReportByTag).accountId).toBe('acc-1')
+            })
+        })
+
+        it('deve enviar a conta ao resumo anual e às projeções', async () => {
+            renderPage()
+            const user = userEvent.setup()
+
+            await user.selectOptions(screen.getByRole('combobox', { name: 'select.label' }), 'acc-2')
+
+            await waitFor(() => {
+                const annual = mockUseAnnualSummary.mock.calls[mockUseAnnualSummary.mock.calls.length - 1]
+                expect(annual[2]).toBe('acc-2')
+                expect(lastParams(mockUseProjections).accountId).toBe('acc-2')
+            })
+        })
+
+        it('deve voltar a consultar todas as contas ao limpar o filtro', async () => {
+            renderPage()
+            const user = userEvent.setup()
+            const select = screen.getByRole('combobox', { name: 'select.label' })
+
+            await user.selectOptions(select, 'acc-2')
+            await user.selectOptions(select, '')
+
+            await waitFor(() => {
+                expect(lastParams(mockUseCashFlow).accountId).toBeUndefined()
+            })
         })
     })
 })

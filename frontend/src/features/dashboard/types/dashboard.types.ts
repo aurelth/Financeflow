@@ -68,4 +68,5 @@ export interface PeriodComparison {
 // Filtro para comparativo de períodos
 export interface PeriodComparisonQuery {
   periods: string[] // formato YYYY-MM
+  accountId?: string
 }

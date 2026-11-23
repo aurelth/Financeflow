@@ -2,6 +2,7 @@ using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs.Imports;
 using FinanceFlow.Domain.Constants;
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
 
@@ -21,11 +22,20 @@ public class ConfirmImportCommandHandler(
             request.ImportId, request.UserId, cancellationToken)
             ?? throw new NotFoundException("BankImport", request.ImportId);
 
-        var imported = 0;
-        var errors = 0;
+        if (bankImport.Imported > 0)
+            throw new ValidationException("Esta importação já foi confirmada.");
+
+        // Sem o processamento as duplicatas ainda não foram detectadas
+        if (bankImport.Status is BankImportStatus.Pending or BankImportStatus.Processing)
+            throw new ValidationException("A importação ainda está sendo processada. Tente novamente em instantes.");
 
         var selections = request.Request.Transactions
             .ToDictionary(t => t.Id);
+
+        // 1) Valida tudo antes de gravar qualquer coisa: linha sem categoria nunca some em silêncio
+        var plan = new List<(BankImportTransaction Row, TransactionType Type, Guid CategoryId)>();
+        var rowErrors = new Dictionary<string, string[]>();
+        var categoryIsValid = new Dictionary<Guid, bool>();
 
         foreach (var importTransaction in bankImport.Transactions)
         {
@@ -35,38 +45,57 @@ public class ConfirmImportCommandHandler(
             if (!selection.IsSelected)
                 continue;
 
-            if (importTransaction.IsDuplicate)
+            // Duplicada só entra se o usuário pediu explicitamente "importar mesmo assim"
+            if (importTransaction.IsDuplicate && !selection.ImportAnyway)
                 continue;
 
-            // Resolve o tipo enviado pelo frontend
             var transactionType = ResolveType(selection.Type, importTransaction.Type);
-
-            // Categoria opcional para Transfer — usa categoria padrão
             var categoryId = selection.CategoryId;
 
             if (categoryId == Guid.Empty)
             {
-                if (transactionType == TransactionType.Transfer)
-                    categoryId = WellKnownIds.TransferCategoryId;
-                else
-                    continue; // Salta transações não-Transfer sem categoria
-            }
-
-            try
-            {
-                // Valida categoria apenas se não for a categoria padrão de transferência
-                if (categoryId != WellKnownIds.TransferCategoryId)
+                // Transferência não exige categoria: usa a categoria padrão
+                if (transactionType != TransactionType.Transfer)
                 {
-                    var category = await categoryRepository.GetByIdAsync(
-                        categoryId, request.UserId, cancellationToken);
-
-                    if (category is null)
-                    {
-                        errors++;
-                        continue;
-                    }
+                    rowErrors[importTransaction.Id.ToString()] = [ImportRowErrors.MissingCategory];
+                    continue;
                 }
 
+                categoryId = WellKnownIds.TransferCategoryId;
+            }
+
+            if (categoryId != WellKnownIds.TransferCategoryId)
+            {
+                if (!categoryIsValid.TryGetValue(categoryId, out var valid))
+                {
+                    valid = await categoryRepository.GetByIdAsync(
+                        categoryId, request.UserId, cancellationToken) is not null;
+                    categoryIsValid[categoryId] = valid;
+                }
+
+                if (!valid)
+                {
+                    rowErrors[importTransaction.Id.ToString()] = [ImportRowErrors.InvalidCategory];
+                    continue;
+                }
+            }
+
+            plan.Add((importTransaction, transactionType, categoryId));
+        }
+
+        if (rowErrors.Count > 0)
+            throw new ValidationException(
+                $"{rowErrors.Count} lançamento(s) sem categoria válida. Escolha a categoria ou desmarque a linha para confirmar.",
+                rowErrors);
+
+        // 2) Grava
+        var imported = 0;
+        var errors = 0;
+
+        foreach (var (importTransaction, transactionType, categoryId) in plan)
+        {
+            try
+            {
                 importTransaction.SuggestedCategoryId = categoryId;
 
                 var transaction = new Transaction
@@ -80,6 +109,9 @@ public class ConfirmImportCommandHandler(
                     Status = TransactionStatus.Paid,
                     CategoryId = categoryId,
                     ImportHash = importTransaction.Hash,
+                    ExternalId = string.IsNullOrWhiteSpace(importTransaction.ExternalId)
+                        ? null
+                        : importTransaction.ExternalId,
                     Tags = "[]",
                 };
 
@@ -108,7 +140,9 @@ public class ConfirmImportCommandHandler(
             Duplicates: bankImport.Duplicates,
             Errors: bankImport.Errors,
             ErrorMessage: bankImport.ErrorMessage,
-            CreatedAt: bankImport.CreatedAt);
+            CreatedAt: bankImport.CreatedAt,
+            AccountId: bankImport.AccountId,
+            AccountName: bankImport.Account?.Name);
     }
 
     private static TransactionType ResolveType(string? typeFromRequest, TransactionType fallback)

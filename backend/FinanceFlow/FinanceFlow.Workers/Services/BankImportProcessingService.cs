@@ -1,7 +1,5 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using FinanceFlow.Workers.Models;
 
@@ -47,12 +45,5 @@ public class BankImportProcessingService(
         logger.LogInformation(
             "Importação {ImportId} processada com sucesso",
             importEvent.ImportId);
-    }
-
-    public static string ComputeHash(DateTime date, decimal amount, string description, string type)
-    {
-        var raw = $"{date:yyyy-MM-dd}|{amount}|{description.Trim().ToUpperInvariant()}|{type}";
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(raw));
-        return Convert.ToHexString(hash).ToLowerInvariant();
     }
 }

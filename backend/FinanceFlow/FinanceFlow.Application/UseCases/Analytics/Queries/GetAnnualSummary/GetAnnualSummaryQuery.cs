@@ -5,5 +5,6 @@ namespace FinanceFlow.Application.UseCases.Analytics.Queries.GetAnnualSummary;
 
 public record GetAnnualSummaryQuery(
     Guid UserId,
-    int Year
+    int Year,
+    Guid? AccountId = null
 ) : IRequest<AnnualSummaryDto>;

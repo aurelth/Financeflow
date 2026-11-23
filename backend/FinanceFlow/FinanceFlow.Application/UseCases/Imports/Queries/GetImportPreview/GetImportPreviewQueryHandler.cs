@@ -17,27 +17,45 @@ public class GetImportPreviewQueryHandler(
             request.ImportId, request.UserId, cancellationToken)
             ?? throw new NotFoundException("BankImport", request.ImportId);
 
+        // Lançamentos existentes que originaram as suspeitas de duplicata, para o usuário comparar
+        var matchedIds = bankImport.Transactions
+            .Where(t => t.MatchedTransactionId.HasValue)
+            .Select(t => t.MatchedTransactionId!.Value)
+            .Distinct()
+            .ToList();
+
+        var matched = (await bankImportRepository.GetTransactionsByIdsAsync(
+                request.UserId, matchedIds, cancellationToken))
+            .ToDictionary(t => t.Id);
+
         var transactions = bankImport.Transactions
             .OrderBy(t => t.Date.Date)
             .ThenBy(t => t.Date)
             .Select(t => new BankImportTransactionDto(
-            Id: t.Id,
-            ExternalId: t.ExternalId,
-            Date: t.Date,
-            Amount: t.Amount,
-            Description: t.Description,
-            Type: t.Type,
-            IsDuplicate: t.IsDuplicate,
-            IsSelected: t.IsSelected,
-            SuggestedCategoryId: t.SuggestedCategoryId,
-            SuggestedCategoryName: t.SuggestedCategory?.Name
-        ));
+                Id: t.Id,
+                ExternalId: t.ExternalId,
+                Date: t.Date,
+                Amount: t.Amount,
+                Description: t.Description,
+                Type: t.Type,
+                IsDuplicate: t.IsDuplicate,
+                IsSelected: t.IsSelected,
+                SuggestedCategoryId: t.SuggestedCategoryId,
+                SuggestedCategoryName: t.SuggestedCategory?.Name,
+                DuplicateReason: t.DuplicateReason,
+                Match: t.MatchedTransactionId is { } id && matched.TryGetValue(id, out var m)
+                    ? new DuplicateMatchDto(m.Id, m.Date, m.Amount, m.Description)
+                    : null))
+            .ToList();
 
         return new BankImportPreviewDto(
             ImportId: bankImport.Id,
             FileName: bankImport.FileName,
             TotalRecords: bankImport.TotalRecords,
             Duplicates: bankImport.Duplicates,
-            Transactions: transactions);
+            Transactions: transactions,
+            AccountId: bankImport.AccountId,
+            AccountName: bankImport.Account?.Name,
+            Status: bankImport.Status.ToString());
     }
 }

@@ -30,7 +30,7 @@ FinanceFlow é uma aplicação web de gestão financeira pessoal construída com
 - **Dashboard** — visão geral com gráficos de evolução do saldo, despesas por categoria e comparação semanal
 - **Comparativo Histórico** — comparação de receitas e despesas entre períodos
 - **Relatórios** — geração de relatórios em PDF e Excel com exportação assíncrona via SignalR
-- **Importação OFX** — importação de extratos bancários no formato OFX
+- **Importação OFX** — importação de extratos bancários no formato OFX, com deduplicação por conta (FITID e conteúdo), revisão de duplicadas com "importar mesmo assim", detecção de lançamentos manuais equivalentes e troca de conta no preview
 - **Score de Saúde Financeira** — pontuação de 0 a 100 baseada em 6 critérios com histórico dos últimos 6 meses
 - **Assistente IA** — chat com Claude (Anthropic) com contexto financeiro real do utilizador
 - **Notificações** — alertas de vencimento de transações em tempo real via SignalR
@@ -303,7 +303,7 @@ git push origin develop
 | v0.29.0 | CI/CD E2E | ✅ Concluído |
 | v0.30.0 | Mobile (React Native) | ✅ Concluído |
 | v0.31.0 | Contas (múltiplas contas, saldo por conta, conta no upload de OFX) | ✅ Concluído |
-| v0.32.0 | Deduplicação por conta e FITID | 🔜 Planejado |
+| v0.32.0 | Deduplicação por conta e FITID, categoria obrigatória na importação, relatórios por conta | ✅ Concluído |
 | v0.33.0 | Transferências entre contas (pareamento automático) | 🔜 Planejado |
 | v0.34.0 | Saldo e conciliação com o extrato | 🔜 Planejado |
 

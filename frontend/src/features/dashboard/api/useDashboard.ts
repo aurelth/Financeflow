@@ -52,14 +52,16 @@ export const useWeeklyComparison = (filters: DashboardQuery) =>
 
   export const usePeriodComparison = (query: PeriodComparisonQuery, enabled = true) =>
   useQuery({
-    queryKey: ['dashboard', 'period-comparison', query.periods],
+    queryKey: ['dashboard', 'period-comparison', query.periods, query.accountId],
     queryFn:  () =>
       api.get<PeriodComparison>('/api/dashboard/period-comparison', {
-        params: { periods: query.periods },
+        params: { periods: query.periods, accountId: query.accountId },
         paramsSerializer: params => {
-          return params.periods
+          const parts = params.periods
             .map((p: string) => `periods=${encodeURIComponent(p)}`)
-            .join('&')
+          if (params.accountId)
+            parts.push(`accountId=${encodeURIComponent(params.accountId)}`)
+          return parts.join('&')
         },
       }).then(r => r.data),
     staleTime: 0,

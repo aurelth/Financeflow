@@ -33,3 +33,5 @@ Thumbs.db
 
 # Storage local (gerado em runtime)
 backend/storage/
+backend/FinanceFlow/FinanceFlow.API/storage/
+backend/FinanceFlow/FinanceFlow.Workers/storage/

@@ -7,5 +7,6 @@ public record GetCashFlowQuery(
     Guid UserId,
     DateTime From,
     DateTime To,
-    string GroupBy // "day" ou "month"
+    string GroupBy, // "day" ou "month"
+    Guid? AccountId = null
 ) : IRequest<CashFlowDto>;

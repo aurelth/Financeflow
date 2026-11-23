@@ -1,9 +1,9 @@
-using System.Security.Cryptography;
 using System.Text;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs.Imports;
 using FinanceFlow.Application.Events;
+using FinanceFlow.Application.Services;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
@@ -59,10 +59,23 @@ public class UploadOFXCommandHandler(
             TotalRecords = parseResult.Transactions.Count(),
         };
 
+        // Guarda a identificação do arquivo (já em hash) para aprender/validar a conta ao trocá-la no preview
+        if (!string.IsNullOrWhiteSpace(parseResult.AccountId))
+        {
+            bankImport.BankId = string.IsNullOrWhiteSpace(parseResult.BankId) ? null : parseResult.BankId.Trim();
+            bankImport.AccountKeyHash = accountKeyHasher.ComputeKey(request.UserId, bankImport.BankId, parseResult.AccountId);
+            bankImport.AccountLast4 = accountKeyHasher.Last4(parseResult.AccountId);
+        }
+
+        // Linhas idênticas no mesmo arquivo recebem hashes distintos (1ª, 2ª, 3ª ocorrência...)
+        var occurrences = new Dictionary<string, int>();
+
         // Mapeia as transações extraídas
         foreach (var t in parseResult.Transactions)
         {
-            var hash = ComputeHash(t.Date, t.Amount, t.Description, t.Type);
+            var baseHash = ImportHashing.ComputeBaseHash(t.Date, t.Amount, t.Description, t.Type);
+            occurrences[baseHash] = occurrences.GetValueOrDefault(baseHash) + 1;
+            var hash = ImportHashing.WithOccurrence(baseHash, occurrences[baseHash]);
 
             // Usa o TRNTYPE do OFX para determinar o tipo, com fallback para o valor
             var type = t.Type.Equals("CREDIT", StringComparison.OrdinalIgnoreCase)
@@ -175,13 +188,6 @@ public class UploadOFXCommandHandler(
 
         var fallback = await accountRepository.GetOrCreateDefaultAsync(request.UserId, cancellationToken);
         return (fallback, AccountResolutions.Defaulted);
-    }
-
-    private static string ComputeHash(DateTime date, decimal amount, string description, string type)
-    {
-        var raw = $"{date:yyyy-MM-dd}|{amount}|{description.Trim().ToUpperInvariant()}|{type}";
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(raw));
-        return Convert.ToHexString(hash).ToLowerInvariant();
     }
 
     // Recebe o tipo para filtrar categorias do tipo correto

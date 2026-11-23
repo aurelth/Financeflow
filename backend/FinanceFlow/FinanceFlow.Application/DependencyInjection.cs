@@ -37,6 +37,9 @@ public static class DependencyInjection
         services.AddScoped<IHealthScoreService, HealthScoreService>();
         services.AddScoped<IAvatarService, AvatarService>();
 
+        // Importação de extratos
+        services.AddScoped<IImportDeduplicationService, ImportDeduplicationService>();
+
         //Goals
         services.AddScoped<IGoalProgressService, GoalProgressService>();
 

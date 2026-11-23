@@ -5,5 +5,8 @@ public record BankImportPreviewDto(
     string FileName,
     int TotalRecords,
     int Duplicates,
-    IEnumerable<BankImportTransactionDto> Transactions
+    IEnumerable<BankImportTransactionDto> Transactions,
+    Guid? AccountId = null,
+    string? AccountName = null,
+    string? Status = null
 );
