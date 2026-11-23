@@ -1,4 +1,5 @@
 using FinanceFlow.Application.DTOs.Imports;
+using FinanceFlow.Application.UseCases.Imports.Commands.ChangeImportAccount;
 using FinanceFlow.Application.UseCases.Imports.Commands.ConfirmImport;
 using FinanceFlow.Application.UseCases.Imports.Commands.DeleteImport;
 using FinanceFlow.Application.UseCases.Imports.Commands.ProcessImport;
@@ -51,6 +52,21 @@ public class ImportsController(IMediator mediator) : BaseController(mediator)
     {
         var query = new GetImportPreviewQuery(id, CurrentUserId);
         var result = await Mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Troca a conta de uma importação ainda não confirmada e refaz a detecção de duplicatas.</summary>
+    [HttpPut("{id:guid}/account")]
+    [ProducesResponseType(typeof(BankImportDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> ChangeAccount(
+        Guid id,
+        [FromBody] ChangeImportAccountRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        var command = new ChangeImportAccountCommand(id, CurrentUserId, request.AccountId);
+        var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
     }
 

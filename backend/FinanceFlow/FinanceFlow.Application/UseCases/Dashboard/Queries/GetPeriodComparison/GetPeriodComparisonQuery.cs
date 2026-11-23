@@ -5,5 +5,6 @@ namespace FinanceFlow.Application.UseCases.Dashboard.Queries.GetPeriodComparison
 
 public record GetPeriodComparisonQuery(
     Guid UserId,
-    IEnumerable<(int Month, int Year)> Periods
+    IEnumerable<(int Month, int Year)> Periods,
+    Guid? AccountId = null
 ) : IRequest<PeriodComparisonDto>;

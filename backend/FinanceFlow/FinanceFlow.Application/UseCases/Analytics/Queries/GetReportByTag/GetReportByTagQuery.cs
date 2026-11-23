@@ -6,5 +6,6 @@ namespace FinanceFlow.Application.UseCases.Analytics.Queries.GetReportByTag;
 public record GetReportByTagQuery(
     Guid UserId,
     DateTime From,
-    DateTime To
+    DateTime To,
+    Guid? AccountId = null
 ) : IRequest<ReportByTagDto>;

@@ -25,7 +25,7 @@ public class GetAnnualSummaryQueryHandler(
     {
         var cacheKey = $"analytics:annual:{request.UserId}:{request.Year}";
 
-        return await cache.GetOrSetAsync(cacheKey, async () =>
+        async Task<AnnualSummaryDto> ComputeAsync()
         {
             var from = new DateTime(request.Year, 1, 1);
             var to = new DateTime(request.Year, 12, 31);
@@ -43,7 +43,7 @@ public class GetAnnualSummaryQueryHandler(
                 amountMin: null,
                 amountMax: null,
                 search: null,
-                accountId: null,
+                accountId: request.AccountId,
                 cancellationToken: cancellationToken);
 
             // Filtra apenas transações confirmadas
@@ -90,6 +90,11 @@ public class GetAnnualSummaryQueryHandler(
                 AverageMonthlyIncome: Math.Round(totalIncome / divisor, 2),
                 AverageMonthlyExpenses: Math.Round(totalExpenses / divisor, 2));
 
-        }, CacheTtl, cancellationToken);
+        }
+
+        // Visões filtradas por conta não usam cache: a invalidação é por chave exata (sem conta)
+        return request.AccountId.HasValue
+            ? await ComputeAsync()
+            : await cache.GetOrSetAsync(cacheKey, ComputeAsync, CacheTtl, cancellationToken);
     }
 }

@@ -14,6 +14,7 @@ public class Transaction : BaseEntity
     public string? AttachmentName { get; set; }
     public string Tags { get; set; } = string.Empty; // JSON serializado
     public string? ImportHash { get; set; }
+    public string? ExternalId { get; set; } // FITID do OFX de origem, quando importado
 
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;

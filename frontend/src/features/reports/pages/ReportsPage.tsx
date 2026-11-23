@@ -4,6 +4,7 @@ import {
   ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import { useCashFlow, useAnnualSummary, useReportByCategory, useReportByTag, useProjections } from '../api/useAnalytics'
+import AccountSelect from '@/features/accounts/components/AccountSelect'
 import CashFlowTab      from '../components/analytics/CashFlowTab'
 import AnnualSummaryTab from '../components/analytics/AnnualSummaryTab'
 import ByCategoryTab    from '../components/analytics/ByCategoryTab'
@@ -43,26 +44,30 @@ export default function ReportsPage() {
   const [groupBy, setGroupBy]     = useState<'day' | 'month'>('month')
   const [year, setYear]           = useState(new Date().getFullYear())
   const [categoryType, setCategoryType] = useState<'Income' | 'Expense' | undefined>('Expense')
+  // '' = todas as contas
+  const [accountId, setAccountId] = useState('')
+  const account = accountId || undefined
 
   // ── Queries ──────────────────────────────────────────────────────────────
   const { data: cashFlow,    isLoading: l1 } = useCashFlow(
-    { from: range.from, to: range.to, groupBy },
+    { from: range.from, to: range.to, groupBy, accountId: account },
     activeTab === 'cash-flow')
 
   const { data: annualSummary, isLoading: l2 } = useAnnualSummary(
     year,
-    activeTab === 'annual')
+    activeTab === 'annual',
+    account)
 
   const { data: byCategory,  isLoading: l3 } = useReportByCategory(
-    { from: range.from, to: range.to, type: categoryType },
+    { from: range.from, to: range.to, type: categoryType, accountId: account },
     activeTab === 'by-category')
 
   const { data: byTag,       isLoading: l4 } = useReportByTag(
-    { from: range.from, to: range.to },
+    { from: range.from, to: range.to, accountId: account },
     activeTab === 'by-tag')
 
   const { data: projections, isLoading: l5 } = useProjections(
-    { monthsBack: 12, monthsAhead: 3 },
+    { monthsBack: 12, monthsAhead: 3, accountId: account },
     activeTab === 'projections')
 
   const isLoading = l1 || l2 || l3 || l4 || l5
@@ -78,6 +83,16 @@ export default function ReportsPage() {
         <p className="text-sm mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
           Analise as suas finanças em detalhe
         </p>
+      </div>
+
+      {/* Filtro por conta — oculto quando só existe uma */}
+      <div className="max-w-xs">
+        <AccountSelect
+          value={accountId}
+          onChange={setAccountId}
+          emptyOption="all"
+          hideWhenSingle
+        />
       </div>
 
       {/* Tabs */}

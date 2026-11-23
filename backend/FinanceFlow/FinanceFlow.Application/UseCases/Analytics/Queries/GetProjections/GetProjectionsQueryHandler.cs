@@ -25,7 +25,7 @@ public class GetProjectionsQueryHandler(
     {
         var cacheKey = $"analytics:projections:{request.UserId}:{request.MonthsBack}:{request.MonthsAhead}";
 
-        return await cache.GetOrSetAsync(cacheKey, async () =>
+        async Task<ProjectionsDto> ComputeAsync()
         {
             var today = DateTime.UtcNow;
             var endDate = new DateTime(today.Year, today.Month, 1).AddDays(-1);
@@ -45,7 +45,7 @@ public class GetProjectionsQueryHandler(
                 amountMin: null,
                 amountMax: null,
                 search: null,
-                accountId: null,
+                accountId: request.AccountId,
                 cancellationToken: cancellationToken);
 
             var confirmed = transactions
@@ -89,7 +89,12 @@ public class GetProjectionsQueryHandler(
                 Historical: historical,
                 Projected: projected);
 
-        }, CacheTtl, cancellationToken);
+        }
+
+        // Visões filtradas por conta não usam cache: a invalidação é por chave exata (sem conta)
+        return request.AccountId.HasValue
+            ? await ComputeAsync()
+            : await cache.GetOrSetAsync(cacheKey, ComputeAsync, CacheTtl, cancellationToken);
     }
 
     private static List<ProjectionMonthDto> CalculateProjections(

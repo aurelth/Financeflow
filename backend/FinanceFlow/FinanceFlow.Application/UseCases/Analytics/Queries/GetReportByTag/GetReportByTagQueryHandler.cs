@@ -20,7 +20,7 @@ public class GetReportByTagQueryHandler(
     {
         var cacheKey = $"analytics:by-tag:{request.UserId}:{request.From:yyyyMMdd}:{request.To:yyyyMMdd}";
 
-        return await cache.GetOrSetAsync(cacheKey, async () =>
+        async Task<ReportByTagDto> ComputeAsync()
         {
             var (transactions, _) = await transactionRepository.GetPagedByUserAsync(
                 userId: request.UserId,
@@ -35,7 +35,7 @@ public class GetReportByTagQueryHandler(
                 amountMin: null,
                 amountMax: null,
                 search: null,
-                accountId: null,
+                accountId: request.AccountId,
                 cancellationToken: cancellationToken);
 
             var confirmed = transactions
@@ -74,6 +74,11 @@ public class GetReportByTagQueryHandler(
                 TotalAmount: totalAmount,
                 Tags: tags);
 
-        }, CacheTtl, cancellationToken);
+        }
+
+        // Visões filtradas por conta não usam cache: a invalidação é por chave exata (sem conta)
+        return request.AccountId.HasValue
+            ? await ComputeAsync()
+            : await cache.GetOrSetAsync(cacheKey, ComputeAsync, CacheTtl, cancellationToken);
     }
 }

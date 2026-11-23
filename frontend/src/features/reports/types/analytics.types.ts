@@ -104,20 +104,24 @@ export interface CashFlowParams {
   from:    string
   to:      string
   groupBy: 'day' | 'month'
+  accountId?: string
 }
 
 export interface ByCategoryParams {
   from:  string
   to:    string
   type?: 'Income' | 'Expense'
+  accountId?: string
 }
 
 export interface ByTagParams {
   from: string
   to:   string
+  accountId?: string
 }
 
 export interface ProjectionsParams {
   monthsBack:  number
   monthsAhead: number
+  accountId?:  string
 }

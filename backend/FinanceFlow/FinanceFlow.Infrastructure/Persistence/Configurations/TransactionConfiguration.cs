@@ -30,7 +30,16 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
                .HasForeignKey(t => t.AccountId)
                .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Property(t => t.ImportHash).HasMaxLength(64);
+        builder.Property(t => t.ExternalId).HasMaxLength(100);
+
         builder.HasIndex(t => new { t.AccountId, t.Date });
+
+        // Índices usados pela deduplicação de importações (por conta)
+        builder.HasIndex(t => new { t.AccountId, t.ImportHash })
+               .HasFilter("[ImportHash] IS NOT NULL");
+        builder.HasIndex(t => new { t.AccountId, t.ExternalId })
+               .HasFilter("[ExternalId] IS NOT NULL");
 
         builder.HasOne(t => t.Category)
                .WithMany(c => c.Transactions)

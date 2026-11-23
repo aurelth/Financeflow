@@ -116,6 +116,18 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AccountKeyHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("AccountLast4")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("BankId")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -190,6 +202,10 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("DuplicateReason")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("ExternalId")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -205,6 +221,9 @@ namespace FinanceFlow.Infrastructure.Migrations
 
                     b.Property<bool>("IsSelected")
                         .HasColumnType("bit");
+
+                    b.Property<Guid?>("MatchedTransactionId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("SuggestedCategoryId")
                         .HasColumnType("uniqueidentifier");
@@ -579,8 +598,13 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("ImportHash")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<bool>("IsRecurring")
                         .HasColumnType("bit");
@@ -622,6 +646,12 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.HasIndex("AccountId", "Date");
+
+                    b.HasIndex("AccountId", "ExternalId")
+                        .HasFilter("[ExternalId] IS NOT NULL");
+
+                    b.HasIndex("AccountId", "ImportHash")
+                        .HasFilter("[ImportHash] IS NOT NULL");
 
                     b.ToTable("Transactions", (string)null);
                 });

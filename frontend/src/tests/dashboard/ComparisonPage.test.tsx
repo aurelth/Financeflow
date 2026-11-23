@@ -30,8 +30,19 @@ const mockPeriodComparison = {
   ],
 }
 
+const mockUsePeriodComparison = vi.fn((..._args: unknown[]) => ({ data: mockPeriodComparison, isLoading: false }))
+
 vi.mock('@/features/dashboard/api/useDashboard', () => ({
-  usePeriodComparison: () => ({ data: mockPeriodComparison, isLoading: false }),
+  usePeriodComparison: (...args: unknown[]) => mockUsePeriodComparison(...args),
+}))
+
+vi.mock('@/features/accounts/api/useAccounts', () => ({
+  useAccounts: () => ({
+    data: [
+      { id: 'acc-1', name: 'Nubank', isArchived: false },
+      { id: 'acc-2', name: 'Itaú', isArchived: false },
+    ],
+  }),
 }))
 
 const renderPage = () => {
@@ -96,6 +107,31 @@ describe('ComparisonPage', () => {
 
     await waitFor(() => {
       expect(screen.queryByText('Adicionar período')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('filtro por conta', () => {
+    const lastQuery = () =>
+      mockUsePeriodComparison.mock.calls[mockUsePeriodComparison.mock.calls.length - 1][0] as {
+        periods: string[]
+        accountId?: string
+      }
+
+    it('deve consultar todas as contas por defeito', () => {
+      renderPage()
+      expect(lastQuery().accountId).toBeUndefined()
+    })
+
+    it('deve enviar a conta escolhida ao comparativo', async () => {
+      renderPage()
+      const user = userEvent.setup()
+
+      await user.selectOptions(screen.getByRole('combobox', { name: 'select.label' }), 'acc-2')
+
+      await waitFor(() => {
+        expect(lastQuery().accountId).toBe('acc-2')
+      })
+      expect(lastQuery().periods).toHaveLength(2)
     })
   })
 })

@@ -22,6 +22,8 @@ public class BankImportTransaction : BaseEntity
     // Status da transação no preview
     public bool IsDuplicate { get; set; } = false;
     public bool IsSelected { get; set; } = true;  // selecionada para importar
+    public DuplicateReason? DuplicateReason { get; set; }
+    public Guid? MatchedTransactionId { get; set; } // lançamento existente que originou a suspeita
 
     // Transação criada após confirmação
     public Guid? TransactionId { get; set; }

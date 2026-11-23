@@ -404,4 +404,74 @@ public class UploadOFXCommandHandlerTests
 
         await act.Should().ThrowAsync<FinanceFlow.Application.Common.Exceptions.NotFoundException>();
     }
+
+    // Linhas idênticas no mesmo arquivo recebem hashes distintos (1ª, 2ª ocorrência)
+    [Fact]
+    public async Task Handle_DeveGerarHashesDistintos_ParaLinhasIdenticasNoMesmoArquivo()
+    {
+        var date = new DateTime(2026, 11, 10);
+        var transactions = new List<OFXTransaction>
+        {
+            new("", date, -9.50m, "CAFE", "DEBIT"),
+            new("", date, -9.50m, "CAFE", "DEBIT"),
+            new("", date, -9.50m, "CAFE", "DEBIT"),
+        };
+
+        _ofxParserService
+            .Setup(s => s.Parse(It.IsAny<Stream>()))
+            .Returns(new OFXParseResult("123", "001", date, date, transactions));
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([]);
+
+        var command = new UploadOFXCommand(Guid.NewGuid(), new MemoryStream(), "extrato.ofx");
+
+        await CreateHandler().Handle(command, default);
+
+        _bankImportRepository.Verify(r =>
+            r.AddAsync(It.Is<BankImport>(b =>
+                b.Transactions.Select(t => t.Hash).Distinct().Count() == 3),
+            default), Times.Once);
+    }
+
+    // A 1ª ocorrência mantém o hash antigo, compatível com lançamentos já importados
+    [Fact]
+    public async Task Handle_DeveManterHashAntigo_NaPrimeiraOcorrencia()
+    {
+        var date = new DateTime(2026, 11, 10);
+        var expected = FinanceFlow.Application.Services.ImportHashing
+            .ComputeBaseHash(date, -9.50m, "CAFE", "DEBIT");
+
+        _ofxParserService
+            .Setup(s => s.Parse(It.IsAny<Stream>()))
+            .Returns(new OFXParseResult("123", "001", date, date,
+                [new("", date, -9.50m, "CAFE", "DEBIT"), new("", date, -9.50m, "CAFE", "DEBIT")]));
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([]);
+
+        await CreateHandler().Handle(
+            new UploadOFXCommand(Guid.NewGuid(), new MemoryStream(), "extrato.ofx"), default);
+
+        _bankImportRepository.Verify(r =>
+            r.AddAsync(It.Is<BankImport>(b => b.Transactions.First().Hash == expected), default), Times.Once);
+    }
+
+    // A identificação do arquivo (em hash) é guardada para validar/aprender a conta ao trocá-la no preview
+    [Fact]
+    public async Task Handle_DeveGuardarIdentificacaoDoArquivoNaImportacao()
+    {
+        var date = new DateTime(2026, 11, 10);
+        _ofxParserService
+            .Setup(s => s.Parse(It.IsAny<Stream>()))
+            .Returns(new OFXParseResult("12345-6", "001", date, date,
+                [new("FIT1", date, -10m, "CAFE", "DEBIT")]));
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([]);
+
+        await CreateHandler().Handle(
+            new UploadOFXCommand(Guid.NewGuid(), new MemoryStream(), "extrato.ofx"), default);
+
+        _bankImportRepository.Verify(r =>
+            r.AddAsync(It.Is<BankImport>(b =>
+                b.BankId == "001" &&
+                b.AccountKeyHash == "chave-da-conta" &&
+                b.AccountLast4 == "1234"),
+            default), Times.Once);
+    }
 }

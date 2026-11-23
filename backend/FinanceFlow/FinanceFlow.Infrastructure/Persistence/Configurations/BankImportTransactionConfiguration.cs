@@ -31,6 +31,10 @@ public class BankImportTransactionConfiguration : IEntityTypeConfiguration<BankI
                .HasConversion<string>()
                .HasMaxLength(10);
 
+        builder.Property(t => t.DuplicateReason)
+               .HasConversion<string>()
+               .HasMaxLength(20);
+
         // Índice no hash para deduplicação eficiente
         builder.HasIndex(t => new { t.BankImportId, t.Hash });
 

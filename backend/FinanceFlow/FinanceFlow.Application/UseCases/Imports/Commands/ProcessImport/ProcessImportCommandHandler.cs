@@ -1,3 +1,4 @@
+using FinanceFlow.Application.Services;
 using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
@@ -5,7 +6,8 @@ using MediatR;
 namespace FinanceFlow.Application.UseCases.Imports.Commands.ProcessImport;
 
 public class ProcessImportCommandHandler(
-    IBankImportRepository bankImportRepository)
+    IBankImportRepository bankImportRepository,
+    IImportDeduplicationService deduplicationService)
     : IRequestHandler<ProcessImportCommand>
 {
     public async Task Handle(
@@ -21,32 +23,10 @@ public class ProcessImportCommandHandler(
         bankImport.Status = BankImportStatus.Processing;
         await bankImportRepository.UpdateAsync(bankImport, cancellationToken);
 
-        var duplicates = 0;
-
-        // Verifica duplicatas por hash
-        foreach (var t in bankImport.Transactions)
-        {
-            var isDuplicate = await bankImportRepository.HashExistsAsync(
-                request.UserId, t.Hash, cancellationToken);
-
-            if (isDuplicate)
-            {
-                t.IsDuplicate = true;
-                t.IsSelected = false;
-                duplicates++;
-            }
-        }
-
-        // Remove automaticamente as BankImportTransactions duplicadas
-        var duplicateTransactions = bankImport.Transactions
-            .Where(t => t.IsDuplicate == true)
-            .ToList();
-
-        foreach (var t in duplicateTransactions)
-            bankImport.Transactions.Remove(t);
-
-        bankImport.Duplicates = duplicates;
+        // As duplicatas ficam visíveis no preview (desmarcadas): o usuário decide se importa mesmo assim
+        bankImport.Duplicates = await deduplicationService.DetectAsync(bankImport, cancellationToken);
         bankImport.Status = BankImportStatus.Completed;
+
         await bankImportRepository.UpdateAsync(bankImport, cancellationToken);
     }
 }

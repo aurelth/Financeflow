@@ -78,6 +78,7 @@ public class DashboardController(IMediator mediator) : BaseController(mediator)
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPeriodComparison(
         [FromQuery] string[] periods,
+        [FromQuery] Guid? accountId,
         CancellationToken cancellationToken)
     {
         if (periods.Length == 0 || periods.Length > 3)
@@ -97,7 +98,7 @@ public class DashboardController(IMediator mediator) : BaseController(mediator)
             parsedPeriods.Add((month, year));
         }
 
-        var query = new GetPeriodComparisonQuery(CurrentUserId, parsedPeriods);
+        var query = new GetPeriodComparisonQuery(CurrentUserId, parsedPeriods, accountId);
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result);
     }

@@ -21,7 +21,7 @@ public class GetCashFlowQueryHandler(
     {
         var cacheKey = $"analytics:cashflow:{request.UserId}:{request.From:yyyyMMdd}:{request.To:yyyyMMdd}:{request.GroupBy}";
 
-        return await cache.GetOrSetAsync(cacheKey, async () =>
+        async Task<CashFlowDto> ComputeAsync()
         {
             var (transactions, _) = await transactionRepository.GetPagedByUserAsync(
                 userId: request.UserId,
@@ -36,7 +36,7 @@ public class GetCashFlowQueryHandler(
                 amountMin: null,
                 amountMax: null,
                 search: null,
-                accountId: null,
+                accountId: request.AccountId,
                 cancellationToken: cancellationToken);
 
             var confirmed = transactions
@@ -59,7 +59,12 @@ public class GetCashFlowQueryHandler(
                 TotalExpenses: totalExpenses,
                 NetBalance: totalIncome - totalExpenses);
 
-        }, CacheTtl, cancellationToken);
+        }
+
+        // Visões filtradas por conta não usam cache: a invalidação é por chave exata (sem conta)
+        return request.AccountId.HasValue
+            ? await ComputeAsync()
+            : await cache.GetOrSetAsync(cacheKey, ComputeAsync, CacheTtl, cancellationToken);
     }
 
     private static List<CashFlowPeriodDto> GroupByDay(

@@ -211,4 +211,31 @@ public class ImportEndpointsTests(FinanceFlowWebApplicationFactory factory)
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    // PUT /api/imports/{id}/account
+
+    [Fact]
+    public async Task ChangeAccount_DeveRetornar404_QuandoImportacaoNaoExiste()
+    {
+        var client = CreateClient();
+        await AuthenticateAsync(client, "import.account.notfound@teste.com");
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/imports/{Guid.NewGuid()}/account",
+            new ChangeImportAccountRequestDto(Guid.NewGuid()));
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ChangeAccount_DeveRetornar401_QuandoSemToken()
+    {
+        var client = CreateClient();
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/imports/{Guid.NewGuid()}/account",
+            new ChangeImportAccountRequestDto(Guid.NewGuid()));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 }

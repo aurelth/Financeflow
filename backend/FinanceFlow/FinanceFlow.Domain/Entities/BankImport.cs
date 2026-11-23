@@ -16,6 +16,12 @@ public class BankImport : BaseEntity
     public int Errors { get; set; } = 0;
     public string? ErrorMessage { get; set; }
 
+    // Identificação da conta bancária lida do arquivo (BANKID/ACCTID já em hash).
+    // Permite aprender o vínculo ao trocar a conta da importação no preview.
+    public string? BankId { get; set; }
+    public string? AccountKeyHash { get; set; }
+    public string? AccountLast4 { get; set; }
+
     // Navegação
     public ICollection<BankImportTransaction> Transactions { get; set; } = [];
 }

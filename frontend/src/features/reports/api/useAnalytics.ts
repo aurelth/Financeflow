@@ -23,11 +23,11 @@ export const useCashFlow = (params: CashFlowParams, enabled = true) =>
   })
 
 // GET /api/analytics/annual-summary
-export const useAnnualSummary = (year: number, enabled = true) =>
+export const useAnnualSummary = (year: number, enabled = true, accountId?: string) =>
   useQuery<AnnualSummaryDto>({
-    queryKey: ['analytics', 'annual-summary', year],
+    queryKey: ['analytics', 'annual-summary', year, accountId],
     queryFn: () =>
-      api.get<AnnualSummaryDto>('/api/analytics/annual-summary', { params: { year } }).then(r => r.data),
+      api.get<AnnualSummaryDto>('/api/analytics/annual-summary', { params: { year, accountId } }).then(r => r.data),
     enabled,
     staleTime: 5 * 60 * 1000,
   })

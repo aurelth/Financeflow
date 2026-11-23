@@ -23,6 +23,10 @@ public class BankImportConfiguration : IEntityTypeConfiguration<BankImport>
         builder.Property(b => b.ErrorMessage)
                .HasMaxLength(1000);
 
+        builder.Property(b => b.BankId).HasMaxLength(20);
+        builder.Property(b => b.AccountKeyHash).HasMaxLength(64);
+        builder.Property(b => b.AccountLast4).HasMaxLength(4);
+
         builder.HasOne(b => b.Account)
                .WithMany()
                .HasForeignKey(b => b.AccountId)
