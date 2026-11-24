@@ -6,6 +6,7 @@ using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace FinanceFlow.UnitTests.Imports;
@@ -17,6 +18,7 @@ public class ConfirmImportTransferTests
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
     private readonly Mock<ITransferRepository> _transferRepository = new();
+    private readonly Mock<ICategoryRuleRepository> _categoryRuleRepository = new();
     private readonly Mock<IDashboardCacheInvalidator> _dashboardCacheInvalidator = new();
 
     private readonly Guid _userId = Guid.NewGuid();
@@ -30,7 +32,9 @@ public class ConfirmImportTransferTests
             _transactionRepository.Object,
             _categoryRepository.Object,
             _transferRepository.Object,
-            _dashboardCacheInvalidator.Object);
+            _categoryRuleRepository.Object,
+            _dashboardCacheInvalidator.Object,
+            NullLogger<ConfirmImportCommandHandler>.Instance);
 
     // Linha do extrato da conta A (saída de 1000) com par na conta B
     private (BankImportTransaction Row, Transaction Candidate) Setup(

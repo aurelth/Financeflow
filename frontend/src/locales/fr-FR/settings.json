@@ -3,5 +3,21 @@
   "sections": { "language": "Langue", "currency": "Devise", "timezone": "Fuseau horaire", "notifications": "Notifications", "appearance": "Apparence" },
   "language": { "label": "Langue du système", "subtitle": "Choisissez la langue pour les textes et le formatage", "ptBR": "Português (Brasil)", "enUS": "English (US)", "esES": "Español", "frFR": "Français" },
   "notifications": { "email": "Notifications par email", "push": "Notifications push", "dueDates": "Alertes d'échéance" },
-  "actions": { "save": "Enregistrer les paramètres", "saved": "Paramètres enregistrés" }
+  "actions": { "save": "Enregistrer les paramètres", "saved": "Paramètres enregistrés" },
+  "categoryRules": {
+    "title": "Règles de catégorisation",
+    "subtitle": "FinanceFlow apprend des catégories que vous confirmez à l'import et propose la même la fois suivante. Oubliez une règle si elle est erronée.",
+    "empty": "Aucune règle pour l'instant. Elles apparaissent ici après la confirmation d'un import.",
+    "error": "Impossible de charger les règles.",
+    "hits_one": "confirmée {{count}} fois",
+    "hits_other": "confirmée {{count}} fois",
+    "forget": "Oublier la règle de {{key}}",
+    "forgetTitle": "Oublier la règle",
+    "showAll": "Tout afficher ({{count}})",
+    "showLess": "Afficher moins",
+    "type": {
+      "Income": "Revenu",
+      "Expense": "Dépense"
+    }
+  }
 }

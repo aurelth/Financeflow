@@ -16,7 +16,8 @@ public record BankImportTransactionDto(
     string? SuggestedCategoryName,
     DuplicateReason? DuplicateReason = null,
     DuplicateMatchDto? Match = null,
-    TransferMatchDto? TransferMatch = null
+    TransferMatchDto? TransferMatch = null,
+    CategorySuggestionSource? SuggestionSource = null
 );
 
 /// <summary>Lançamento já existente com o qual a linha do extrato foi confundida.</summary>

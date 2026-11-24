@@ -26,5 +26,21 @@
   "actions": {
     "save": "Guardar configurações",
     "saved": "Configurações guardadas"
+  },
+  "categoryRules": {
+    "title": "Regras de categorização",
+    "subtitle": "O FinanceFlow aprende com as categorias que você confirma nas importações e sugere a mesma nas próximas. Esqueça uma regra se ela estiver errada.",
+    "empty": "Nenhuma regra ainda. Ela aparece aqui depois que você confirma uma importação.",
+    "error": "Não foi possível carregar as regras.",
+    "hits_one": "confirmada {{count}} vez",
+    "hits_other": "confirmada {{count}} vezes",
+    "forget": "Esquecer a regra de {{key}}",
+    "forgetTitle": "Esquecer regra",
+    "showAll": "Ver todas ({{count}})",
+    "showLess": "Ver menos",
+    "type": {
+      "Income": "Receita",
+      "Expense": "Despesa"
+    }
   }
 }

@@ -4,6 +4,7 @@ using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs.Imports;
 using FinanceFlow.Application.UseCases.Imports.Commands.UploadOFX;
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.Domain.ValueObjects;
 using FluentAssertions;
@@ -17,6 +18,7 @@ public class UploadOFXCommandHandlerTests
     private readonly Mock<IBankImportRepository> _bankImportRepository = new();
     private readonly Mock<IOFXParserService> _ofxParserService = new();
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
+    private readonly Mock<ICategoryRuleRepository> _categoryRuleRepository = new();
     private readonly Mock<IAccountRepository> _accountRepository = new();
     private readonly Mock<IAccountKeyHasher> _accountKeyHasher = new();
     private readonly Mock<IEventPublisher> _eventPublisher = new();
@@ -24,6 +26,9 @@ public class UploadOFXCommandHandlerTests
 
     public UploadOFXCommandHandlerTests()
     {
+        _categoryRuleRepository
+            .Setup(r => r.GetByKeysAsync(It.IsAny<Guid>(), It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
         _accountKeyHasher
             .Setup(h => h.ComputeKey(It.IsAny<Guid>(), It.IsAny<string?>(), It.IsAny<string>()))
             .Returns("chave-da-conta");
@@ -46,6 +51,7 @@ public class UploadOFXCommandHandlerTests
         new(_bankImportRepository.Object,
             _ofxParserService.Object,
             _categoryRepository.Object,
+            _categoryRuleRepository.Object,
             _accountRepository.Object,
             _accountKeyHasher.Object,
             _eventPublisher.Object,
@@ -523,5 +529,132 @@ public class UploadOFXCommandHandlerTests
                 b.AccountKeyHash == "chave-da-conta" &&
                 b.AccountLast4 == "1234"),
             default), Times.Once);
+    }
+
+    // ── Regras de categorização aprendidas ───────────────────────────────────
+
+    private static Category Cat(string name, TransactionType type = TransactionType.Expense) =>
+        new() { Id = Guid.NewGuid(), Name = name, Type = type, IsDefault = true };
+
+    private static OFXTransaction Line(DateTime date, decimal amount, string description, string type) =>
+        new("F1", date, amount, description, type);
+
+    private async Task<BankImport> UploadAsync(Guid userId, params OFXTransaction[] lines)
+    {
+        BankImport? captured = null;
+        _bankImportRepository
+            .Setup(r => r.AddAsync(It.IsAny<BankImport>(), It.IsAny<CancellationToken>()))
+            .Callback<BankImport, CancellationToken>((b, _) => captured = b)
+            .Returns(Task.CompletedTask);
+        _ofxParserService
+            .Setup(s => s.Parse(It.IsAny<Stream>()))
+            .Returns(new OFXParseResult("12345", "001", DateTime.UtcNow.AddDays(-30), DateTime.UtcNow, lines));
+
+        await CreateHandler().Handle(new UploadOFXCommand(userId, new MemoryStream(), "extrato.ofx"), default);
+        return captured!;
+    }
+
+    [Fact]
+    public async Task Handle_DeveUsarRegraAprendida_AntesDasPalavrasChave()
+    {
+        var userId = Guid.NewGuid();
+        var alimentacao = Cat("Alimentação");
+        var mercadoDaCasa = Cat("Compras da casa");
+
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([alimentacao]);
+        _categoryRepository
+            .Setup(r => r.GetAllByUserAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([alimentacao, mercadoDaCasa]);
+        _categoryRuleRepository
+            .Setup(r => r.GetByKeysAsync(userId, It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([CategoryRule.Create(userId, TransactionType.Expense, "mercado extra", mercadoDaCasa.Id)]);
+
+        // "mercado" também casa com a palavra-chave de Alimentação: a regra do usuário precisa vencer
+        var import = await UploadAsync(userId,
+            Line(DateTime.UtcNow, -80m, "COMPRA NO DEBITO 12/11 MERCADO EXTRA 1234", "DEBIT"));
+
+        var row = import.Transactions.Should().ContainSingle().Subject;
+        row.SuggestedCategoryId.Should().Be(mercadoDaCasa.Id);
+        row.SuggestionSource.Should().Be(CategorySuggestionSource.Rule);
+    }
+
+    [Fact]
+    public async Task Handle_DeveCairNasPalavrasChave_QuandoNaoHaRegra()
+    {
+        var userId = Guid.NewGuid();
+        var alimentacao = Cat("Alimentação");
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([alimentacao]);
+
+        var import = await UploadAsync(userId, Line(DateTime.UtcNow, -80m, "SUPERMERCADO BOM", "DEBIT"));
+
+        var row = import.Transactions.Should().ContainSingle().Subject;
+        row.SuggestedCategoryId.Should().Be(alimentacao.Id);
+        row.SuggestionSource.Should().Be(CategorySuggestionSource.Keyword);
+    }
+
+    [Fact]
+    public async Task Handle_NaoDeveSugerir_QuandoNenhumaRegraNemPalavraChaveCasa()
+    {
+        var userId = Guid.NewGuid();
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([Cat("Alimentação")]);
+
+        var import = await UploadAsync(userId, Line(DateTime.UtcNow, -80m, "ACME COMERCIO", "DEBIT"));
+
+        var row = import.Transactions.Should().ContainSingle().Subject;
+        row.SuggestedCategoryId.Should().BeNull();
+        row.SuggestionSource.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_DeveIgnorarRegra_QuandoACategoriaNaoEstaMaisDisponivel()
+    {
+        var userId = Guid.NewGuid();
+        var alimentacao = Cat("Alimentação");
+        var arquivada = Guid.NewGuid(); // fora de GetAllByUserAsync: excluída, arquivada ou de meta
+
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([alimentacao]);
+        _categoryRepository
+            .Setup(r => r.GetAllByUserAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([alimentacao]);
+        _categoryRuleRepository
+            .Setup(r => r.GetByKeysAsync(userId, It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([CategoryRule.Create(userId, TransactionType.Expense, "mercado extra", arquivada)]);
+
+        var import = await UploadAsync(userId, Line(DateTime.UtcNow, -80m, "MERCADO EXTRA", "DEBIT"));
+
+        var row = import.Transactions.Should().ContainSingle().Subject;
+        row.SuggestedCategoryId.Should().Be(alimentacao.Id); // volta para a palavra-chave
+        row.SuggestionSource.Should().Be(CategorySuggestionSource.Keyword);
+    }
+
+    [Fact]
+    public async Task Handle_NaoDeveAplicarRegraDeDespesa_NumaReceita()
+    {
+        var userId = Guid.NewGuid();
+        var despesa = Cat("Compras da casa");
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([]);
+        _categoryRepository
+            .Setup(r => r.GetAllByUserAsync(userId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([despesa]);
+        _categoryRuleRepository
+            .Setup(r => r.GetByKeysAsync(userId, It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([CategoryRule.Create(userId, TransactionType.Expense, "joao silva", despesa.Id)]);
+
+        // O mesmo nome entrando como CRÉDITO: a regra é de despesa e não vale aqui
+        var import = await UploadAsync(userId, Line(DateTime.UtcNow, 200m, "PIX RECEBIDO JOAO SILVA", "CREDIT"));
+
+        import.Transactions.Single().SuggestedCategoryId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_NaoDeveConsultarRegras_QuandoNenhumaDescricaoIdentificaAlguem()
+    {
+        var userId = Guid.NewGuid();
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([]);
+
+        await UploadAsync(userId, Line(DateTime.UtcNow, -10m, "PIX ENVIADO", "DEBIT"));
+
+        _categoryRuleRepository.Verify(r => r.GetByKeysAsync(
+            It.IsAny<Guid>(), It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

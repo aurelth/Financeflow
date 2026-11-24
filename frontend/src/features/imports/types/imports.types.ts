@@ -7,6 +7,9 @@ export type TransactionType = 'Income' | 'Expense'
 // Por que uma linha do extrato foi marcada como duplicada
 export type DuplicateReason = 'SameFitId' | 'SameContent' | 'PossibleManual'
 
+// De onde veio a categoria sugerida: palavra-chave embutida ou regra aprendida com o próprio usuário
+export type CategorySuggestionSource = 'Keyword' | 'Rule'
+
 // Confiança do pareamento com um lançamento de outra conta
 export type TransferMatchStatus = 'Auto' | 'Suggested'
 
@@ -58,6 +61,7 @@ export interface BankImportTransactionDto {
   hash?: string
   suggestedCategoryId: string | null
   suggestedCategoryName?: string | null
+  suggestionSource?: CategorySuggestionSource | null
   isDuplicate: boolean
   isSelected: boolean
   transactionId?: string | null

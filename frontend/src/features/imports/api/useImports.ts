@@ -112,6 +112,8 @@ export function useConfirmImport(id: string) {
       queryClient.invalidateQueries({ queryKey: ['accounts'] })
       queryClient.invalidateQueries({ queryKey: ['transactions'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+      // A confirmação ensina regras de categorização ao backend
+      queryClient.invalidateQueries({ queryKey: ['category-rules'] })
     },
   })
 }

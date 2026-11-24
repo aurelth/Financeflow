@@ -4,6 +4,7 @@ import {
   forwardRef,
   useImperativeHandle,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -126,6 +127,8 @@ function SectionTitle({ text, tone }: { text: string; tone: "transfer" | "sugges
 
 const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
   ({ transactions: initialTransactions, categories, errorIds = [], onSummaryChange }, ref) => {
+    // `t` é a linha nos callbacks abaixo; o tradutor ganha outro nome
+    const { t: translate } = useTranslation("imports");
     const [rows, setRows] = useState<RowState[]>(
       initialTransactions.map((t) => ({
         ...t,
@@ -202,7 +205,10 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
     function changeCategory(id: string, categoryId: string) {
       setRows(
         rows.map((t) =>
-          t.id === id ? { ...t, suggestedCategoryId: categoryId || null } : t,
+          // Escolha manual: a categoria deixa de ser uma sugestão do sistema
+          t.id === id
+            ? { ...t, suggestedCategoryId: categoryId || null, suggestionSource: null }
+            : t,
         ),
       );
     }
@@ -222,7 +228,7 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
           if (t.id !== id) return t;
           const newType: RowType =
             t.localType === "Transfer" ? (t.type as RowType) : "Transfer";
-          return { ...t, localType: newType, suggestedCategoryId: null };
+          return { ...t, localType: newType, suggestedCategoryId: null, suggestionSource: null };
         }),
       );
     }
@@ -447,37 +453,48 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
               Transferência
             </span>
           ) : (
-          <select
-            value={t.suggestedCategoryId ?? ""}
-            disabled={t.isDuplicate && !t.isSelected}
-            aria-label={`Categoria de ${t.description}`}
-            aria-invalid={hasError || undefined}
-            onChange={(e) => changeCategory(t.id, e.target.value)}
-            className="text-xs rounded-lg px-2 py-1.5 outline-none w-full"
-            style={{
-              background: "var(--ff-bg-elevated)",
-              color: t.suggestedCategoryId
-                ? "var(--ff-text-primary)"
-                : "var(--ff-text-muted)",
-              border: hasError
-                ? "1px solid #f87171"
-                : "1px solid var(--ff-border)",
-            }}
-          >
-            <option value="">Sem categoria</option>
-            {filteredCategories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-            {filteredCategories.length === 0 && (
-              <option value="" disabled>
-                {rowType === "Expense"
-                  ? "Crie categorias de despesa"
-                  : "Crie categorias de receita"}
-              </option>
+          <div className="min-w-0">
+            <select
+              value={t.suggestedCategoryId ?? ""}
+              disabled={t.isDuplicate && !t.isSelected}
+              aria-label={`Categoria de ${t.description}`}
+              aria-invalid={hasError || undefined}
+              onChange={(e) => changeCategory(t.id, e.target.value)}
+              className="text-xs rounded-lg px-2 py-1.5 outline-none w-full"
+              style={{
+                background: "var(--ff-bg-elevated)",
+                color: t.suggestedCategoryId
+                  ? "var(--ff-text-primary)"
+                  : "var(--ff-text-muted)",
+                border: hasError
+                  ? "1px solid #f87171"
+                  : "1px solid var(--ff-border)",
+              }}
+            >
+              <option value="">Sem categoria</option>
+              {filteredCategories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+              {filteredCategories.length === 0 && (
+                <option value="" disabled>
+                  {rowType === "Expense"
+                    ? "Crie categorias de despesa"
+                    : "Crie categorias de receita"}
+                </option>
+              )}
+            </select>
+            {t.suggestionSource === "Rule" && t.suggestedCategoryId && (
+              <p
+                data-testid="learned-suggestion"
+                className="mt-1 text-[11px]"
+                style={{ color: "var(--ff-emerald)" }}
+              >
+                {translate("preview.learnedSuggestion")}
+              </p>
             )}
-          </select>
+          </div>
           )}
 
           {/* Valor */}

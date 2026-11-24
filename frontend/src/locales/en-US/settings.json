@@ -6,5 +6,21 @@
     "ptBR": "Português (Brasil)", "enUS": "English (US)", "esES": "Español", "frFR": "Français"
   },
   "notifications": { "email": "Email notifications", "push": "Push notifications", "dueDates": "Due date alerts" },
-  "actions": { "save": "Save settings", "saved": "Settings saved" }
+  "actions": { "save": "Save settings", "saved": "Settings saved" },
+  "categoryRules": {
+    "title": "Categorization rules",
+    "subtitle": "FinanceFlow learns from the categories you confirm when importing and suggests the same one next time. Forget a rule if it is wrong.",
+    "empty": "No rules yet. They show up here after you confirm an import.",
+    "error": "Could not load the rules.",
+    "hits_one": "confirmed {{count}} time",
+    "hits_other": "confirmed {{count}} times",
+    "forget": "Forget the rule for {{key}}",
+    "forgetTitle": "Forget rule",
+    "showAll": "Show all ({{count}})",
+    "showLess": "Show less",
+    "type": {
+      "Income": "Income",
+      "Expense": "Expense"
+    }
+  }
 }

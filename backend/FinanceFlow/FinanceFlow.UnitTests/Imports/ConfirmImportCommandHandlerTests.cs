@@ -6,6 +6,7 @@ using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace FinanceFlow.UnitTests.Imports;
@@ -16,6 +17,7 @@ public class ConfirmImportCommandHandlerTests
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
     private readonly Mock<ITransferRepository> _transferRepository = new();
+    private readonly Mock<ICategoryRuleRepository> _categoryRuleRepository = new();
     private readonly Mock<IDashboardCacheInvalidator> _dashboardCacheInvalidator = new();
 
     private ConfirmImportCommandHandler CreateHandler() =>
@@ -23,7 +25,9 @@ public class ConfirmImportCommandHandlerTests
             _transactionRepository.Object,
             _categoryRepository.Object,
             _transferRepository.Object,
-            _dashboardCacheInvalidator.Object);
+            _categoryRuleRepository.Object,
+            _dashboardCacheInvalidator.Object,
+            NullLogger<ConfirmImportCommandHandler>.Instance);
 
     [Fact]
     public async Task Handle_DeveCriarTransacoes_QuandoSelecionadas()
@@ -589,5 +593,189 @@ public class ConfirmImportCommandHandlerTests
 
         await act.Should().ThrowAsync<ValidationException>();
         _transactionRepository.Verify(r => r.AddAsync(It.IsAny<Transaction>(), default), Times.Never);
+    }
+
+    // ── Aprendizado de regras de categorização ───────────────────────────────
+
+    private (BankImport Import, BankImportTransaction Row, Category Category) LearningScenario(
+        Guid userId,
+        Guid importId,
+        string description,
+        TransactionType type = TransactionType.Expense)
+    {
+        var category = new Category { Id = Guid.NewGuid(), Name = "Alimentação", Type = type, IsDefault = true };
+        var row = new BankImportTransaction
+        {
+            Id = Guid.NewGuid(), Hash = "h" + Guid.NewGuid(), Amount = 80m, Description = description,
+            Type = type, Date = DateTime.UtcNow, IsSelected = true,
+        };
+        var bankImport = new BankImport
+        {
+            Id = importId, UserId = userId, Status = BankImportStatus.Completed, Transactions = [row],
+        };
+        _bankImportRepository.Setup(r => r.GetByIdAsync(importId, userId, default)).ReturnsAsync(bankImport);
+        _categoryRepository.Setup(r => r.GetByIdAsync(category.Id, userId, default)).ReturnsAsync(category);
+        _categoryRuleRepository
+            .Setup(r => r.GetTrackedByKeysAsync(userId, It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
+        return (bankImport, row, category);
+    }
+
+    private Task<BankImportDto> ConfirmAsync(Guid userId, Guid importId, BankImportTransaction row, Guid categoryId, string type = "Expense") =>
+        CreateHandler().Handle(new ConfirmImportCommand(importId, userId,
+            new ConfirmImportRequestDto([new ConfirmImportItemDto(row.Id, true, categoryId, type)])), default);
+
+    [Fact]
+    public async Task Handle_DeveAprenderRegra_AoConfirmarComCategoria()
+    {
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var (_, row, category) = LearningScenario(userId, importId, "COMPRA NO DEBITO 12/11 MERCADO EXTRA 1234");
+
+        await ConfirmAsync(userId, importId, row, category.Id);
+
+        _categoryRuleRepository.Verify(r => r.Add(It.Is<CategoryRule>(c =>
+            c.UserId == userId &&
+            c.Key == "mercado extra" &&
+            c.Type == TransactionType.Expense &&
+            c.CategoryId == category.Id &&
+            c.HitCount == 1)), Times.Once);
+        _categoryRuleRepository.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_DeveReforcarRegraExistente_QuandoACategoriaECoincide()
+    {
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var (_, row, category) = LearningScenario(userId, importId, "MERCADO EXTRA");
+        var existing = CategoryRule.Create(userId, TransactionType.Expense, "mercado extra", category.Id);
+        existing.HitCount = 4;
+        _categoryRuleRepository
+            .Setup(r => r.GetTrackedByKeysAsync(userId, It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([existing]);
+
+        await ConfirmAsync(userId, importId, row, category.Id);
+
+        existing.HitCount.Should().Be(5);
+        _categoryRuleRepository.Verify(r => r.Add(It.IsAny<CategoryRule>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_DeveSubstituirARegra_QuandoOUsuarioEscolheOutraCategoria()
+    {
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var (_, row, category) = LearningScenario(userId, importId, "MERCADO EXTRA");
+        var existing = CategoryRule.Create(userId, TransactionType.Expense, "mercado extra", Guid.NewGuid());
+        existing.HitCount = 9;
+        _categoryRuleRepository
+            .Setup(r => r.GetTrackedByKeysAsync(userId, It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([existing]);
+
+        await ConfirmAsync(userId, importId, row, category.Id);
+
+        existing.CategoryId.Should().Be(category.Id);
+        existing.HitCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Handle_NaoDeveAprender_QuandoADescricaoNaoIdentificaNinguem()
+    {
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var (_, row, category) = LearningScenario(userId, importId, "PIX ENVIADO");
+
+        var result = await ConfirmAsync(userId, importId, row, category.Id);
+
+        result.Imported.Should().Be(1);
+        _categoryRuleRepository.Verify(r => r.Add(It.IsAny<CategoryRule>()), Times.Never);
+        _categoryRuleRepository.Verify(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_NaoDeveAprender_QuandoALinhaNaoFoiImportada()
+    {
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var (_, row, category) = LearningScenario(userId, importId, "MERCADO EXTRA");
+        _transactionRepository
+            .Setup(r => r.AddAsync(It.IsAny<Transaction>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("falha ao gravar"));
+
+        var result = await ConfirmAsync(userId, importId, row, category.Id);
+
+        result.Errors.Should().Be(1);
+        _categoryRuleRepository.Verify(r => r.Add(It.IsAny<CategoryRule>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_DeveManterAImportacao_QuandoAGravacaoDaRegraFalha()
+    {
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var (bankImport, row, category) = LearningScenario(userId, importId, "MERCADO EXTRA");
+        _categoryRuleRepository
+            .Setup(r => r.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("índice único violado"));
+
+        var result = await ConfirmAsync(userId, importId, row, category.Id);
+
+        result.Imported.Should().Be(1);
+        result.Errors.Should().Be(0);
+        bankImport.ConfirmedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task Handle_DeveContarVezesPorRegra_QuandoADescricaoSeRepeteNoLote()
+    {
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var (bankImport, first, category) = LearningScenario(userId, importId, "UBER *TRIP 111");
+        var second = new BankImportTransaction
+        {
+            Id = Guid.NewGuid(), Hash = "h2", Amount = 20m, Description = "UBER *TRIP 222",
+            Type = TransactionType.Expense, Date = DateTime.UtcNow, IsSelected = true,
+        };
+        bankImport.Transactions = [first, second];
+
+        await CreateHandler().Handle(new ConfirmImportCommand(importId, userId,
+            new ConfirmImportRequestDto([
+                new ConfirmImportItemDto(first.Id, true, category.Id, "Expense"),
+                new ConfirmImportItemDto(second.Id, true, category.Id, "Expense"),
+            ])), default);
+
+        // As duas linhas geram a mesma chave: uma única regra, com a contagem refletindo as duas confirmações
+        _categoryRuleRepository.Verify(r => r.Add(It.Is<CategoryRule>(c => c.Key == "uber trip" && c.HitCount == 2)), Times.Once);
+        _categoryRuleRepository.Verify(r => r.Add(It.IsAny<CategoryRule>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_DeveManterAOrigemDaSugestao_QuandoOUsuarioAceitaACategoria()
+    {
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var (_, row, category) = LearningScenario(userId, importId, "MERCADO EXTRA");
+        row.SuggestedCategoryId = category.Id;
+        row.SuggestionSource = CategorySuggestionSource.Rule;
+
+        await ConfirmAsync(userId, importId, row, category.Id);
+
+        row.SuggestionSource.Should().Be(CategorySuggestionSource.Rule);
+    }
+
+    [Fact]
+    public async Task Handle_DeveLimparAOrigemDaSugestao_QuandoOUsuarioTrocaACategoria()
+    {
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var (_, row, category) = LearningScenario(userId, importId, "MERCADO EXTRA");
+        row.SuggestedCategoryId = Guid.NewGuid();
+        row.SuggestionSource = CategorySuggestionSource.Rule;
+
+        await ConfirmAsync(userId, importId, row, category.Id);
+
+        row.SuggestionSource.Should().BeNull();
+        row.SuggestedCategoryId.Should().Be(category.Id);
     }
 }
