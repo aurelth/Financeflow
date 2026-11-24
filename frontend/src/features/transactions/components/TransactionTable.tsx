@@ -1,4 +1,4 @@
-import { Pencil, Trash2, RefreshCw, ArrowLeftRight } from 'lucide-react'
+import { Pencil, Trash2, RefreshCw, ArrowLeftRight, Unlink } from 'lucide-react'
 import { TransactionStatus, RecurrenceType, type Transaction } from '../types/transaction.types'
 import { TransactionType } from '../../categories/types/category.types'
 import CategoryIcon  from '../../categories/components/CategoryIcon'
@@ -9,6 +9,8 @@ interface TransactionTableProps {
   transactions: Transaction[]
   onEdit:       (transaction: Transaction) => void
   onDelete:     (transaction: Transaction) => void
+  // Desfaz o vínculo de uma transferência pareada (aparece só nas transferências com par)
+  onUnlink?:    (transaction: Transaction) => void
   // Mostra o nome da conta sob a descrição (útil quando o utilizador tem mais de uma conta)
   showAccount?: boolean
 }
@@ -60,7 +62,7 @@ function getAmountColor(type: TransactionType): string {
   return 'var(--ff-expense)'
 }
 
-export default function TransactionTable({ transactions, onEdit, onDelete, showAccount = false }: TransactionTableProps) {
+export default function TransactionTable({ transactions, onEdit, onDelete, onUnlink, showAccount = false }: TransactionTableProps) {
   if (transactions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
@@ -145,6 +147,17 @@ export default function TransactionTable({ transactions, onEdit, onDelete, showA
                       >
                         <ArrowLeftRight size={10} />
                         Transferência
+                      </span>
+                    )}
+                    {/* Outra ponta da transferência: para onde foi / de onde veio, ou "sem par" */}
+                    {type === TransactionType.Transfer && tx.transferDirection && (
+                      <span
+                        className="text-xs flex-shrink-0"
+                        style={{ color: tx.transferLinkId ? 'var(--ff-text-muted)' : 'var(--ff-pending)' }}
+                      >
+                        {tx.transferLinkId
+                          ? `${tx.transferDirection === 'Out' ? 'para' : 'de'} ${tx.counterpartAccountName ?? 'outra conta'}`
+                          : 'sem par'}
                       </span>
                     )}
                   </div>
@@ -243,6 +256,25 @@ export default function TransactionTable({ transactions, onEdit, onDelete, showA
                 {/* Ações */}
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
+                    {onUnlink && tx.transferLinkId && (
+                      <button
+                        onClick={() => onUnlink(tx)}
+                        className="p-1.5 rounded-lg transition-all duration-200"
+                        style={{ color: 'var(--ff-text-muted)' }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.color      = '#818cf8'
+                          e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.color      = 'var(--ff-text-muted)'
+                          e.currentTarget.style.background = 'transparent'
+                        }}
+                        title="Desfazer vínculo da transferência"
+                        aria-label={`Desfazer vínculo: ${tx.description || 'transferência'}`}
+                      >
+                        <Unlink size={14} />
+                      </button>
+                    )}
                     <button
                       onClick={() => onEdit(tx)}
                       className="p-1.5 rounded-lg transition-all duration-200"

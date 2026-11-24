@@ -15,7 +15,8 @@ namespace FinanceFlow.Application.UseCases.Imports.Commands.ChangeImportAccount;
 public class ChangeImportAccountCommandHandler(
     IBankImportRepository bankImportRepository,
     IAccountRepository accountRepository,
-    IImportDeduplicationService deduplicationService)
+    IImportDeduplicationService deduplicationService,
+    ITransferMatchingService transferMatchingService)
     : IRequestHandler<ChangeImportAccountCommand, BankImportDto>
 {
     public async Task<BankImportDto> Handle(
@@ -48,8 +49,12 @@ public class ChangeImportAccountCommandHandler(
         }
 
         // Pendente: o Worker ainda vai processar e já usará a nova conta
+        // O par de uma transferência também depende da conta (a outra ponta precisa estar em OUTRA conta)
         if (bankImport.Status == BankImportStatus.Completed)
+        {
             bankImport.Duplicates = await deduplicationService.DetectAsync(bankImport, cancellationToken);
+            await transferMatchingService.MatchAsync(bankImport, cancellationToken);
+        }
 
         await bankImportRepository.UpdateAsync(bankImport, cancellationToken);
 

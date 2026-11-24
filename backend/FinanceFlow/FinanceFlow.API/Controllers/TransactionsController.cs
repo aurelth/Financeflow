@@ -8,6 +8,7 @@ using FinanceFlow.Application.UseCases.Transactions.Queries.GetDueTransactions;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetTransactionById;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetTransactions;
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -75,6 +76,7 @@ public class TransactionsController(
         [FromForm] string? subcategoryId,
         [FromForm] string[] tags,
         [FromForm] string? accountId,
+        [FromForm] string? transferDirection,
         IFormFile? attachment,
         CancellationToken cancellationToken)
     {
@@ -104,7 +106,10 @@ public class TransactionsController(
             AccountId: string.IsNullOrWhiteSpace(accountId) ? null : Guid.Parse(accountId),
             AttachmentStream: attachmentStream,
             AttachmentFileName: attachmentFileName,
-            AttachmentContentType: attachmentContentType);
+            AttachmentContentType: attachmentContentType,
+            TransferDirection: Enum.TryParse<TransferDirection>(transferDirection, ignoreCase: true, out var direction)
+                ? direction
+                : null);
 
         var result = await Mediator.Send(command, cancellationToken);
 
@@ -138,7 +143,8 @@ public class TransactionsController(
             SubcategoryId: request.SubcategoryId,
             Tags: request.Tags,
             PropagateToFuture: request.PropagateToFuture,
-            AccountId: request.AccountId);
+            AccountId: request.AccountId,
+            TransferDirection: request.TransferDirection);
 
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);
@@ -199,7 +205,8 @@ public class TransactionsController(
             SubcategoryId: transaction.SubcategoryId,
             Tags: transaction.Tags,
             AttachmentPath: attachmentPath,
-            AttachmentName: attachmentName);
+            AttachmentName: attachmentName,
+            TransferDirection: transaction.TransferDirection);
 
         var result = await Mediator.Send(command, cancellationToken);
         return Ok(result);

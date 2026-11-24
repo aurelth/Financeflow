@@ -18,6 +18,8 @@ public class FinanceFlowDbContext(DbContextOptions<FinanceFlowDbContext> options
     public DbSet<BankImportTransaction> BankImportTransactions => Set<BankImportTransaction>();
     public DbSet<Goal> Goals => Set<Goal>();
     public DbSet<Account> Accounts => Set<Account>();
+    public DbSet<TransferLink> TransferLinks => Set<TransferLink>();
+    public DbSet<TransferRejection> TransferRejections => Set<TransferRejection>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,6 +41,8 @@ public class FinanceFlowDbContext(DbContextOptions<FinanceFlowDbContext> options
         modelBuilder.Entity<BankImportTransaction>().HasQueryFilter(t => t.DeletedAt == null);
         modelBuilder.Entity<Goal>().HasQueryFilter(g => g.DeletedAt == null);
         modelBuilder.Entity<Account>().HasQueryFilter(a => a.DeletedAt == null);
+        modelBuilder.Entity<TransferLink>().HasQueryFilter(l => l.DeletedAt == null);
+        modelBuilder.Entity<TransferRejection>().HasQueryFilter(r => r.DeletedAt == null);
     }
 
     public override Task<int> SaveChangesAsync(

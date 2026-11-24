@@ -13,6 +13,7 @@ interface AccountSelectProps {
   hideWhenSingle?: boolean
   style?:     React.CSSProperties
   id?:        string
+  disabled?:  boolean
 }
 
 const baseStyle: React.CSSProperties = {
@@ -28,7 +29,7 @@ const baseStyle: React.CSSProperties = {
 }
 
 export default function AccountSelect({
-  value, onChange, emptyOption, currentAccountId, hideWhenSingle = false, style, id,
+  value, onChange, emptyOption, currentAccountId, hideWhenSingle = false, style, id, disabled,
 }: AccountSelectProps) {
   const { t } = useTranslation('accounts')
   const { data: accounts = [] } = useAccounts(!!currentAccountId)
@@ -40,6 +41,7 @@ export default function AccountSelect({
   return (
     <select
       id={id}
+      disabled={disabled}
       aria-label={t('select.label')}
       value={value}
       onChange={e => onChange(e.target.value)}

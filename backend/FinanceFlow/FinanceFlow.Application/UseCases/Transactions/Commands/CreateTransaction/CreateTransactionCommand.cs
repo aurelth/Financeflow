@@ -1,5 +1,6 @@
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 using MediatR;
 
 namespace FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransaction;
@@ -22,5 +23,7 @@ public record CreateTransactionCommand(
     string? AttachmentName = null,
     Stream? AttachmentStream = null,
     string? AttachmentFileName = null,
-    string? AttachmentContentType = null
+    string? AttachmentContentType = null,
+    // Obrigatório quando Type = Transfer: a conta recebe (In) ou envia (Out) o dinheiro
+    TransferDirection? TransferDirection = null
 ) : IRequest<TransactionDto>;

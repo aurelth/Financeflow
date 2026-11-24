@@ -7,6 +7,23 @@ export type TransactionType = 'Income' | 'Expense'
 // Por que uma linha do extrato foi marcada como duplicada
 export type DuplicateReason = 'SameFitId' | 'SameContent' | 'PossibleManual'
 
+// Confiança do pareamento com um lançamento de outra conta
+export type TransferMatchStatus = 'Auto' | 'Suggested'
+
+// Lançamento de outra conta que parece ser a outra ponta da transferência
+export interface TransferMatchDto {
+  transactionId: string
+  accountId?: string | null
+  accountName?: string | null
+  date: string
+  amount: number
+  description: string
+  score: number
+  status: TransferMatchStatus
+  // Hoje é receita/despesa e vira transferência ao vincular
+  willConvert: boolean
+}
+
 export interface BankImportDto {
   id: string
   fileName: string
@@ -46,6 +63,7 @@ export interface BankImportTransactionDto {
   transactionId?: string | null
   duplicateReason?: DuplicateReason | null
   match?: DuplicateMatchDto | null
+  transferMatch?: TransferMatchDto | null
 }
 
 export interface BankImportPreviewDto {
@@ -54,6 +72,8 @@ export interface BankImportPreviewDto {
   status: BankImportStatus
   totalRecords: number
   duplicates?: number
+  autoTransfers?: number
+  suggestedTransfers?: number
   accountId?: string | null
   accountName?: string | null
   transactions: BankImportTransactionDto[]
@@ -66,6 +86,8 @@ export interface ConfirmImportItemDto {
   type?:      string
   // Só enviado para linhas duplicadas que o usuário decidiu importar mesmo assim
   importAnyway?: boolean
+  // Só enviado para linhas com par de transferência: vincular as duas pontas ou ignorar o par
+  transferAction?: 'Link' | 'Ignore'
 }
 
 export interface ConfirmImportRequestDto {
@@ -73,4 +95,4 @@ export interface ConfirmImportRequestDto {
 }
 
 // Códigos de erro por linha devolvidos pela API quando a confirmação é bloqueada (HTTP 422)
-export type ImportRowError = 'MissingCategory' | 'InvalidCategory'
+export type ImportRowError = 'MissingCategory' | 'InvalidCategory' | 'UnknownTransferDirection'

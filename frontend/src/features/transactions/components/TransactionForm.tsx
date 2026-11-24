@@ -10,6 +10,7 @@ import {
   useRemoveAttachment,
 } from '../api/useTransactions'
 import { TransactionType } from '../../categories/types/category.types'
+import { resolveType } from '@/lib/enumUtils'
 import CategorySelect from './CategorySelect'
 import AccountSelect from '@/features/accounts/components/AccountSelect'
 import { useAccounts } from '@/features/accounts/api/useAccounts'
@@ -78,6 +79,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
         subcategoryId:  transaction.subcategoryId,
         tags:           transaction.tags,
         accountId:      transaction.accountId,
+        transferDirection: transaction.transferDirection ?? null,
       }
       : defaultForm
   )
@@ -97,6 +99,10 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
   // Sem escolha explícita o back-end usa a conta principal; o select reflete isso
   const defaultAccountId  = accounts.find(a => a.isDefault)?.id ?? ''
   const selectedAccountId = form.accountId ?? defaultAccountId
+
+  // Transferência vinculada: tipo, valor, conta e sentido sustentam a outra ponta e ficam travados
+  const isTransferForm = resolveType(form.type) === TransactionType.Transfer
+  const isLinkedTransfer = !!transaction?.transferLinkId
   const showAccountSelect = accounts.length > 1 || (!!transaction && !!transaction.accountId && accounts.every(a => a.id !== transaction.accountId))
 
   const createTransaction = useCreateTransaction()
@@ -145,6 +151,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
 
   function handleSubmit() {
     if (!form.categoryId || form.amount <= 0) return
+    if (isTransferForm && !form.transferDirection) return
     if (isEditing && devePerguntar) { setShowPropagateModal(true); return }
     executarUpdate(false)
   }
@@ -171,6 +178,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
   }
 
   function handleCreate() {
+    if (isTransferForm && !form.transferDirection) return
     createTransaction.mutate(
       { data: form, attachment: attachment ?? undefined },
       { onSuccess: onClose }
@@ -231,8 +239,14 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
               {[TransactionType.Expense, TransactionType.Income, TransactionType.Transfer].map(t => (
                 <button
                   key={t}
-                  onClick={() => setForm(f => ({ ...f, type: t }))}
-                  className="py-2.5 rounded-xl text-sm font-semibold transition-all"
+                  onClick={() => setForm(f => ({
+                    ...f,
+                    type: t,
+                    // Transferência precisa de sentido; os outros tipos não têm
+                    transferDirection: t === TransactionType.Transfer ? (f.transferDirection ?? 'Out') : null,
+                  }))}
+                  disabled={isLinkedTransfer}
+                  className="py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   style={form.type === t
                     ? t === TransactionType.Income
                       ? { background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.4)', color: 'var(--ff-income)' }
@@ -265,11 +279,46 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
               </div>
             )}
 
+            {/* Sentido da transferência nesta conta */}
+            {isTransferForm && (
+              <div>
+                <label style={labelStyle}>Nesta conta, o dinheiro…</label>
+                <div className="grid grid-cols-2 gap-2" role="group" aria-label="Sentido da transferência">
+                  {([['Out', '↗ Saiu'], ['In', '↙ Entrou']] as const).map(([dir, label]) => (
+                    <button
+                      key={dir}
+                      type="button"
+                      aria-pressed={form.transferDirection === dir}
+                      disabled={isLinkedTransfer}
+                      onClick={() => setForm(f => ({ ...f, transferDirection: dir }))}
+                      className="py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                      style={form.transferDirection === dir
+                        ? { background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.4)', color: '#818cf8' }
+                        : { background: 'var(--ff-bg-elevated)', border: '1px solid var(--ff-border)', color: 'var(--ff-text-muted)' }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {isLinkedTransfer ? (
+                  <p className="text-xs mt-1.5" style={{ color: 'var(--ff-text-muted)' }}>
+                    Vinculada a {transaction?.counterpartAccountName ?? 'outra conta'}. Para mudar tipo, valor, conta ou
+                    sentido, desfaça o vínculo na lista de transações.
+                  </p>
+                ) : (
+                  <p className="text-xs mt-1.5" style={{ color: 'var(--ff-text-muted)' }}>
+                    Para criar as duas pontas de uma vez, use “Transferir entre contas”.
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Valor */}
             <div>
               <label style={labelStyle}>Valor</label>
               <input
                 type="number" min="0" step="0.01"
+                disabled={isLinkedTransfer}
                 value={form.amount || ''}
                 onChange={e => setForm(f => ({ ...f, amount: Number(e.target.value) }))}
                 placeholder="0,00"
@@ -294,7 +343,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
               {isLikelyTransfer(form.description) && form.type !== TransactionType.Transfer && (
                 <button
                   type="button"
-                  onClick={() => setForm(f => ({ ...f, type: TransactionType.Transfer }))}
+                  onClick={() => setForm(f => ({ ...f, type: TransactionType.Transfer, transferDirection: f.transferDirection ?? 'Out' }))}
                   className="flex items-center gap-1.5 mt-1.5 text-xs transition-colors"
                   style={{ color: '#818cf8' }}
                   onMouseEnter={e => (e.currentTarget.style.color = '#a5b4fc')}
@@ -344,6 +393,7 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
                   value={selectedAccountId}
                   currentAccountId={transaction?.accountId}
                   onChange={accountId => setForm(f => ({ ...f, accountId }))}
+                  disabled={isLinkedTransfer}
                   style={{ ...inputStyle, fontSize: '14px' }}
                 />
               </div>

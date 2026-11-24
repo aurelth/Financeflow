@@ -25,6 +25,11 @@ public class BankImportTransaction : BaseEntity
     public DuplicateReason? DuplicateReason { get; set; }
     public Guid? MatchedTransactionId { get; set; } // lançamento existente que originou a suspeita
 
+    // Pareamento com a outra ponta de uma transferência (lançamento de outra conta)
+    public Guid? TransferMatchTransactionId { get; set; }
+    public int? TransferMatchScore { get; set; }
+    public TransferMatchStatus? TransferMatchStatus { get; set; }
+
     // Transação criada após confirmação
     public Guid? TransactionId { get; set; }
     public Transaction? Transaction { get; set; }

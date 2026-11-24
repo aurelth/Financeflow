@@ -7,7 +7,8 @@ namespace FinanceFlow.Application.UseCases.Imports.Commands.ProcessImport;
 
 public class ProcessImportCommandHandler(
     IBankImportRepository bankImportRepository,
-    IImportDeduplicationService deduplicationService)
+    IImportDeduplicationService deduplicationService,
+    ITransferMatchingService transferMatchingService)
     : IRequestHandler<ProcessImportCommand>
 {
     public async Task Handle(
@@ -25,6 +26,10 @@ public class ProcessImportCommandHandler(
 
         // As duplicatas ficam visíveis no preview (desmarcadas): o usuário decide se importa mesmo assim
         bankImport.Duplicates = await deduplicationService.DetectAsync(bankImport, cancellationToken);
+
+        // Depois das duplicatas: linhas já existentes não podem ser a ponta de uma transferência nova
+        await transferMatchingService.MatchAsync(bankImport, cancellationToken);
+
         bankImport.Status = BankImportStatus.Completed;
 
         await bankImportRepository.UpdateAsync(bankImport, cancellationToken);

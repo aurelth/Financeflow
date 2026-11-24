@@ -15,6 +15,7 @@ public class UpdateTransactionCommandHandlerTests
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
     private readonly Mock<IAccountRepository> _accountRepository = new();
+    private readonly Mock<ITransferRepository> _transferRepository = new();
     private readonly Mock<ICacheService> _cache = new();
     private readonly IMapper _mapper;
 
@@ -91,6 +92,7 @@ public class UpdateTransactionCommandHandlerTests
         new(_transactionRepository.Object,
             _categoryRepository.Object,
             _accountRepository.Object,
+            _transferRepository.Object,
             _cache.Object,
             _mapper);
 

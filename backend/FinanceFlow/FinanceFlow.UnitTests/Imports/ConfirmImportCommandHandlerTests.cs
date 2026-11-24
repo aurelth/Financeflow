@@ -1,5 +1,6 @@
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs.Imports;
+using FinanceFlow.Application.Services;
 using FinanceFlow.Application.UseCases.Imports.Commands.ConfirmImport;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Enums;
@@ -14,11 +15,15 @@ public class ConfirmImportCommandHandlerTests
     private readonly Mock<IBankImportRepository> _bankImportRepository = new();
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
+    private readonly Mock<ITransferRepository> _transferRepository = new();
+    private readonly Mock<IDashboardCacheInvalidator> _dashboardCacheInvalidator = new();
 
     private ConfirmImportCommandHandler CreateHandler() =>
         new(_bankImportRepository.Object,
             _transactionRepository.Object,
-            _categoryRepository.Object);
+            _categoryRepository.Object,
+            _transferRepository.Object,
+            _dashboardCacheInvalidator.Object);
 
     [Fact]
     public async Task Handle_DeveCriarTransacoes_QuandoSelecionadas()

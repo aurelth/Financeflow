@@ -8,6 +8,7 @@ namespace FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransacti
 
 public class DeleteTransactionCommandHandler(
     ITransactionRepository transactionRepository,
+    ITransferRepository transferRepository,
     ICacheService cache)
     : IRequestHandler<DeleteTransactionCommand>
 {
@@ -18,6 +19,12 @@ public class DeleteTransactionCommandHandler(
         var transaction = await transactionRepository.GetByIdAsync(
             request.Id, request.UserId, cancellationToken)
             ?? throw new NotFoundException(nameof(Transaction), request.Id);
+
+        // Excluir uma ponta desfaz o vínculo: a outra ponta continua como transferência sem par (pendente).
+        // O vínculo sai no mesmo SaveChanges da exclusão.
+        var link = await transferRepository.GetLinkByTransactionAsync(transaction.Id, cancellationToken);
+        if (link is not null)
+            transferRepository.RemoveLink(link);
 
         // Soft delete da transação atual
         transaction.DeletedAt = DateTime.UtcNow;

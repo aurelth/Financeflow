@@ -11,6 +11,7 @@ namespace FinanceFlow.UnitTests.Transactions;
 public class DeleteTransactionCommandHandlerTests
 {
     private readonly Mock<ITransactionRepository> _transactionRepository = new();
+    private readonly Mock<ITransferRepository> _transferRepository = new();
     private readonly Mock<ICacheService> _cache = new();
 
     private static readonly Guid UserId = Guid.NewGuid();
@@ -26,6 +27,7 @@ public class DeleteTransactionCommandHandlerTests
 
     private DeleteTransactionCommandHandler CreateHandler() =>
         new(_transactionRepository.Object,
+            _transferRepository.Object,
             _cache.Object);
 
     [Fact]

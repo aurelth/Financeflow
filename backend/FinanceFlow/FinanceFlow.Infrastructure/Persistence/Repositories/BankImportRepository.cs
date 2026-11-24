@@ -106,6 +106,7 @@ public class BankImportRepository(FinanceFlowDbContext context) : IBankImportRep
         return await context.Transactions
             .IgnoreQueryFilters()
             .AsNoTracking()
+            .Include(t => t.Account)
             .Where(t => t.UserId == userId && idList.Contains(t.Id))
             .ToListAsync(cancellationToken);
     }

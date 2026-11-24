@@ -1,3 +1,4 @@
+using FinanceFlow.Domain.Enums;
 namespace FinanceFlow.Domain.Entities;
 
 public class Transaction : BaseEntity
@@ -15,6 +16,13 @@ public class Transaction : BaseEntity
     public string Tags { get; set; } = string.Empty; // JSON serializado
     public string? ImportHash { get; set; }
     public string? ExternalId { get; set; } // FITID do OFX de origem, quando importado
+
+    /// <summary>Sentido da transferência (só para Type = Transfer). Define o efeito no saldo da conta.</summary>
+    public TransferDirection? TransferDirection { get; set; }
+
+    // Vínculo com a outra ponta da transferência (no máximo um dos dois existe)
+    public TransferLink? LinkAsOut { get; set; }
+    public TransferLink? LinkAsIn { get; set; }
 
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;

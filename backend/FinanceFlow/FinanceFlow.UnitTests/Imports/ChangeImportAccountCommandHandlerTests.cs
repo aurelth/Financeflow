@@ -14,10 +14,12 @@ public class ChangeImportAccountCommandHandlerTests
     private readonly Mock<IBankImportRepository> _bankImportRepository = new();
     private readonly Mock<IAccountRepository> _accountRepository = new();
     private readonly Mock<IImportDeduplicationService> _deduplicationService = new();
+    private readonly Mock<ITransferMatchingService> _transferMatchingService = new();
     private readonly Guid _userId = Guid.NewGuid();
 
     private ChangeImportAccountCommandHandler CreateHandler() =>
-        new(_bankImportRepository.Object, _accountRepository.Object, _deduplicationService.Object);
+        new(_bankImportRepository.Object, _accountRepository.Object, _deduplicationService.Object,
+            _transferMatchingService.Object);
 
     private BankImport SetupImport(
         BankImportStatus status = BankImportStatus.Completed,
@@ -79,6 +81,31 @@ public class ChangeImportAccountCommandHandlerTests
         result.AccountName.Should().Be("Nubank");
         _deduplicationService.Verify(s => s.DetectAsync(bankImport, default), Times.Once);
         _bankImportRepository.Verify(r => r.UpdateAsync(bankImport, default), Times.Once);
+    }
+
+    // O par de uma transferência precisa estar em OUTRA conta: trocar a conta muda os pares
+    [Fact]
+    public async Task Handle_DeveRefazerOPareamentoDeTransferencias_QuandoImportacaoConcluida()
+    {
+        var bankImport = SetupImport();
+        var account = SetupAccount();
+
+        await CreateHandler().Handle(
+            new ChangeImportAccountCommand(bankImport.Id, _userId, account.Id), default);
+
+        _transferMatchingService.Verify(s => s.MatchAsync(bankImport, default), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_NaoDeveParearTransferencias_QuandoImportacaoPendente()
+    {
+        var bankImport = SetupImport(BankImportStatus.Pending);
+        var account = SetupAccount();
+
+        await CreateHandler().Handle(
+            new ChangeImportAccountCommand(bankImport.Id, _userId, account.Id), default);
+
+        _transferMatchingService.Verify(s => s.MatchAsync(It.IsAny<BankImport>(), default), Times.Never);
     }
 
     // Pendente: o Worker ainda vai processar usando a nova conta
