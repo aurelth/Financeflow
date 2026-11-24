@@ -22,6 +22,18 @@ public class BankImport : BaseEntity
     public string? AccountKeyHash { get; set; }
     public string? AccountLast4 { get; set; }
 
+    // Saldo informado pelo banco no extrato (LEDGERBAL) e período coberto; base da conciliação
+    public decimal? LedgerBalance { get; set; }
+    public DateTime? LedgerBalanceDate { get; set; }
+    public DateTime? StatementStart { get; set; }
+    public DateTime? StatementEnd { get; set; }
+
+    /// <summary>
+    /// Quando o usuário confirmou a importação. Só extratos confirmados entram na conciliação,
+    /// pois antes disso os lançamentos ainda não existem na conta.
+    /// </summary>
+    public DateTime? ConfirmedAt { get; set; }
+
     // Navegação
     public ICollection<BankImportTransaction> Transactions { get; set; } = [];
 }

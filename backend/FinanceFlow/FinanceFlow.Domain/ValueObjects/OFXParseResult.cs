@@ -5,7 +5,9 @@ public record OFXParseResult(
     string BankId,
     DateTime StartDate,
     DateTime EndDate,
-    IEnumerable<OFXTransaction> Transactions
+    IEnumerable<OFXTransaction> Transactions,
+    decimal? LedgerBalance = null,
+    DateTime? LedgerBalanceDate = null
 );
 
 public record OFXTransaction(

@@ -100,6 +100,33 @@ public class AccountRepository(FinanceFlowDbContext context) : IAccountRepositor
         return rows.ToDictionary(r => r.AccountId, r => r.Total);
     }
 
+    public async Task<decimal> GetMovementTotalUntilAsync(
+        Guid userId,
+        Guid accountId,
+        DateTime until,
+        CancellationToken cancellationToken = default)
+    {
+        var endExclusive = until.Date.AddDays(1);
+
+        return await context.Transactions
+            .IgnoreQueryFilters()
+            .Where(t =>
+                t.UserId == userId &&
+                t.AccountId == accountId &&
+                t.DeletedAt == null &&
+                t.Status != TransactionStatus.Scheduled &&
+                t.Date < endExclusive &&
+                (t.Account.InitialBalanceDate == null || t.Date > t.Account.InitialBalanceDate))
+            .AsNoTracking()
+            .SumAsync(t =>
+                t.Type == TransactionType.Income ? t.Amount :
+                t.Type == TransactionType.Expense ? -t.Amount :
+                t.Type == TransactionType.Transfer && t.TransferDirection == TransferDirection.In ? t.Amount :
+                t.Type == TransactionType.Transfer && t.TransferDirection == TransferDirection.Out ? -t.Amount :
+                0m,
+                cancellationToken);
+    }
+
     public async Task<bool> NameExistsAsync(
         Guid userId,
         string name,

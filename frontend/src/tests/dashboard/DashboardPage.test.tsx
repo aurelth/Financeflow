@@ -56,8 +56,12 @@ vi.mock('@/features/dashboard/api/useDashboard', () => ({
   useWeeklyComparison:   () => ({ data: mockWeeklyComparison,   isLoading: false }),
 }))
 
+let mockAccounts: unknown[] = []
+let mockReconciliations: unknown[] = []
+
 vi.mock('@/features/accounts/api/useAccounts', () => ({
-  useAccounts: () => ({ data: [] }),
+  useAccounts: () => ({ data: mockAccounts }),
+  useAccountsReconciliation: () => ({ data: mockReconciliations }),
 }))
 
 vi.mock('@/features/budgets/api/useBudgets', () => ({
@@ -80,7 +84,32 @@ const renderPage = () => {
 }
 
 describe('DashboardPage', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockAccounts = []
+    mockReconciliations = []
+  })
+
+  it('não deve mostrar alerta de conciliação nem saldo por conta sem contas ou extratos', () => {
+    renderPage()
+    expect(screen.queryByTestId('reconciliation-alert')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('account-balances-widget')).not.toBeInTheDocument()
+  })
+
+  it('deve mostrar o alerta e o saldo por conta quando uma conta diverge do extrato', () => {
+    mockAccounts = [
+      { id: 'a1', name: 'Conta principal', type: 'Checking', currency: 'BRL', color: '#10b981', balance: 1000, isDefault: true,  isArchived: false },
+      { id: 'a2', name: 'Nubank',          type: 'Checking', currency: 'BRL', color: '#8b5cf6', balance: 2500, isDefault: false, isArchived: false },
+    ]
+    mockReconciliations = [
+      { accountId: 'a2', status: 'Divergent', difference: 100, statementBalance: 2600, calculatedBalance: 2500 },
+    ]
+    renderPage()
+
+    expect(screen.getByTestId('reconciliation-alert')).toBeInTheDocument()
+    expect(screen.getByTestId('account-balances-widget')).toBeInTheDocument()
+    expect(screen.getByTestId('account-balance-a2')).toBeInTheDocument()
+  })
 
   it('deve renderizar o título da página', () => {
     renderPage()

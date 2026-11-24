@@ -57,6 +57,10 @@ public class UploadOFXCommandHandler(
             FileName = request.FileName,
             Status = BankImportStatus.Pending,
             TotalRecords = parseResult.Transactions.Count(),
+            LedgerBalance = parseResult.LedgerBalance,
+            LedgerBalanceDate = parseResult.LedgerBalanceDate,
+            StatementStart = ValidDate(parseResult.StartDate),
+            StatementEnd = ValidDate(parseResult.EndDate),
         };
 
         // Guarda a identificação do arquivo (já em hash) para aprender/validar a conta ao trocá-la no preview
@@ -126,6 +130,9 @@ public class UploadOFXCommandHandler(
             AccountName: account.Name,
             AccountResolution: resolution);
     }
+
+    // O parser devolve a data mínima quando o período não vem no arquivo
+    private static DateTime? ValidDate(DateTime date) => date == default ? null : date;
 
     // Prioridade: conta escolhida pelo usuário > conta reconhecida pelo OFX > "Conta principal"
     private async Task<(Account Account, string Resolution)> ResolveAccountAsync(

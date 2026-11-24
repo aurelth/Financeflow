@@ -17,6 +17,8 @@ import {
 } from "../api/useDashboard";
 import { useBudgetSummary } from "@/features/budgets/api/useBudgets";
 import AccountSelect from "@/features/accounts/components/AccountSelect";
+import ReconciliationAlert from "@/features/accounts/components/ReconciliationAlert";
+import AccountBalancesWidget from "../components/AccountBalancesWidget";
 import { useTransactions } from "@/features/transactions/api/useTransactions";
 import LineChartCard from "../components/LineChartCard";
 import PieChartCard from "../components/PieChartCard";
@@ -200,6 +202,9 @@ export default function DashboardPage() {
         />
       </div>
 
+      {/* Diferença entre o saldo do extrato e o calculado — some quando tudo está conciliado */}
+      <ReconciliationAlert />
+
       {/* Filtro por conta — oculto quando só existe uma */}
       <div className="max-w-xs">
         <AccountSelect
@@ -320,6 +325,9 @@ export default function DashboardPage() {
 
           {/* Gráfico de barras */}
           <BarChartCard data={weeklyComparison} />
+
+          {/* Saldo atual por conta (com o selo de conciliação) */}
+          <AccountBalancesWidget />
 
           {/* Widgets — linha final */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">

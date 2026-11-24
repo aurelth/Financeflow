@@ -6,7 +6,9 @@
     "showArchived": "Afficher les archivés",
     "totalBalance": "Solde total",
     "activeAccounts_one": "{{count}} compte actif",
-    "activeAccounts_other": "{{count}} comptes actifs"
+    "activeAccounts_other": "{{count}} comptes actifs",
+    "reconciliationAlert_one": "{{count}} compte avec un écart par rapport au relevé",
+    "reconciliationAlert_other": "{{count}} comptes avec un écart par rapport au relevé"
   },
   "empty": {
     "title": "Aucun compte trouvé",
@@ -73,5 +75,22 @@
     "updated": "Compte mis à jour avec succès !",
     "archived": "Compte archivé.",
     "restored": "Compte réactivé."
+  },
+  "reconciliation": {
+    "title": "Rapprochement avec le relevé",
+    "matched": "Rapproché avec le relevé du {{date}}",
+    "divergent": "Écart de {{amount}} par rapport au relevé du {{date}}",
+    "bankBalance": "Solde de la banque",
+    "calculatedBalance": "Solde calculé",
+    "missingIncome": "Des entrées manquent dans FinanceFlow (ou il y a des sorties en trop). Vérifiez que toutes les opérations de la période ont été importées.",
+    "extraIncome": "FinanceFlow contient des entrées en trop (ou il manque des sorties). Vérifiez les doublons ou les saisies manuelles.",
+    "noStatement": "Aucun relevé avec solde. Importez un fichier OFX pour rapprocher ce compte.",
+    "unavailable": "Comparaison impossible : le solde initial du compte est postérieur à la date du relevé.",
+    "review": "Voir les comptes"
+  },
+  "dashboardWidget": {
+    "title": "Solde par compte",
+    "viewAll": "Voir les comptes",
+    "divergentHint": "Écart avec le relevé"
   }
 }

@@ -27,6 +27,8 @@ public class BankImportConfiguration : IEntityTypeConfiguration<BankImport>
         builder.Property(b => b.AccountKeyHash).HasMaxLength(64);
         builder.Property(b => b.AccountLast4).HasMaxLength(4);
 
+        builder.Property(b => b.LedgerBalance).HasPrecision(18, 2);
+
         builder.HasOne(b => b.Account)
                .WithMany()
                .HasForeignKey(b => b.AccountId)

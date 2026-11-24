@@ -128,6 +128,9 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<DateTime?>("ConfirmedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -151,6 +154,19 @@ namespace FinanceFlow.Infrastructure.Migrations
 
                     b.Property<int>("Imported")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("LedgerBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("LedgerBalanceDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("StatementEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("StatementStart")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .IsRequired()

@@ -72,6 +72,8 @@ export const useCreateTransaction = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
+      // O saldo da conta e a conciliação com o extrato mudam a cada lançamento
+      qc.invalidateQueries({ queryKey: ['accounts'] })
       toast.success('Transação criada com sucesso!')
     },
     onError: (err: any) => {
@@ -97,6 +99,8 @@ export const useUpdateTransaction = (id: string) => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
+      // O saldo da conta e a conciliação com o extrato mudam a cada lançamento
+      qc.invalidateQueries({ queryKey: ['accounts'] })
       toast.success('Transação atualizada com sucesso!')
     },
     onError: (err: any) => {
@@ -125,6 +129,8 @@ export const useDeleteTransaction = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
       qc.invalidateQueries({ queryKey: ['dashboard'] })
+      // O saldo da conta e a conciliação com o extrato mudam a cada lançamento
+      qc.invalidateQueries({ queryKey: ['accounts'] })
       toast.success('Transação removida com sucesso!')
     },
     onError: (err: any) => {

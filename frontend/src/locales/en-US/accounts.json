@@ -6,7 +6,9 @@
     "showArchived": "Show archived",
     "totalBalance": "Total balance",
     "activeAccounts_one": "{{count}} active account",
-    "activeAccounts_other": "{{count}} active accounts"
+    "activeAccounts_other": "{{count}} active accounts",
+    "reconciliationAlert_one": "{{count}} account differs from its statement",
+    "reconciliationAlert_other": "{{count}} accounts differ from their statements"
   },
   "empty": {
     "title": "No accounts found",
@@ -73,5 +75,22 @@
     "updated": "Account updated successfully!",
     "archived": "Account archived.",
     "restored": "Account restored."
+  },
+  "reconciliation": {
+    "title": "Statement reconciliation",
+    "matched": "Reconciled with the statement of {{date}}",
+    "divergent": "{{amount}} difference from the statement of {{date}}",
+    "bankBalance": "Bank balance",
+    "calculatedBalance": "Calculated balance",
+    "missingIncome": "FinanceFlow is missing income (or has extra expenses). Check that every transaction in the period was imported.",
+    "extraIncome": "FinanceFlow has extra income (or is missing expenses). Check for duplicate or manual entries.",
+    "noStatement": "No statement with a balance. Import an OFX file to reconcile this account.",
+    "unavailable": "Cannot compare: the account's opening balance is dated after the statement.",
+    "review": "View accounts"
+  },
+  "dashboardWidget": {
+    "title": "Balance by account",
+    "viewAll": "View accounts",
+    "divergentHint": "Difference from statement"
   }
 }

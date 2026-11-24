@@ -2,7 +2,9 @@ using FinanceFlow.Application.DTOs.Accounts;
 using FinanceFlow.Application.UseCases.Accounts.Commands.ArchiveAccount;
 using FinanceFlow.Application.UseCases.Accounts.Commands.CreateAccount;
 using FinanceFlow.Application.UseCases.Accounts.Commands.UpdateAccount;
+using FinanceFlow.Application.UseCases.Accounts.Queries.GetAccountReconciliation;
 using FinanceFlow.Application.UseCases.Accounts.Queries.GetAccounts;
+using FinanceFlow.Application.UseCases.Accounts.Queries.GetAccountsReconciliation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +23,25 @@ public class AccountsController(IMediator mediator) : BaseController(mediator)
     {
         var query = new GetAccountsQuery(CurrentUserId, includeArchived);
         var result = await Mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Concilia todas as contas ativas com o saldo do último extrato confirmado de cada uma.</summary>
+    [HttpGet("reconciliation")]
+    [ProducesResponseType(typeof(IEnumerable<AccountReconciliationDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAllReconciliation(CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new GetAccountsReconciliationQuery(CurrentUserId), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Compara o saldo calculado da conta com o saldo do último extrato confirmado.</summary>
+    [HttpGet("{id:guid}/reconciliation")]
+    [ProducesResponseType(typeof(AccountReconciliationDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetReconciliation(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new GetAccountReconciliationQuery(id, CurrentUserId), cancellationToken);
         return Ok(result);
     }
 

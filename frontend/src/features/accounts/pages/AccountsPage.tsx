@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import EmptyState from '@/components/ui/EmptyState'
 import { formatCurrency } from '@/lib/format'
-import { useAccounts, useRestoreAccount } from '../api/useAccounts'
+import { useAccounts, useAccountsReconciliation, useRestoreAccount } from '../api/useAccounts'
 import AccountCard from '../components/AccountCard'
 import AccountForm from '../components/AccountForm'
 import ArchiveAccountDialog from '../components/ArchiveAccountDialog'
@@ -18,6 +18,7 @@ export default function AccountsPage() {
   const [archiving, setArchiving]       = useState<Account | null>(null)
 
   const { data: accounts = [], isLoading } = useAccounts(showArchived)
+  const { data: reconciliations = [] } = useAccountsReconciliation()
   const restoreAccount = useRestoreAccount()
 
   const active = accounts.filter(a => !a.isArchived)
@@ -95,6 +96,7 @@ export default function AccountsPage() {
             <AccountCard
               key={account.id}
               account={account}
+              reconciliation={reconciliations.find(r => r.accountId === account.id)}
               onEdit={a => { setEditing(a); setShowForm(true) }}
               onArchive={setArchiving}
               onRestore={a => restoreAccount.mutate(a, { onSuccess: () => toast.success(t('toast.restored')) })}

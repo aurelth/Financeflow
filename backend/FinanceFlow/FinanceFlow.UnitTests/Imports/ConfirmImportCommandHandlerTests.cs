@@ -92,6 +92,63 @@ public class ConfirmImportCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_DeveMarcarImportacaoComoConfirmada_AposImportarLancamentos()
+    {
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var row = new BankImportTransaction
+        {
+            Id = Guid.NewGuid(), Hash = "h", Amount = 10m, Description = "IFOOD",
+            Type = TransactionType.Expense, Date = DateTime.UtcNow, IsSelected = true,
+        };
+        var bankImport = new BankImport
+        {
+            Id = importId, UserId = userId, Status = BankImportStatus.Completed, Transactions = [row],
+        };
+        _bankImportRepository.Setup(r => r.GetByIdAsync(importId, userId, default)).ReturnsAsync(bankImport);
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(categoryId, userId, default))
+            .ReturnsAsync(new Category { Id = categoryId, Name = "Alimentação", Type = TransactionType.Expense, IsDefault = true });
+
+        await CreateHandler().Handle(new ConfirmImportCommand(importId, userId,
+            new ConfirmImportRequestDto([new ConfirmImportItemDto(row.Id, true, categoryId, "Expense")])), default);
+
+        bankImport.ConfirmedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task Handle_NaoDeveMarcarComoConfirmada_QuandoTudoFalhaAoGravar()
+    {
+        var userId = Guid.NewGuid();
+        var importId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var row = new BankImportTransaction
+        {
+            Id = Guid.NewGuid(), Hash = "h", Amount = 10m, Description = "IFOOD",
+            Type = TransactionType.Expense, Date = DateTime.UtcNow, IsSelected = true,
+        };
+        var bankImport = new BankImport
+        {
+            Id = importId, UserId = userId, Status = BankImportStatus.Completed, Transactions = [row],
+        };
+        _bankImportRepository.Setup(r => r.GetByIdAsync(importId, userId, default)).ReturnsAsync(bankImport);
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(categoryId, userId, default))
+            .ReturnsAsync(new Category { Id = categoryId, Name = "Alimentação", Type = TransactionType.Expense, IsDefault = true });
+        _transactionRepository
+            .Setup(r => r.AddAsync(It.IsAny<Transaction>(), default))
+            .ThrowsAsync(new InvalidOperationException("falha ao gravar"));
+
+        await CreateHandler().Handle(new ConfirmImportCommand(importId, userId,
+            new ConfirmImportRequestDto([new ConfirmImportItemDto(row.Id, true, categoryId, "Expense")])), default);
+
+        bankImport.Imported.Should().Be(0);
+        bankImport.Errors.Should().Be(1);
+        bankImport.ConfirmedAt.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Handle_DeveIgnorarDuplicatas()
     {
         // Arrange

@@ -6,7 +6,9 @@
     "showArchived": "Mostrar archivadas",
     "totalBalance": "Saldo total",
     "activeAccounts_one": "{{count}} cuenta activa",
-    "activeAccounts_other": "{{count}} cuentas activas"
+    "activeAccounts_other": "{{count}} cuentas activas",
+    "reconciliationAlert_one": "{{count}} cuenta con diferencia respecto al extracto",
+    "reconciliationAlert_other": "{{count}} cuentas con diferencia respecto al extracto"
   },
   "empty": {
     "title": "No se encontraron cuentas",
@@ -73,5 +75,22 @@
     "updated": "¡Cuenta actualizada con éxito!",
     "archived": "Cuenta archivada.",
     "restored": "Cuenta reactivada."
+  },
+  "reconciliation": {
+    "title": "Conciliación con el extracto",
+    "matched": "Conciliada con el extracto del {{date}}",
+    "divergent": "Diferencia de {{amount}} respecto al extracto del {{date}}",
+    "bankBalance": "Saldo del banco",
+    "calculatedBalance": "Saldo calculado",
+    "missingIncome": "Faltan ingresos en FinanceFlow (o hay gastos de más). Revisa que se hayan importado todos los movimientos del período.",
+    "extraIncome": "Hay ingresos de más en FinanceFlow (o faltan gastos). Revisa movimientos duplicados o manuales.",
+    "noStatement": "Sin extracto con saldo. Importa un archivo OFX para conciliar esta cuenta.",
+    "unavailable": "No se puede comparar: el saldo inicial de la cuenta es posterior a la fecha del extracto.",
+    "review": "Ver cuentas"
+  },
+  "dashboardWidget": {
+    "title": "Saldo por cuenta",
+    "viewAll": "Ver cuentas",
+    "divergentHint": "Diferencia con el extracto"
   }
 }

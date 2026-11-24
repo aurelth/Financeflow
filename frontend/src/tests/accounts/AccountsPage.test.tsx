@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import AccountsPage from '@/features/accounts/pages/AccountsPage'
-import type { Account } from '@/features/accounts/types/account.types'
+import type { Account, AccountReconciliation } from '@/features/accounts/types/account.types'
 import { makeAccount, nubank, itau } from './fixtures'
 
 vi.mock('react-i18next', async () => (await import('./i18nMock')).accountsI18nMock)
@@ -13,6 +13,7 @@ const mockRestore = vi.fn()
 const mockCreate  = vi.fn()
 const mockUpdate  = vi.fn()
 let mockAccounts: Account[] = []
+let mockReconciliations: AccountReconciliation[] = []
 let lastIncludeArchived: boolean | undefined
 
 vi.mock('@/features/accounts/api/useAccounts', () => ({
@@ -20,6 +21,7 @@ vi.mock('@/features/accounts/api/useAccounts', () => ({
     lastIncludeArchived = includeArchived
     return { data: mockAccounts, isLoading: false }
   },
+  useAccountsReconciliation: () => ({ data: mockReconciliations }),
   useCreateAccount:  () => ({ mutate: mockCreate,  isPending: false }),
   useUpdateAccount:  () => ({ mutate: mockUpdate,  isPending: false }),
   useArchiveAccount: () => ({ mutate: mockArchive, isPending: false }),
@@ -37,6 +39,7 @@ describe('AccountsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAccounts = [makeAccount(), nubank, itau]
+    mockReconciliations = []
   })
 
   it('deve exibir o título e todas as contas', () => {
