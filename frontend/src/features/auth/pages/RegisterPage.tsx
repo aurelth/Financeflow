@@ -109,7 +109,6 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     setValue,
-    watch,
     control,
     formState: { errors },
   } = useForm<FormData>({
@@ -117,6 +116,7 @@ export default function RegisterPage() {
   });
 
   const passwordValue = useWatch({ control, name: "password" }) ?? "";
+  const cpfValue      = useWatch({ control, name: "cpf" }) ?? "";
 
   const requirements = [
     { met: passwordValue.length >= 8, label: "Mínimo 8 caracteres" },
@@ -202,7 +202,7 @@ export default function RegisterPage() {
             <input
               id="cpf"
               placeholder="000.000.000-00"
-              value={watch("cpf") ?? ""}
+              value={cpfValue}
               onChange={(e) =>
                 setValue("cpf", maskCpf(e.target.value), {
                   shouldValidate: true,

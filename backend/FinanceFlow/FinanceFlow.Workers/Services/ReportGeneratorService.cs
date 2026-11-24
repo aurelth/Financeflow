@@ -12,7 +12,6 @@ namespace FinanceFlow.Workers.Services;
 public class ReportGeneratorService(
     IHttpClientFactory httpClientFactory,
     ApiAuthService authService,
-    IConfiguration configuration,
     ILogger<ReportGeneratorService> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()

@@ -14,7 +14,6 @@ public class TransactionDueAlertJob(
     NotificationDeduplicationService deduplicationService,
     ApiAuthService authService,
     IHttpClientFactory httpClientFactory,
-    IConfiguration configuration,
     ILogger<TransactionDueAlertJob> logger) : IJob
 {
     private static readonly JsonSerializerOptions JsonOptions = new()

@@ -181,7 +181,7 @@ export default function ProjectionsTab({ data }: Props) {
                 fontSize: '12px',
                 color: '#a1a1aa',
               }}
-              formatter={(value: any, name: any) => [
+              formatter={(value, name) => [
                 value !== undefined ? formatCurrency(Number(value)) : '—',
                 name,
               ]}
@@ -216,18 +216,19 @@ export default function ProjectionsTab({ data }: Props) {
               stroke="#6366f1"
               strokeWidth={2}
               strokeDasharray="0"
-              dot={(props: any) => {
-                const { cx, cy, payload } = props
+              dot={(props: { cx?: number; cy?: number; payload?: { isProjected?: boolean } }) => {
+                const { cx, cy } = props
+                const projected = !!props.payload?.isProjected
                 return (
                   <circle
                     key={`dot-${cx}-${cy}`}
                     cx={cx}
                     cy={cy}
-                    r={payload.isProjected ? 5 : 4}
-                    fill={payload.isProjected ? '#818cf8' : '#6366f1'}
-                    stroke={payload.isProjected ? '#6366f1' : 'none'}
-                    strokeWidth={payload.isProjected ? 1.5 : 0}
-                    strokeDasharray={payload.isProjected ? '3 2' : '0'}
+                    r={projected ? 5 : 4}
+                    fill={projected ? '#818cf8' : '#6366f1'}
+                    stroke={projected ? '#6366f1' : 'none'}
+                    strokeWidth={projected ? 1.5 : 0}
+                    strokeDasharray={projected ? '3 2' : '0'}
                   />
                 )
               }}

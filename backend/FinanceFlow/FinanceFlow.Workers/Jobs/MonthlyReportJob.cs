@@ -13,7 +13,6 @@ namespace FinanceFlow.Workers.Jobs;
 public class MonthlyReportJob(
     ApiAuthService authService,
     IHttpClientFactory httpClientFactory,
-    IConfiguration configuration,
     ILogger<MonthlyReportJob> logger) : IJob
 {
     public async Task Execute(IJobExecutionContext context)

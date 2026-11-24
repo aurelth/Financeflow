@@ -59,14 +59,14 @@ export default function LineChartCard({ data }: LineChartCardProps) {
               color: '#a1a1aa',
             }}
             labelStyle={{ color: '#a1a1aa', marginBottom: 4 }}
-            labelFormatter={(label: any) => formatDate(String(label))}
-            formatter={(value: any, name: any) => [
+            labelFormatter={(label) => formatDate(String(label))}
+            formatter={(value, name) => [
               formatCurrency(Number(value)),
               name === 'balance' ? 'Saldo' : name === 'income' ? 'Receita' : 'Despesa',
             ]}
           />
           <Legend
-            formatter={(value: any) =>
+            formatter={(value) =>
               value === 'balance' ? 'Saldo' : value === 'income' ? 'Receita' : 'Despesa'
             }
             wrapperStyle={{ fontSize: 12, color: '#52525b' }}

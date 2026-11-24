@@ -121,7 +121,8 @@ public class BudgetAlertService(
                          $"({spentFormatted} de {limitFormatted}) em {summary.Month}/{summary.Year}.";
         }
 
-        if (alertLevel is null)
+        // message é sempre preenchida junto com alertLevel; checar os dois deixa isso explícito para o compilador
+        if (alertLevel is null || message is null)
             return;
 
         var alertTopic = configuration["Kafka:Topics:BudgetAlerts"] ?? "finance.budget.alerts";

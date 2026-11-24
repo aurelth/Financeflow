@@ -143,11 +143,6 @@ export default function DashboardPage() {
 
     const timeout = setTimeout(() => {
       const steps = getTourSteps(t);
-      console.log("steps gerados:", steps);
-      console.log(
-        "elemento da sidebar existe?",
-        document.querySelector('a[href="/dashboard"]'),
-      );
 
       const driverObj = createDriver({
         steps,

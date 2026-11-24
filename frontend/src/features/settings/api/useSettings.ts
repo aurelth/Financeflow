@@ -1,19 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
+import { getApiErrorMessage } from '@/lib/apiError'
 import { useAuthStore } from '@/store/authStore'
 import type {
   NotificationPreferences,
   UpdateNotificationPreferencesRequest,
   DeleteAccountRequest,
 } from '../types/settings.types'
-
-// Utilitário para extrair mensagem de erro da API
-const getApiError = (err: any, fallback: string): string => {
-  const errors = err?.response?.data?.errors
-  if (errors) return Object.values(errors).flat().join(' ')
-  return err?.response?.data?.message ?? err?.response?.data?.title ?? fallback
-}
 
 // GET /api/settings/notifications
 export function useNotificationPreferences() {
@@ -40,8 +34,8 @@ export function useUpdateNotificationPreferences() {
       queryClient.invalidateQueries({ queryKey: ['settings', 'notifications'] })
       toast.success('Preferências de notificação atualizadas.')
     },
-    onError: (err: any) => {
-      toast.error(getApiError(err, 'Erro ao atualizar preferências.'))
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Erro ao atualizar preferências.'))
     },
   })
 }
@@ -58,8 +52,8 @@ export function useLogoutAll() {
       toast.success('Todas as sessões foram encerradas.')
       logout()
     },
-    onError: (err: any) => {
-      toast.error(getApiError(err, 'Erro ao encerrar sessões.'))
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Erro ao encerrar sessões.'))
     },
   })
 }
@@ -76,8 +70,8 @@ export function useDeleteAccount() {
       toast.success('Conta excluída com sucesso.')
       logout()
     },    
-    onError: (err: any) => {
-      toast.error(getApiError(err, 'Erro ao excluir conta. Tente novamente.'))
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Erro ao excluir conta. Tente novamente.'))
     },
   })
 }

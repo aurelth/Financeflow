@@ -97,7 +97,7 @@ export default function AnnualSummaryTab({ data }: Props) {
                 fontSize: '12px',
                 color: '#a1a1aa',
               }}
-              formatter={(value: any) => [formatCurrency(Number(value))]}
+              formatter={(value) => [formatCurrency(Number(value))]}
             />
             <Legend wrapperStyle={{ fontSize: 12, color: '#52525b' }} />
             <Bar yAxisId="bars" dataKey="Receitas" fill="#34d399" radius={[4, 4, 0, 0]} maxBarSize={28} />

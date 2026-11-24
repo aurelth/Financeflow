@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
+import { getApiErrorMessage } from '@/lib/apiError'
 import type {
   Budget,
   BudgetSummary,
@@ -43,17 +44,7 @@ export const useCreateBudget = () => {
       qc.invalidateQueries({ queryKey: ['budgets'] })
       toast.success('Orçamento criado com sucesso!')
     },
-    onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error(
-          err.response?.data?.message ?? 'Erro ao criar orçamento. Tente novamente.'
-        )
-      }
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao criar orçamento. Tente novamente.')),
   })
 }
 
@@ -67,17 +58,7 @@ export const useUpdateBudget = (id: string) => {
       qc.invalidateQueries({ queryKey: ['budgets'] })
       toast.success('Orçamento atualizado com sucesso!')
     },
-    onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error(
-          err.response?.data?.message ?? 'Erro ao atualizar orçamento. Tente novamente.'
-        )
-      }
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao atualizar orçamento. Tente novamente.')),
   })
 }
 
@@ -91,9 +72,6 @@ export const useDeleteBudget = () => {
       qc.invalidateQueries({ queryKey: ['budgets'] })
       toast.success('Orçamento removido com sucesso!')
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.message
-      toast.error(msg ?? 'Erro ao remover orçamento. Tente novamente.')
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao remover orçamento. Tente novamente.')),
   })
 }

@@ -74,7 +74,7 @@ export default function ComparisonLineChart({ periods }: ComparisonLineChartProp
               fontSize: '12px',
               color: '#a1a1aa',
             }}
-            formatter={(value: any) => [formatCurrency(Number(value))]}
+            formatter={(value) => [formatCurrency(Number(value))]}
           />
           <Legend wrapperStyle={{ fontSize: 12, color: '#52525b' }} />
           {periodLabels.map((label, i) => (

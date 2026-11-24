@@ -222,7 +222,7 @@ export default function HealthScorePage() {
                       fontSize:     '13px',
                       color:        'var(--ff-text-primary)',
                     }}
-                    formatter={(value: any) => [`${value} pts`, 'Score']}
+                    formatter={(value) => [`${value} pts`, 'Score']}
                   />
                   <Line
                     type="monotone"

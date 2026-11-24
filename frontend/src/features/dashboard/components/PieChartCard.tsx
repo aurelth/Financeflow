@@ -73,11 +73,11 @@ export default function PieChartCard({ data }: PieChartCardProps) {
               fontSize: '12px',
               color: '#a1a1aa',
             }}
-            formatter={(value: any, name: any) => [formatCurrency(Number(value)), name]}
+            formatter={(value, name) => [formatCurrency(Number(value)), name]}
           />
           <Legend
-            formatter={(value: any, entry: any) =>
-              `${value} (${entry?.payload?.percentage?.toFixed(1) ?? 0}%)`
+            formatter={(value, entry) =>
+              `${value} (${(entry?.payload as { percentage?: number } | undefined)?.percentage?.toFixed(1) ?? 0}%)`
             }
             wrapperStyle={{ fontSize: 11, color: '#52525b' }}
           />

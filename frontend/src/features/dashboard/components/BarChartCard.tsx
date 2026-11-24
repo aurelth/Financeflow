@@ -50,13 +50,13 @@ export default function BarChartCard({ data }: BarChartCardProps) {
               fontSize: '12px',
               color: '#a1a1aa',
             }}
-            formatter={(value: any, name: any) => [
+            formatter={(value, name) => [
               formatCurrency(Number(value)),
               name === 'income' ? 'Receita' : 'Despesa',
             ]}
           />
           <Legend
-            formatter={(value: any) => value === 'income' ? 'Receita' : 'Despesa'}
+            formatter={(value) => value === 'income' ? 'Receita' : 'Despesa'}
             wrapperStyle={{ fontSize: 12, color: '#52525b' }}
           />
           <Bar dataKey="income"   fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={32} />

@@ -176,6 +176,9 @@ dotnet test FinanceFlow.IntegrationTests/FinanceFlow.IntegrationTests.csproj
 ```bash
 cd frontend
 
+# Lint (obrigatório no CI)
+npm run lint
+
 # Testes de componentes (Vitest)
 npm run test
 
@@ -306,6 +309,8 @@ git push origin develop
 | v0.32.0 | Deduplicação por conta e FITID, categoria obrigatória na importação, relatórios por conta | ✅ Concluído |
 | v0.33.0 | Transferências entre contas (pareamento automático, vínculo manual e desfazer, painel de pendências) | ✅ Concluído |
 | v0.34.0 | Saldo e conciliação com o extrato (LEDGERBAL), alerta de diferença e saldo por conta no dashboard | ✅ Concluído |
+| v0.35.0 | Dívida técnica: ESLint zerado e bloqueante no CI, tratamento de erro da API tipado, build do backend sem warnings de código | ✅ Concluído |
+| v0.36.0 | Remoção do AutoMapper (CVE) com mapeamento manual | 🔜 Planejado |
 
 ---
 

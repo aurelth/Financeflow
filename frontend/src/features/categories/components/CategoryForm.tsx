@@ -17,13 +17,9 @@ const schema = z.object({
   ),
 })
 
-// Usa tipo explícito para evitar conflito com o transform
-type FormData = {
-  name:  string
-  icon:  string
-  color: string
-  type:  TransactionType
-}
+// Entrada (o que o formulário guarda) e saída (o que o zod devolve após o transform) são tipos distintos
+type FormInput = z.input<typeof schema>
+type FormData  = z.output<typeof schema>
 
 interface CategoryFormProps {
   category?:  Category
@@ -54,8 +50,8 @@ const labelStyle: React.CSSProperties = {
 export default function CategoryForm({ category, onSubmit, isPending, onCancel }: CategoryFormProps) {
   const isEditing = !!category
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema) as any,
+  const { register, handleSubmit, control, formState: { errors } } = useForm<FormInput, unknown, FormData>({
+    resolver: zodResolver(schema),
     defaultValues: {
       name:  category?.name  ?? '',
       icon:  category?.icon  ?? '📁',

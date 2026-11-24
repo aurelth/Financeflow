@@ -48,7 +48,7 @@ export default function ComparisonBarChart({ categories, periods }: ComparisonBa
     .slice(0, 8)
 
   const chartData = top8.map(cat => {
-    const entry: Record<string, any> = { name: cat.categoryName }
+    const entry: Record<string, string | number> = { name: cat.categoryName }
     periods.forEach((p, i) => {
       entry[`${MONTHS[p.month - 1]}/${p.year}`] = cat.values[i] ?? 0
     })
@@ -95,7 +95,7 @@ export default function ComparisonBarChart({ categories, periods }: ComparisonBa
               fontSize: '12px',
               color: '#a1a1aa',
             }}
-            formatter={(value: any) => [formatCurrency(Number(value))]}
+            formatter={(value) => [formatCurrency(Number(value))]}
           />
           <Legend wrapperStyle={{ fontSize: 12, color: '#52525b' }} />
           {periodLabels.map((label, i) => (
