@@ -46,6 +46,21 @@ public class ExceptionHandlingMiddleware(
             return context.Response.WriteAsync(validationResponse);
         }
 
+        if (ex is QuotaExceededException quotaEx)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
+            context.Response.Headers.RetryAfter = Math.Max(
+                1, (int)(quotaEx.ResetsAtUtc - DateTime.UtcNow).TotalSeconds).ToString();
+            return context.Response.WriteAsync(JsonSerializer.Serialize(new
+            {
+                status = (int)HttpStatusCode.TooManyRequests,
+                message = quotaEx.Message,
+                limit = quotaEx.Limit,
+                resetsAtUtc = quotaEx.ResetsAtUtc,
+                traceId = context.TraceIdentifier,
+            }));
+        }
+
         var (statusCode, message) = ex switch
         {
             NotFoundException => (HttpStatusCode.NotFound, ex.Message),

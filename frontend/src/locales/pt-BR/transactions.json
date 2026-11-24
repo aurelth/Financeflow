@@ -47,5 +47,27 @@
     "view": "Visualizar",
     "download": "Baixar",
     "remove": "Remover"
+  },
+  "quickEntry": {
+    "button": "Lançar com IA",
+    "title": "Lançar com IA",
+    "subtitle": "Descreva o gasto ou fotografe o comprovante. A IA monta o lançamento e você confere antes de salvar.",
+    "textLabel": "Descrição do lançamento",
+    "textPlaceholder": "Ex.: almoço 45,90 no iFood ontem",
+    "addPhoto": "Anexar foto",
+    "changePhoto": "Trocar foto",
+    "removePhoto": "Remover foto",
+    "imageTooLarge": "A foto é grande demais. Tente uma imagem de até 5 MB.",
+    "genericError": "Não foi possível interpretar agora. Tente novamente.",
+    "nothingFound": "Não encontrei nenhum lançamento nesse conteúdo. Tente descrever com valor e data, ou use outra foto.",
+    "quotaRemaining": "Restam {{remaining}} de {{limit}} usos hoje",
+    "quotaExhausted": "Você usou os {{limit}} lançamentos por IA de hoje. O limite renova à meia-noite.",
+    "cancel": "Cancelar",
+    "submit": "Interpretar",
+    "reading": "Lendo…",
+    "close": "Fechar",
+    "draftBanner": "Sugerido pela IA — confira os dados antes de salvar.",
+    "draftProgress": "Lançamento {{current}} de {{total}}",
+    "discardRest": "Descartar restantes"
   }
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ArrowLeftRight, Plus, Receipt } from 'lucide-react'
+import { ArrowLeftRight, Plus, Receipt, Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useTransactions }           from '../api/useTransactions'
 import { useCategories }             from '../../categories/api/useCategories'
 import { useAccounts }               from '@/features/accounts/api/useAccounts'
@@ -10,10 +11,12 @@ import DeleteTransactionDialog       from '../components/DeleteTransactionDialog
 import TransferFormDialog             from '@/features/transfers/components/TransferFormDialog'
 import UnlinkTransferDialog          from '@/features/transfers/components/UnlinkTransferDialog'
 import PendingTransfersPanel         from '@/features/transfers/components/PendingTransfersPanel'
+import QuickEntryDialog              from '@/features/quick-entry/components/QuickEntryDialog'
 import ExportButton                  from '@/features/reports/components/ExportButton'
 import EmptyState                    from '@/components/ui/EmptyState'
 import SkeletonTable                 from '@/components/ui/SkeletonTable'
 import type { Transaction, GetTransactionsQuery } from '../types/transaction.types'
+import type { QuickEntryBatch } from '@/features/quick-entry/types/quickEntry.types'
 
 function getDefaultFilters(): GetTransactionsQuery {
   const now      = new Date()
@@ -27,13 +30,18 @@ function getDefaultFilters(): GetTransactionsQuery {
 
 const DEFAULT_FILTERS: GetTransactionsQuery = getDefaultFilters()
 
-export default function TransactionsPage() {  
+export default function TransactionsPage() {
+  const { t } = useTranslation('transactions')
   const [filters, setFilters]       = useState<GetTransactionsQuery>(DEFAULT_FILTERS)
   const [showForm, setShowForm]     = useState(false)
   const [editingTx, setEditingTx]   = useState<Transaction | null>(null)
   const [deletingTx, setDeletingTx] = useState<Transaction | null>(null)
   const [showTransferForm, setShowTransferForm] = useState(false)
   const [unlinkingTx, setUnlinkingTx] = useState<Transaction | null>(null)
+  const [showQuickEntry, setShowQuickEntry] = useState(false)
+  // Fila de rascunhos da IA: o formulário abre um por vez, em ordem
+  const [aiBatch, setAiBatch]       = useState<QuickEntryBatch | null>(null)
+  const [aiIndex, setAiIndex]       = useState(0)
 
   const { data, isLoading }       = useTransactions(filters)
   const { data: categories = [] } = useCategories()
@@ -56,6 +64,18 @@ export default function TransactionsPage() {
   function handleCloseForm() {
     setShowForm(false)
     setEditingTx(null)
+  }
+
+  function handleQuickEntryResult(batch: QuickEntryBatch) {
+    setShowQuickEntry(false)
+    setAiBatch(batch)
+    setAiIndex(0)
+  }
+
+  // Salvar ou fechar o formulário passa para o próximo rascunho; no último, encerra a fila
+  function handleCloseDraft() {
+    if (aiBatch && aiIndex + 1 < aiBatch.drafts.length) setAiIndex(i => i + 1)
+    else setAiBatch(null)
   }
 
   function handleFilterChange(newFilters: GetTransactionsQuery) {
@@ -91,6 +111,14 @@ export default function TransactionsPage() {
               Transferir entre contas
             </button>
           )}
+          <button
+            onClick={() => setShowQuickEntry(true)}
+            className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
+            style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--ff-emerald)', border: '1px solid rgba(16,185,129,0.3)' }}
+          >
+            <Sparkles size={15} />
+            {t('quickEntry.button')}
+          </button>
           <button
             onClick={() => setShowForm(true)}
             className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
@@ -209,6 +237,21 @@ export default function TransactionsPage() {
 
       {showForm && (
         <TransactionForm transaction={editingTx ?? undefined} onClose={handleCloseForm} />
+      )}
+
+      {showQuickEntry && (
+        <QuickEntryDialog onClose={() => setShowQuickEntry(false)} onResult={handleQuickEntryResult} />
+      )}
+
+      {aiBatch && (
+        <TransactionForm
+          key={aiIndex}
+          draft={aiBatch.drafts[aiIndex]}
+          draftAttachment={aiBatch.image}
+          draftProgress={{ current: aiIndex + 1, total: aiBatch.drafts.length }}
+          onDiscardDrafts={() => setAiBatch(null)}
+          onClose={handleCloseDraft}
+        />
       )}
 
       {showTransferForm && (

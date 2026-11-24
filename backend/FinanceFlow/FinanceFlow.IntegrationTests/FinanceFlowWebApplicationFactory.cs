@@ -82,6 +82,8 @@ public class FinanceFlowWebApplicationFactory
                 ["Anthropic:ApiKey"] = "test-key-noop",
                 ["Anthropic:Model"] = "claude-sonnet-4-20250514",
                 ["Anthropic:MaxTokens"] = "1024",
+                // Cota pequena para os testes esgotarem o limite sem dezenas de chamadas
+                ["Ai:DailyLimit"] = "3",
             });
         });
 
@@ -127,6 +129,7 @@ public class FinanceFlowWebApplicationFactory
             if (anthropicDescriptor != null)
                 services.Remove(anthropicDescriptor);
 
+            services.AddSingleton<AiReplyStub>();
             services.AddScoped<IAnthropicService, NoOpAnthropicService>();
 
             // Sobrescreve parâmetros de validação do JWT

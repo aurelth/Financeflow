@@ -2,9 +2,11 @@
 using FinanceFlow.Application.Common.Behaviors;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.Services;
+using FinanceFlow.Application.Services.Ai;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Reflection;
 
 namespace FinanceFlow.Application;
@@ -39,6 +41,10 @@ public static class DependencyInjection
         services.AddScoped<ITransferMatchingService, TransferMatchingService>();
         services.AddScoped<IDashboardCacheInvalidator, DashboardCacheInvalidator>();
         services.AddScoped<IAccountReconciliationService, AccountReconciliationService>();
+
+        // IA: cota diária por usuário (o relógio é injetado para os testes controlarem a virada do dia)
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<IAiQuotaService, AiQuotaService>();
 
         //Goals
         services.AddScoped<IGoalProgressService, GoalProgressService>();

@@ -7,5 +7,27 @@
   "actions": { "add": "Nueva transacción", "edit": "Editar transacción", "delete": "Eliminar transacción", "deleteConfirm": "¿Estás seguro de que deseas eliminar esta transacción?", "deleteFuture": "Eliminar esta y futuras", "editFuture": "Actualizar esta y futuras" },
   "filters": { "all": "Todos", "income": "Ingresos", "expenses": "Gastos", "search": "Buscar transacciones..." },
   "empty": "No se encontraron transacciones",
-  "attachment": { "view": "Ver", "download": "Descargar", "remove": "Eliminar" }
+  "attachment": { "view": "Ver", "download": "Descargar", "remove": "Eliminar" },
+  "quickEntry": {
+    "button": "Registrar con IA",
+    "title": "Registrar con IA",
+    "subtitle": "Describe el gasto o fotografía el comprobante. La IA prepara el registro y tú lo revisas antes de guardar.",
+    "textLabel": "Descripción del registro",
+    "textPlaceholder": "Ej.: almuerzo 45,90 en iFood ayer",
+    "addPhoto": "Adjuntar foto",
+    "changePhoto": "Cambiar foto",
+    "removePhoto": "Quitar foto",
+    "imageTooLarge": "La foto es demasiado grande. Prueba con una imagen de hasta 5 MB.",
+    "genericError": "No se pudo interpretar ahora. Inténtalo de nuevo.",
+    "nothingFound": "No encontré ningún registro en ese contenido. Prueba a describirlo con importe y fecha, o usa otra foto.",
+    "quotaRemaining": "Te quedan {{remaining}} de {{limit}} usos hoy",
+    "quotaExhausted": "Has usado los {{limit}} registros por IA de hoy. El límite se renueva a medianoche.",
+    "cancel": "Cancelar",
+    "submit": "Interpretar",
+    "reading": "Leyendo…",
+    "close": "Cerrar",
+    "draftBanner": "Sugerido por la IA — revisa los datos antes de guardar.",
+    "draftProgress": "Registro {{current}} de {{total}}",
+    "discardRest": "Descartar restantes"
+  }
 }
