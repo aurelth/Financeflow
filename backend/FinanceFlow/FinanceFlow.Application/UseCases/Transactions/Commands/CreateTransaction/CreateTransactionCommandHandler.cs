@@ -2,6 +2,7 @@ using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Application.Events;
+using FinanceFlow.Application.Services;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
@@ -19,7 +20,7 @@ public class CreateTransactionCommandHandler(
     IEventPublisher eventPublisher,
     IAttachmentService attachmentService,
     IConfiguration configuration,
-    ICacheService cache)
+    IDashboardCacheInvalidator dashboardCacheInvalidator)
     : IRequestHandler<CreateTransactionCommand, TransactionDto>
 {
     public async Task<TransactionDto> Handle(
@@ -67,17 +68,24 @@ public class CreateTransactionCommandHandler(
         // Gera o RecurrenceGroupId se a transação for recorrente
         Guid? recurrenceGroupId = request.IsRecurring ? Guid.NewGuid() : null;
 
+        // Compra parcelada: Amount é o total; cada parcela leva a sua fatia (a soma fecha o total)
+        var installmentCount = request.InstallmentCount;
+        var installmentAmounts = installmentCount.HasValue
+            ? InstallmentPlanner.Split(request.Amount, installmentCount.Value)
+            : null;
+        Guid? installmentGroupId = installmentCount.HasValue ? Guid.NewGuid() : null;
+
         var transaction = new Transaction
         {
             UserId = request.UserId,
-            Amount = request.Amount,
+            Amount = installmentAmounts?[0] ?? request.Amount,
             Type = request.Type,
             TransferDirection = request.Type == TransactionType.Transfer ? request.TransferDirection : null,
             Date = request.Date,
             Description = request.Description,
             Status = request.Status,
             IsRecurring = request.IsRecurring,
-            RecurrenceType = request.RecurrenceType,
+            RecurrenceType = installmentCount.HasValue ? RecurrenceType.None : request.RecurrenceType,
             AccountId = account.Id,
             CategoryId = request.CategoryId,
             SubcategoryId = request.SubcategoryId,
@@ -85,20 +93,39 @@ public class CreateTransactionCommandHandler(
             AttachmentPath = attachmentPath,
             AttachmentName = attachmentName,
             RecurrenceGroupId = recurrenceGroupId,
+            InstallmentGroupId = installmentGroupId,
+            InstallmentNumber = installmentCount.HasValue ? 1 : null,
+            InstallmentCount = installmentCount,
         };
 
-        await transactionRepository.AddAsync(transaction, cancellationToken);
+        // Todas as datas afetadas, para invalidar o cache do dashboard de cada mês
+        var affectedDates = new List<DateTime> { request.Date };
 
-        // Gera cópias para os meses restantes do ano se recorrente
-        if (request.IsRecurring)
+        if (installmentAmounts is not null)
         {
-            var copies = GerarCopiasRecorrentes(transaction, request.Tags);
-            foreach (var copy in copies)
-                await transactionRepository.AddAsync(copy, cancellationToken);
+            // A primeira parcela já é a própria transação (com o status e o anexo escolhidos); as demais
+            // ficam Agendadas nos meses seguintes. Tudo entra num único SaveChanges: ou todas as parcelas, ou nenhuma.
+            var parcels = new List<Transaction> { transaction };
+            parcels.AddRange(GerarParcelasRestantes(transaction, installmentAmounts, request.Tags));
+
+            await transactionRepository.AddRangeAsync(parcels, cancellationToken);
+            affectedDates.AddRange(parcels.Select(p => p.Date));
+        }
+        else
+        {
+            await transactionRepository.AddAsync(transaction, cancellationToken);
+
+            // Gera cópias para os meses restantes do ano se recorrente
+            if (request.IsRecurring)
+            {
+                var copies = GerarCopiasRecorrentes(transaction, request.Tags);
+                foreach (var copy in copies)
+                    await transactionRepository.AddAsync(copy, cancellationToken);
+            }
         }
 
-        // Invalida o cache do dashboard para o mês da transação
-        await InvalidarCacheDashboardAsync(request.UserId, request.Date, cancellationToken);
+        // Invalida o cache do dashboard de cada mês tocado
+        await dashboardCacheInvalidator.InvalidateAsync(request.UserId, affectedDates, cancellationToken);
 
         var topic = configuration["Kafka:Topics:TransactionCreated"]
                     ?? "finance.transactions.created";
@@ -125,6 +152,39 @@ public class CreateTransactionCommandHandler(
                 "Transação criada, mas não foi possível recarregá-la para montar a resposta.");
 
         return created.ToDto();
+    }
+
+    // Parcelas 2..N: mesmo lançamento, uma por mês, agendadas, sem anexo (o comprovante fica na primeira)
+    private static List<Transaction> GerarParcelasRestantes(
+        Transaction primeira,
+        IReadOnlyList<decimal> valores,
+        string[] tags)
+    {
+        var parcelas = new List<Transaction>();
+
+        for (var numero = 2; numero <= valores.Count; numero++)
+        {
+            parcelas.Add(new Transaction
+            {
+                UserId = primeira.UserId,
+                Amount = valores[numero - 1],
+                Type = primeira.Type,
+                Date = InstallmentPlanner.DueDate(primeira.Date, numero),
+                Description = primeira.Description,
+                Status = TransactionStatus.Scheduled,
+                IsRecurring = false,
+                RecurrenceType = RecurrenceType.None,
+                AccountId = primeira.AccountId,
+                CategoryId = primeira.CategoryId,
+                SubcategoryId = primeira.SubcategoryId,
+                Tags = JsonSerializer.Serialize(tags),
+                InstallmentGroupId = primeira.InstallmentGroupId,
+                InstallmentNumber = numero,
+                InstallmentCount = valores.Count,
+            });
+        }
+
+        return parcelas;
     }
 
     // Gera cópias mensais para os meses restantes do ano corrente
@@ -164,23 +224,5 @@ public class CreateTransactionCommandHandler(
         }
 
         return copies;
-    }
-
-    // Invalida todas as chaves de cache do dashboard para o mês/ano da transação
-    private async Task InvalidarCacheDashboardAsync(
-        Guid userId,
-        DateTime date,
-        CancellationToken cancellationToken)
-    {
-        var prefixes = new[]
-        {
-            $"dashboard:summary:{userId}:{date.Year}:{date.Month}",
-            $"dashboard:balance-evolution:{userId}:{date.Year}:{date.Month}",
-            $"dashboard:expenses-by-category:{userId}:{date.Year}:{date.Month}",
-            $"dashboard:weekly-comparison:{userId}:{date.Year}:{date.Month}",
-        };
-
-        foreach (var prefix in prefixes)
-            await cache.RemoveAsync(prefix, cancellationToken);
     }
 }

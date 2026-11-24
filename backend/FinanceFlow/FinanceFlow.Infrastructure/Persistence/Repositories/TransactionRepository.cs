@@ -232,6 +232,69 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
             t.DeletedAt == null)
         .SumAsync(t => t.Amount, cancellationToken);
 
+    public async Task<List<Transaction>> GetInstallmentGroupAsync(
+        Guid installmentGroupId,
+        Guid userId,
+        CancellationToken cancellationToken = default) =>
+        await context.Transactions
+            .IgnoreQueryFilters()
+            .Where(t =>
+                t.InstallmentGroupId == installmentGroupId &&
+                t.UserId == userId &&
+                t.DeletedAt == null)
+            .OrderBy(t => t.InstallmentNumber)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+    public async Task<List<Transaction>> GetFutureInstallmentsAsync(
+        Guid installmentGroupId,
+        Guid userId,
+        int afterNumber,
+        bool onlyUnpaid,
+        CancellationToken cancellationToken = default)
+    {
+        var query = context.Transactions
+            .IgnoreQueryFilters()
+            .Where(t =>
+                t.InstallmentGroupId == installmentGroupId &&
+                t.UserId == userId &&
+                t.DeletedAt == null &&
+                t.InstallmentNumber > afterNumber);
+
+        if (onlyUnpaid)
+            query = query.Where(t => t.Status != TransactionStatus.Paid);
+
+        return await query
+            .OrderBy(t => t.InstallmentNumber)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task AddRangeAsync(
+        IEnumerable<Transaction> transactions,
+        CancellationToken cancellationToken = default)
+    {
+        await context.Transactions.AddRangeAsync(transactions, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdateRangeAsync(
+        IEnumerable<Transaction> transactions,
+        CancellationToken cancellationToken = default)
+    {
+        var list = transactions.ToList();
+
+        // Mesma regra do UpdateAsync: o vínculo de transferência é gerenciado só pelo ITransferRepository
+        foreach (var transaction in list)
+        {
+            transaction.LinkAsOut = null;
+            transaction.LinkAsIn = null;
+        }
+
+        context.Transactions.UpdateRange(list);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task AddAsync(
         Transaction transaction,
         CancellationToken cancellationToken = default)

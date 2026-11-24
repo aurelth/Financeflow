@@ -31,5 +31,9 @@ public record TransactionDto(
     Guid? TransferLinkId = null,
     Guid? CounterpartTransactionId = null,
     Guid? CounterpartAccountId = null,
-    string? CounterpartAccountName = null
+    string? CounterpartAccountName = null,
+    // Compra parcelada (nulos quando o lançamento não é parcelado)
+    Guid? InstallmentGroupId = null,
+    int? InstallmentNumber = null,
+    int? InstallmentCount = null
 );

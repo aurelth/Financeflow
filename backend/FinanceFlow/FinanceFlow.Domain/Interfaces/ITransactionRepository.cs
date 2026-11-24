@@ -48,6 +48,23 @@ public interface ITransactionRepository
         DateTime fromDate,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Todas as parcelas (não excluídas) de uma compra parcelada do usuário, em ordem de número.</summary>
+    Task<List<Transaction>> GetInstallmentGroupAsync(
+        Guid installmentGroupId,
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Parcelas seguintes à informada (número maior). Com <paramref name="onlyUnpaid"/>, deixa de fora as já pagas,
+    /// que representam dinheiro que já saiu e não devem ser alteradas em massa.
+    /// </summary>
+    Task<List<Transaction>> GetFutureInstallmentsAsync(
+        Guid installmentGroupId,
+        Guid userId,
+        int afterNumber,
+        bool onlyUnpaid,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Retorna resumo financeiro do utilizador para um mês/ano específico.
     /// </summary>
@@ -85,6 +102,12 @@ public interface ITransactionRepository
         CancellationToken cancellationToken = default);
 
     Task AddAsync(Transaction transaction, CancellationToken cancellationToken = default);
+
+    /// <summary>Grava todas as transações num único SaveChanges: ou entram todas, ou nenhuma.</summary>
+    Task AddRangeAsync(IEnumerable<Transaction> transactions, CancellationToken cancellationToken = default);
+
+    /// <summary>Atualiza todas num único SaveChanges (usado em edição/cancelamento de grupos).</summary>
+    Task UpdateRangeAsync(IEnumerable<Transaction> transactions, CancellationToken cancellationToken = default);
     Task UpdateAsync(Transaction transaction, CancellationToken cancellationToken = default);
     Task DeleteAsync(Transaction transaction, CancellationToken cancellationToken = default);
 }

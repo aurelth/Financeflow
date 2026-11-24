@@ -151,7 +151,7 @@ describe('TransactionForm', () => {
     renderForm()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole('checkbox'))
+    await user.click(screen.getByRole('checkbox', { name: /transação recorrente/i }))
 
     await waitFor(() => {
       expect(screen.getByText('Mensal')).toBeInTheDocument()

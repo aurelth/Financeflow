@@ -31,6 +31,10 @@ export interface Transaction {
   isRecurring:    boolean
   recurrenceType: RecurrenceType
   recurrenceGroupId: string | null
+  // Compra parcelada (ausentes/nulos quando o lançamento não é parcelado)
+  installmentGroupId?: string | null
+  installmentNumber?:  number | null
+  installmentCount?:   number | null
   attachmentPath: string | null
   attachmentName:  string | null
   tags:           string[]
@@ -78,6 +82,8 @@ export interface CreateTransactionRequest {
   accountId?:     string
   // Obrigatório quando type = Transfer: a conta recebe (In) ou envia (Out) o dinheiro
   transferDirection?: TransferDirection | null
+  // Compra parcelada: `amount` é o TOTAL, dividido em N parcelas mensais (2 a 60)
+  installmentCount?: number | null
 }
 
 export interface UpdateTransactionRequest {

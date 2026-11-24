@@ -11,6 +11,12 @@ public class Transaction : BaseEntity
     public bool IsRecurring { get; set; } = false;
     public RecurrenceType RecurrenceType { get; set; } = RecurrenceType.None;
     public Guid? RecurrenceGroupId { get; set; }
+
+    // Compra parcelada: todas as parcelas compartilham o grupo; o total de parcelas fica em cada uma
+    // para a tela mostrar "3/12" sem consultar o grupo. Nulos quando o lançamento não é parcelado.
+    public Guid? InstallmentGroupId { get; set; }
+    public int? InstallmentNumber { get; set; }
+    public int? InstallmentCount { get; set; }
     public string? AttachmentPath { get; set; }
     public string? AttachmentName { get; set; }
     public string Tags { get; set; } = string.Empty; // JSON serializado

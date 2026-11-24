@@ -715,6 +715,15 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<int?>("InstallmentCount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("InstallmentGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("InstallmentNumber")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsRecurring")
                         .HasColumnType("bit");
 
@@ -764,6 +773,9 @@ namespace FinanceFlow.Infrastructure.Migrations
 
                     b.HasIndex("AccountId", "ImportHash")
                         .HasFilter("[ImportHash] IS NOT NULL");
+
+                    b.HasIndex("InstallmentGroupId", "InstallmentNumber")
+                        .HasFilter("[InstallmentGroupId] IS NOT NULL");
 
                     b.ToTable("Transactions", (string)null);
                 });

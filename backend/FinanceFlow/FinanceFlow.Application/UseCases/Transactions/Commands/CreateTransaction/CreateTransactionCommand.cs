@@ -25,5 +25,7 @@ public record CreateTransactionCommand(
     string? AttachmentFileName = null,
     string? AttachmentContentType = null,
     // Obrigatório quando Type = Transfer: a conta recebe (In) ou envia (Out) o dinheiro
-    TransferDirection? TransferDirection = null
+    TransferDirection? TransferDirection = null,
+    // Compra parcelada: Amount é o TOTAL, dividido em N parcelas mensais (2 a 60). Nulo = lançamento comum.
+    int? InstallmentCount = null
 ) : IRequest<TransactionDto>;

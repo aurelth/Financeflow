@@ -1,4 +1,5 @@
-import { Pencil, Trash2, RefreshCw, ArrowLeftRight, Unlink } from 'lucide-react'
+import { Pencil, Trash2, RefreshCw, ArrowLeftRight, Unlink, CreditCard } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { TransactionStatus, RecurrenceType, type Transaction } from '../types/transaction.types'
 import { TransactionType } from '../../categories/types/category.types'
 import CategoryIcon  from '../../categories/components/CategoryIcon'
@@ -11,6 +12,8 @@ interface TransactionTableProps {
   onDelete:     (transaction: Transaction) => void
   // Desfaz o vínculo de uma transferência pareada (aparece só nas transferências com par)
   onUnlink?:    (transaction: Transaction) => void
+  // Abre o plano de parcelas de uma compra parcelada (o selo "3/12" vira botão quando informado)
+  onShowInstallments?: (transaction: Transaction) => void
   // Mostra o nome da conta sob a descrição (útil quando o utilizador tem mais de uma conta)
   showAccount?: boolean
 }
@@ -62,7 +65,9 @@ function getAmountColor(type: TransactionType): string {
   return 'var(--ff-expense)'
 }
 
-export default function TransactionTable({ transactions, onEdit, onDelete, onUnlink, showAccount = false }: TransactionTableProps) {
+export default function TransactionTable({ transactions, onEdit, onDelete, onUnlink, onShowInstallments, showAccount = false }: TransactionTableProps) {
+  const { t } = useTranslation('transactions')
+
   if (transactions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
@@ -121,6 +126,24 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
                         fileName={tx.attachmentName ?? tx.attachmentPath.split('/').pop() ?? 'comprovante'}
                         triggerIcon="paperclip"
                       />
+                    )}
+                    {tx.installmentGroupId && tx.installmentNumber && tx.installmentCount && (
+                      <button
+                        type="button"
+                        data-testid="installment-badge"
+                        onClick={() => onShowInstallments?.(tx)}
+                        disabled={!onShowInstallments}
+                        title={t('installments.badgeTitle', { number: tx.installmentNumber, count: tx.installmentCount })}
+                        className="flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md flex-shrink-0 disabled:cursor-default"
+                        style={{
+                          background: 'rgba(99,102,241,0.1)',
+                          color:      '#818cf8',
+                          border:     '1px solid rgba(99,102,241,0.25)',
+                        }}
+                      >
+                        <CreditCard size={10} />
+                        {tx.installmentNumber}/{tx.installmentCount}
+                      </button>
                     )}
                     {tx.isRecurring && recurrenceLabel[tx.recurrenceType] && (
                       <span

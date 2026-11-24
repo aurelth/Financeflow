@@ -1,6 +1,7 @@
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs;
+using FinanceFlow.Application.Services;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
@@ -15,7 +16,7 @@ public class UpdateTransactionCommandHandler(
     ICategoryRepository categoryRepository,
     IAccountRepository accountRepository,
     ITransferRepository transferRepository,
-    ICacheService cache)
+    IDashboardCacheInvalidator dashboardCacheInvalidator)
     : IRequestHandler<UpdateTransactionCommand, TransactionDto>
 {
     public async Task<TransactionDto> Handle(
@@ -33,6 +34,18 @@ public class UpdateTransactionCommandHandler(
         if (category.Type != request.Type)
             throw new ValidationException(
                 "O tipo da transação não coincide com o tipo da categoria.");
+
+        // Parcela de uma compra parcelada: o grupo se sustenta pelo tipo e pelo fato de ser finito.
+        // Mudar o tipo de uma parcela deixaria o grupo meio receita, meio despesa; recorrência não se mistura com parcelas.
+        var isInstallment = transaction.InstallmentGroupId.HasValue;
+        if (isInstallment)
+        {
+            if (request.Type != transaction.Type)
+                throw new ValidationException("Não é possível mudar o tipo de uma parcela de compra parcelada.");
+
+            if (request.IsRecurring)
+                throw new ValidationException("Uma parcela de compra parcelada não pode ser recorrente.");
+        }
 
         // Transferência vinculada: as duas pontas se sustentam (mesmo valor, contas e sentidos opostos).
         // Alterar isso numa ponta quebraria a outra; para mudar, é preciso desfazer o vínculo antes.
@@ -82,7 +95,7 @@ public class UpdateTransactionCommandHandler(
         var subcategoriaAlterada = transaction.SubcategoryId != request.SubcategoryId;
 
         var devePropagarParaFuturas = request.PropagateToFuture
-            && transaction.RecurrenceGroupId.HasValue
+            && (transaction.RecurrenceGroupId.HasValue || isInstallment)
             && (amountAlterado || descricaoAlterada || categoriaAlterada || subcategoriaAlterada);
 
         // Guarda a data original antes de alterar para invalidar o cache do mês correto
@@ -111,13 +124,25 @@ public class UpdateTransactionCommandHandler(
 
         await transactionRepository.UpdateAsync(transaction, cancellationToken);
 
+        // Datas afetadas, para invalidar o cache do dashboard de cada mês
+        var datasAfetadas = new List<DateTime> { dataOriginal, request.Date };
+
         // Propaga Amount, Description, CategoryId e SubcategoryId para as futuras do grupo
         if (devePropagarParaFuturas)
         {
-            var futuras = await transactionRepository.GetFutureRecurringAsync(
-                transaction.RecurrenceGroupId!.Value,
-                transaction.Date,
-                cancellationToken);
+            // Recorrência: as seguintes por data. Parcelas: as seguintes por número, só as ainda não pagas
+            // (parcela paga é dinheiro que já saiu; o histórico dela não muda em massa)
+            var futuras = isInstallment
+                ? await transactionRepository.GetFutureInstallmentsAsync(
+                    transaction.InstallmentGroupId!.Value,
+                    request.UserId,
+                    transaction.InstallmentNumber!.Value,
+                    onlyUnpaid: true,
+                    cancellationToken)
+                : (await transactionRepository.GetFutureRecurringAsync(
+                    transaction.RecurrenceGroupId!.Value,
+                    transaction.Date,
+                    cancellationToken)).ToList();
 
             foreach (var futura in futuras)
             {
@@ -127,16 +152,14 @@ public class UpdateTransactionCommandHandler(
                 futura.SubcategoryId = request.SubcategoryId;
                 futura.Category = null!;
                 futura.Subcategory = null;
-                await transactionRepository.UpdateAsync(futura, cancellationToken);
+                datasAfetadas.Add(futura.Date);
             }
+
+            // Um único SaveChanges: o grupo é alterado por inteiro ou não é alterado
+            await transactionRepository.UpdateRangeAsync(futuras, cancellationToken);
         }
 
-       // Invalida o cache do dashboard para o mês da transação
-        await InvalidarCacheDashboardAsync(request.UserId, dataOriginal, cancellationToken);
-
-        // Invalida também para o novo mês caso a data tenha mudado
-        if (request.Date.Month != dataOriginal.Month || request.Date.Year != dataOriginal.Year)
-            await InvalidarCacheDashboardAsync(request.UserId, request.Date, cancellationToken);
+        await dashboardCacheInvalidator.InvalidateAsync(request.UserId, datasAfetadas, cancellationToken);
 
         var updated = await transactionRepository.GetByIdAsync(
             transaction.Id, request.UserId, cancellationToken);
@@ -147,23 +170,5 @@ public class UpdateTransactionCommandHandler(
                 "Transação atualizada, mas não foi possível recarregá-la para montar a resposta.");
 
         return updated.ToDto();
-    }
-
-    // Invalida todas as chaves de cache do dashboard para o mês/ano da transação
-    private async Task InvalidarCacheDashboardAsync(
-        Guid userId,
-        DateTime date,
-        CancellationToken cancellationToken)
-    {
-        var prefixes = new[]
-        {
-            $"dashboard:summary:{userId}:{date.Year}:{date.Month}",
-            $"dashboard:balance-evolution:{userId}:{date.Year}:{date.Month}",
-            $"dashboard:expenses-by-category:{userId}:{date.Year}:{date.Month}",
-            $"dashboard:weekly-comparison:{userId}:{date.Year}:{date.Month}",
-        };
-
-        foreach (var prefix in prefixes)
-            await cache.RemoveAsync(prefix, cancellationToken);
     }
 }

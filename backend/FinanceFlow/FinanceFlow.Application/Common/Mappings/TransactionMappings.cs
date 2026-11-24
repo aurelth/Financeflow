@@ -41,7 +41,10 @@ public static class TransactionMappings
             TransferLinkId:          transaction.LinkAsOut?.Id ?? transaction.LinkAsIn?.Id,
             CounterpartTransactionId: transaction.LinkAsOut?.InTransactionId ?? transaction.LinkAsIn?.OutTransactionId,
             CounterpartAccountId:    counterpart?.AccountId,
-            CounterpartAccountName:  counterpart?.Account?.Name);
+            CounterpartAccountName:  counterpart?.Account?.Name,
+            InstallmentGroupId:      transaction.InstallmentGroupId,
+            InstallmentNumber:       transaction.InstallmentNumber,
+            InstallmentCount:        transaction.InstallmentCount);
     }
 
     public static List<TransactionDto> ToDtos(this IEnumerable<Transaction> transactions) =>

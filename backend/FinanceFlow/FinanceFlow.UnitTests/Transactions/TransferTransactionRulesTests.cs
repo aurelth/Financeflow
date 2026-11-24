@@ -1,3 +1,4 @@
+using FinanceFlow.Application.Services;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransaction;
@@ -76,7 +77,7 @@ public class TransferTransactionRulesTests
     private CreateTransactionCommandHandler CreateHandler() =>
         new(_transactionRepository.Object, _categoryRepository.Object, _accountRepository.Object,
             _eventPublisher.Object, _attachmentService.Object, _configuration.Object,
-            _cache.Object);
+            new DashboardCacheInvalidator(_cache.Object));
 
     private CreateTransactionCommand CreateCommand(
         TransactionType type, Guid categoryId, TransferDirection? direction) => new(
@@ -146,7 +147,7 @@ public class TransferTransactionRulesTests
 
     private UpdateTransactionCommandHandler UpdateHandler() =>
         new(_transactionRepository.Object, _categoryRepository.Object, _accountRepository.Object,
-            _transferRepository.Object, _cache.Object);
+            _transferRepository.Object, new DashboardCacheInvalidator(_cache.Object));
 
     private Transaction ExistingTransfer(TransferDirection direction = TransferDirection.Out) => new()
     {
@@ -335,7 +336,7 @@ public class TransferTransactionRulesTests
             .ReturnsAsync(link);
 
         await new DeleteTransactionCommandHandler(
-                _transactionRepository.Object, _transferRepository.Object, _cache.Object)
+                _transactionRepository.Object, _transferRepository.Object, new DashboardCacheInvalidator(_cache.Object))
             .Handle(new DeleteTransactionCommand(tx.Id, _userId), default);
 
         _transferRepository.Verify(r => r.RemoveLink(link), Times.Once);
@@ -354,7 +355,7 @@ public class TransferTransactionRulesTests
             .ReturnsAsync(tx);
 
         await new DeleteTransactionCommandHandler(
-                _transactionRepository.Object, _transferRepository.Object, _cache.Object)
+                _transactionRepository.Object, _transferRepository.Object, new DashboardCacheInvalidator(_cache.Object))
             .Handle(new DeleteTransactionCommand(tx.Id, _userId), default);
 
         _transferRepository.Verify(r => r.RemoveLink(It.IsAny<TransferLink>()), Times.Never);

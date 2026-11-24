@@ -1,3 +1,4 @@
+using FinanceFlow.Application.Services;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransaction;
@@ -72,7 +73,7 @@ public class CreateTransactionCommandHandlerTests
             _eventPublisher.Object,
             _attachmentService.Object,
             _configuration.Object,
-            _cache.Object);
+            new DashboardCacheInvalidator(_cache.Object));
 
     [Fact]
     public async Task Handle_DeveCriarTransacao_QuandoDadosSaoValidos()
