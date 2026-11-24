@@ -68,7 +68,7 @@ export default function NotificationDropdown() {
 
       <DropdownMenuContent
         align="end"
-        className="w-96 p-0"
+        className="w-96 max-w-[calc(100vw-1rem)] p-0"
         style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
       >
         {/* Header */}

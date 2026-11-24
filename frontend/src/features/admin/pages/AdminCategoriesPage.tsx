@@ -111,8 +111,8 @@ export default function AdminCategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold" style={{ color: 'var(--ff-text-primary)' }}>
             Categorias Padrão
           </h1>
@@ -156,7 +156,7 @@ export default function AdminCategoriesPage() {
 
       {/* Lista */}
       <div
-        className="rounded-2xl overflow-hidden"
+        className="rounded-2xl overflow-x-auto"
         style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
       >
         {isLoading ? (
@@ -164,7 +164,7 @@ export default function AdminCategoriesPage() {
             <Loader2 size={24} className="animate-spin" style={{ color: 'var(--ff-emerald)' }} />
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[480px] text-sm">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--ff-border)' }}>
                 {['Ícone', 'Nome', 'Tipo', 'Criado em', 'Ações'].map(h => (
@@ -240,7 +240,7 @@ export default function AdminCategoriesPage() {
 
       {/* Modal de formulário */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex justify-center p-4 !m-0 overflow-y-auto [align-items:safe_center] bg-black/70 backdrop-blur-sm">
           <div
             className="w-full max-w-md rounded-2xl shadow-2xl"
             style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
@@ -355,7 +355,7 @@ export default function AdminCategoriesPage() {
 
       {/* Modal de confirmação de exclusão */}
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex justify-center p-4 !m-0 overflow-y-auto [align-items:safe_center] bg-black/70 backdrop-blur-sm">
           <div
             className="w-full max-w-md rounded-2xl shadow-2xl"
             style={{ background: 'var(--ff-bg-card)', border: '1px solid rgba(244,63,94,0.3)' }}

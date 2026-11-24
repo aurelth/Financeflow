@@ -44,7 +44,7 @@ export default function AssistantPage() {
   const isEmpty = messages.length === 0
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)]">
+    <div className="flex flex-col h-[calc(100dvh-6rem)] md:h-[calc(100dvh-7rem)]">
 
       {/* Cabeçalho */}
       <div className="flex items-center justify-between mb-6 flex-shrink-0">

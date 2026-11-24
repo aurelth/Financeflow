@@ -83,8 +83,8 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
       className="rounded-xl overflow-hidden"
       style={{ border: '1px solid var(--ff-border)' }}
     >
-      <table className="w-full text-sm">
-        <thead>
+      <table className="w-full text-sm max-md:block">
+        <thead className="max-md:hidden">
           <tr style={{ background: 'var(--ff-bg-card)', borderBottom: '1px solid var(--ff-border)' }}>
             {['Descrição', 'Categoria', 'Data', 'Status', 'Valor', 'Ações'].map((h, i) => (
               <th
@@ -97,7 +97,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="max-md:block">
           {transactions.map(tx => {
             const type   = resolveType(tx.type)
             const status = resolveStatus(tx.status)
@@ -106,16 +106,16 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
             return (
               <tr
                 key={tx.id}
-                className="transition-colors duration-150"
+                className="transition-colors duration-150 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-3 max-md:gap-y-2 max-md:p-3"
                 style={{ background: 'var(--ff-bg-card)', borderBottom: '1px solid var(--ff-border-subtle)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-bg-elevated)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-bg-card)')}
               >
                 {/* Descrição */}
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 max-md:p-0 max-md:col-start-1 max-md:row-start-1 max-md:min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                      className="font-medium truncate max-w-[200px]"
+                      className="font-medium md:truncate md:max-w-[200px] max-md:break-words max-md:min-w-0"
                       style={{ color: 'var(--ff-text-primary)' }}
                     >
                       {tx.description || '—'}
@@ -208,7 +208,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
                 </td>
 
                 {/* Categoria */}
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 max-md:p-0 max-md:col-start-1 max-md:row-start-2 max-md:min-w-0">
                   <div className="flex items-center gap-2">
                     {/* Ícone especial para Transfer */}
                     {type === TransactionType.Transfer ? (
@@ -246,12 +246,12 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
                 </td>
 
                 {/* Data */}
-                <td className="px-4 py-3 whitespace-nowrap" style={{ color: 'var(--ff-text-muted)' }}>
+                <td className="px-4 py-3 whitespace-nowrap max-md:p-0 max-md:col-start-2 max-md:row-start-2 max-md:text-right max-md:text-xs max-md:self-center" style={{ color: 'var(--ff-text-muted)' }}>
                   {formatDate(tx.date)}
                 </td>
 
                 {/* Status */}
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 max-md:p-0 max-md:col-start-1 max-md:row-start-3 max-md:self-center">
                   {type === TransactionType.Transfer ? (                    
                     <span
                       className="text-xs px-2 py-0.5 rounded-full font-medium"
@@ -270,19 +270,19 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
                 </td>
 
                 {/* Valor */}
-                <td className="px-4 py-3 text-right whitespace-nowrap font-semibold">
+                <td className="px-4 py-3 text-right whitespace-nowrap font-semibold max-md:p-0 max-md:col-start-2 max-md:row-start-1">
                   <span style={{ color: getAmountColor(type) }}>
                     {formatAmount(tx.amount, type)}
                   </span>
                 </td>
 
                 {/* Ações */}
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 max-md:p-0 max-md:col-start-2 max-md:row-start-3">
                   <div className="flex items-center justify-end gap-1">
                     {onUnlink && tx.transferLinkId && (
                       <button
                         onClick={() => onUnlink(tx)}
-                        className="p-1.5 rounded-lg transition-all duration-200"
+                        className="p-1.5 max-md:p-2.5 rounded-lg transition-all duration-200"
                         style={{ color: 'var(--ff-text-muted)' }}
                         onMouseEnter={e => {
                           e.currentTarget.style.color      = '#818cf8'
@@ -300,7 +300,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
                     )}
                     <button
                       onClick={() => onEdit(tx)}
-                      className="p-1.5 rounded-lg transition-all duration-200"
+                      className="p-1.5 max-md:p-2.5 rounded-lg transition-all duration-200"
                       style={{ color: 'var(--ff-text-muted)' }}
                       onMouseEnter={e => {
                         e.currentTarget.style.color      = 'var(--ff-text-primary)'
@@ -316,7 +316,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
                     </button>
                     <button
                       onClick={() => onDelete(tx)}
-                      className="p-1.5 rounded-lg transition-all duration-200"
+                      className="p-1.5 max-md:p-2.5 rounded-lg transition-all duration-200"
                       style={{ color: 'var(--ff-text-muted)' }}
                       onMouseEnter={e => {
                         e.currentTarget.style.color      = 'var(--ff-expense)'

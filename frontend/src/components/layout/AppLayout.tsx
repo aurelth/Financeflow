@@ -16,7 +16,7 @@ export default function AppLayout() {
   const location = useLocation()
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--ff-bg-base)' }}>
+    <div className="flex h-dvh overflow-hidden" style={{ background: 'var(--ff-bg-base)' }}>
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <Header />

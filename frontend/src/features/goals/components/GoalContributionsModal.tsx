@@ -20,9 +20,9 @@ export default function GoalContributionsModal({
   const contributions = data?.items ?? [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex justify-center p-4 !m-0 overflow-y-auto [align-items:safe_center] bg-black/70 backdrop-blur-sm">
       <div
-        className="w-full max-w-lg rounded-2xl shadow-2xl max-h-[90vh] flex flex-col"
+        className="w-full max-w-lg rounded-2xl shadow-2xl max-h-[calc(100dvh-2rem)] flex flex-col"
         style={{
           background: "var(--ff-bg-card)",
           border: "1px solid var(--ff-border)",

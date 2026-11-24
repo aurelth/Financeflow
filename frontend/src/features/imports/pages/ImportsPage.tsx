@@ -51,18 +51,18 @@ function ImportHistoryRow({ item, onPreview, onDelete, isDeleting }: ImportHisto
 
   return (
     <div
-      className="flex items-center justify-between px-5 py-4 rounded-xl transition-colors"
+      className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-5 py-4 rounded-xl transition-colors"
       style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 min-w-0">
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ background: 'var(--ff-bg-elevated)' }}
         >
           <FileText size={16} style={{ color: 'var(--ff-emerald)' }} />
         </div>
-        <div>
-          <p className="text-sm font-medium" style={{ color: 'var(--ff-text-primary)' }}>
+        <div className="min-w-0">
+          <p className="text-sm font-medium break-all" style={{ color: 'var(--ff-text-primary)' }}>
             {item.fileName}
           </p>
           <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
@@ -71,9 +71,9 @@ function ImportHistoryRow({ item, onPreview, onDelete, isDeleting }: ImportHisto
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 sm:flex-shrink-0">
         {isCompleted && (
-          <div className="text-right hidden sm:block">
+          <div className="w-full sm:w-auto sm:text-right">
             <p className="text-xs" style={{ color: 'var(--ff-text-muted)' }}>
               <span style={{ color: '#34d399' }}>{item.imported} importadas</span>
               {item.duplicates > 0 && <> · {item.duplicates} duplicadas</>}
@@ -87,7 +87,7 @@ function ImportHistoryRow({ item, onPreview, onDelete, isDeleting }: ImportHisto
         {(isCompleted || isPending) && (
           <button
             onClick={() => onPreview(item.id)}
-            className="h-8 px-3 rounded-xl text-xs font-medium transition-colors"
+            className="h-9 sm:h-8 px-3 rounded-xl text-xs font-medium transition-colors whitespace-nowrap"
             style={{ background: 'var(--ff-bg-elevated)', color: 'var(--ff-text-secondary)' }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-text-primary)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-text-secondary)')}
@@ -175,8 +175,8 @@ export default function ImportsPage() {
     <div className="space-y-6">
 
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-xl font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
             Importar OFX
           </h1>

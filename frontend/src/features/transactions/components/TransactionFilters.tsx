@@ -21,6 +21,7 @@ const inputStyle: React.CSSProperties = {
   padding:     '8px 12px',
   fontSize:    '13px',
   width:       '100%',
+  minWidth:    0,
   outline:     'none',
   transition:  'border-color 0.15s',
 }
@@ -35,10 +36,10 @@ export default function TransactionFilters({ filters, categories, onChange, onCl
       className="rounded-xl p-4 space-y-3"
       style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
 
         {/* Pesquisa */}
-        <div className="relative">
+        <div className="relative col-span-2 lg:col-span-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--ff-text-muted)' }} />
           <input
             type="text"
@@ -53,6 +54,7 @@ export default function TransactionFilters({ filters, categories, onChange, onCl
 
         {/* Tipo */}
         <select
+          className="col-span-2 sm:col-span-1"
           value={filters.type ?? ''}
           onChange={e => onChange({ ...filters, type: e.target.value ? Number(e.target.value) as TransactionType : undefined })}
           style={inputStyle}
@@ -67,6 +69,7 @@ export default function TransactionFilters({ filters, categories, onChange, onCl
 
         {/* Status */}
         <select
+          className="col-span-2 sm:col-span-1"
           value={filters.status ?? ''}
           onChange={e => onChange({ ...filters, status: e.target.value ? Number(e.target.value) as TransactionStatus : undefined })}
           style={inputStyle}
@@ -80,22 +83,26 @@ export default function TransactionFilters({ filters, categories, onChange, onCl
         </select>
 
         {/* Categoria */}
-        <CategorySelect
-          categories={categories}
-          value={filters.categoryId ?? ''}
-          onChange={categoryId => onChange({ ...filters, categoryId: categoryId || undefined, subcategoryId: undefined })}
-          nullable
-          nullLabel="Todas as categorias"
-        />
+        <div className="col-span-2 lg:col-span-1 min-w-0">
+          <CategorySelect
+            categories={categories}
+            value={filters.categoryId ?? ''}
+            onChange={categoryId => onChange({ ...filters, categoryId: categoryId || undefined, subcategoryId: undefined })}
+            nullable
+            nullLabel="Todas as categorias"
+          />
+        </div>
 
         {/* Conta — oculta quando só existe uma */}
-        <AccountSelect
-          value={filters.accountId ?? ''}
-          onChange={accountId => onChange({ ...filters, accountId: accountId || undefined })}
-          emptyOption="all"
-          hideWhenSingle
-          style={inputStyle}
-        />
+        <div className="col-span-2 lg:col-span-1 min-w-0 empty:hidden">
+          <AccountSelect
+            value={filters.accountId ?? ''}
+            onChange={accountId => onChange({ ...filters, accountId: accountId || undefined })}
+            emptyOption="all"
+            hideWhenSingle
+            style={inputStyle}
+          />
+        </div>
 
         {/* Data início */}
         <input

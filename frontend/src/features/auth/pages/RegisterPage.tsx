@@ -138,7 +138,7 @@ export default function RegisterPage() {
 
   return (
     <div
-      className="rounded-2xl p-8 shadow-2xl"
+      className="rounded-2xl p-6 sm:p-8 shadow-2xl"
       style={{
         background: "rgba(17,17,17,0.9)",
         border: "1px solid var(--ff-border)",
@@ -190,7 +190,7 @@ export default function RegisterPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <label
               htmlFor="cpf"

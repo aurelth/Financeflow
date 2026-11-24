@@ -93,8 +93,8 @@ export default function TransactionsPage() {
     <div className="space-y-6">
 
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
           <h1 className="text-xl font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
             Transações
           </h1>
@@ -102,12 +102,12 @@ export default function TransactionsPage() {
             Registre e acompanhe as suas receitas e despesas
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <ExportButton defaultMonth={filterMonth} defaultYear={filterYear} />
           {accounts.length > 1 && (
             <button
               onClick={() => setShowTransferForm(true)}
-              className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
+              className="flex items-center justify-center gap-2 h-10 sm:h-9 px-4 rounded-xl text-sm font-medium transition-colors max-sm:flex-1 max-sm:min-w-[9rem]"
               style={{ background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
             >
               <ArrowLeftRight size={15} />
@@ -116,7 +116,7 @@ export default function TransactionsPage() {
           )}
           <button
             onClick={() => setShowQuickEntry(true)}
-            className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
+            className="flex items-center justify-center gap-2 h-10 sm:h-9 px-4 rounded-xl text-sm font-medium transition-colors max-sm:flex-1 max-sm:min-w-[9rem]"
             style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--ff-emerald)', border: '1px solid rgba(16,185,129,0.3)' }}
           >
             <Sparkles size={15} />
@@ -124,7 +124,7 @@ export default function TransactionsPage() {
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
+            className="flex items-center justify-center gap-2 h-10 sm:h-9 px-4 rounded-xl text-sm font-medium transition-colors max-sm:flex-1 max-sm:min-w-[9rem]"
             style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-emerald-hover)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-emerald)')}

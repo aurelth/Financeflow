@@ -60,7 +60,7 @@ export default function TransferFormDialog({ onClose }: TransferFormDialogProps)
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex justify-center p-4 !m-0 overflow-y-auto [align-items:safe_center] bg-black/70 backdrop-blur-sm">
       <div
         role="dialog"
         aria-label="Transferir entre contas"
@@ -81,7 +81,7 @@ export default function TransferFormDialog({ onClose }: TransferFormDialogProps)
         </div>
 
         <div className="px-6 py-5 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <div>
               <label htmlFor="transfer-from" style={labelStyle}>De</label>
               <select
@@ -118,7 +118,7 @@ export default function TransferFormDialog({ onClose }: TransferFormDialogProps)
             </p>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <div>
               <label htmlFor="transfer-amount" style={labelStyle}>Valor</label>
               <input
