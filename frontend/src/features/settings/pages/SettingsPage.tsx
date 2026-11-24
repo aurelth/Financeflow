@@ -13,6 +13,7 @@ import {
   useUpdateNotificationPreferences,
   useLogoutAll,
 } from '../api/useSettings'
+import CategoryRulesCard from '../components/CategoryRulesCard'
 import DeleteAccountDialog from '../components/DeleteAccountDialog'
 import type { NotificationPreferences } from '../types/settings.types'
 
@@ -273,6 +274,9 @@ export default function SettingsPage() {
           Ver tutorial
         </button>
       </div>
+
+      {/* Regras de categorização aprendidas nas importações */}
+      <CategoryRulesCard />
 
       {/* Sessão */}
       <div

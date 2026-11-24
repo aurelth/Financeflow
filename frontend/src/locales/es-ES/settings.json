@@ -3,5 +3,21 @@
   "sections": { "language": "Idioma", "currency": "Moneda", "timezone": "Zona horaria", "notifications": "Notificaciones", "appearance": "Apariencia" },
   "language": { "label": "Idioma del sistema", "subtitle": "Elige el idioma para textos y formato", "ptBR": "Português (Brasil)", "enUS": "English (US)", "esES": "Español", "frFR": "Français" },
   "notifications": { "email": "Notificaciones por email", "push": "Notificaciones push", "dueDates": "Alertas de vencimiento" },
-  "actions": { "save": "Guardar configuración", "saved": "Configuración guardada" }
+  "actions": { "save": "Guardar configuración", "saved": "Configuración guardada" },
+  "categoryRules": {
+    "title": "Reglas de categorización",
+    "subtitle": "FinanceFlow aprende de las categorías que confirmas al importar y sugiere la misma la próxima vez. Olvida una regla si es incorrecta.",
+    "empty": "Aún no hay reglas. Aparecen aquí después de confirmar una importación.",
+    "error": "No se pudieron cargar las reglas.",
+    "hits_one": "confirmada {{count}} vez",
+    "hits_other": "confirmada {{count}} veces",
+    "forget": "Olvidar la regla de {{key}}",
+    "forgetTitle": "Olvidar regla",
+    "showAll": "Ver todas ({{count}})",
+    "showLess": "Ver menos",
+    "type": {
+      "Income": "Ingreso",
+      "Expense": "Gasto"
+    }
+  }
 }

@@ -15,3 +15,17 @@ export interface UpdateNotificationPreferencesRequest {
 export interface DeleteAccountRequest {
   currentPassword: string
 }
+
+export interface CategoryRule {
+  id:           string
+  // Descrição normalizada que dispara a regra (ex.: "mercado extra")
+  key:          string
+  type:         'Income' | 'Expense'
+  categoryId:   string
+  categoryName: string
+  categoryIcon: string
+  categoryColor: string
+  // Quantas vezes o usuário confirmou esta mesma categoria
+  hitCount:     number
+  lastUsedAt:   string
+}

@@ -17,6 +17,7 @@ public class UploadOFXCommandHandler(
     IBankImportRepository bankImportRepository,
     IOFXParserService ofxParserService,
     ICategoryRepository categoryRepository,
+    ICategoryRuleRepository categoryRuleRepository,
     IAccountRepository accountRepository,
     IAccountKeyHasher accountKeyHasher,
     IEventPublisher eventPublisher,
@@ -45,9 +46,12 @@ public class UploadOFXCommandHandler(
         // Define a conta da importação (escolhida, reconhecida pelo OFX ou "Conta principal")
         var (account, resolution) = await ResolveAccountAsync(request, parseResult, cancellationToken);
 
-        // Busca categorias padrão para sugestão automática
+        // Busca categorias padrão para sugestão automática (palavras-chave)
         var defaultCategories = await categoryRepository.GetAllDefaultAsync(cancellationToken);
         var categoryList = defaultCategories.ToList();
+
+        // Regras aprendidas com as confirmações anteriores do usuário têm prioridade sobre as palavras-chave
+        var learnedRules = await LoadLearnedRulesAsync(request.UserId, parseResult, cancellationToken);
 
         // Cria o BankImport
         var bankImport = new BankImport
@@ -82,14 +86,10 @@ public class UploadOFXCommandHandler(
             var hash = ImportHashing.WithOccurrence(baseHash, occurrences[baseHash]);
 
             // Usa o TRNTYPE do OFX para determinar o tipo, com fallback para o valor
-            var type = t.Type.Equals("CREDIT", StringComparison.OrdinalIgnoreCase)
-                ? TransactionType.Income
-                : t.Type.Equals("DEBIT", StringComparison.OrdinalIgnoreCase)
-                    ? TransactionType.Expense
-                    : t.Amount >= 0 ? TransactionType.Income : TransactionType.Expense;
+            var type = TypeOf(t);
 
-            // Categorização automática por palavras-chave
-            var suggestedCategoryId = SuggestCategory(t.Description, categoryList, type);
+            // Categorização: regra aprendida do usuário > palavras-chave
+            var (suggestedCategoryId, suggestionSource) = Suggest(t.Description, type, learnedRules, categoryList);
 
             bankImport.Transactions.Add(new BankImportTransaction
             {
@@ -100,6 +100,7 @@ public class UploadOFXCommandHandler(
                 Type = type,
                 Hash = hash,
                 SuggestedCategoryId = suggestedCategoryId,
+                SuggestionSource = suggestionSource,
                 IsDuplicate = false,
                 IsSelected = true,
             });
@@ -129,6 +130,62 @@ public class UploadOFXCommandHandler(
             AccountId: account.Id,
             AccountName: account.Name,
             AccountResolution: resolution);
+    }
+
+    private static TransactionType TypeOf(OFXTransaction t) =>
+        t.Type.Equals("CREDIT", StringComparison.OrdinalIgnoreCase)
+            ? TransactionType.Income
+            : t.Type.Equals("DEBIT", StringComparison.OrdinalIgnoreCase)
+                ? TransactionType.Expense
+                : t.Amount >= 0 ? TransactionType.Income : TransactionType.Expense;
+
+    /// <summary>
+    /// Regras do usuário que valem para este arquivo: só entram as que apontam para uma categoria
+    /// ainda visível para ele (não excluída, arquivada ou de meta) e do mesmo tipo da regra.
+    /// </summary>
+    private async Task<Dictionary<(TransactionType Type, string Key), Guid>> LoadLearnedRulesAsync(
+        Guid userId,
+        OFXParseResult parseResult,
+        CancellationToken cancellationToken)
+    {
+        var keys = parseResult.Transactions
+            .Select(t => DescriptionNormalizer.ToKey(t.Description))
+            .Where(k => k.Length > 0)
+            .Distinct()
+            .ToList();
+
+        var result = new Dictionary<(TransactionType, string), Guid>();
+        if (keys.Count == 0)
+            return result;
+
+        var rules = await categoryRuleRepository.GetByKeysAsync(userId, keys, cancellationToken);
+        if (rules.Count == 0)
+            return result;
+
+        var visible = (await categoryRepository.GetAllByUserAsync(userId, cancellationToken))
+            .ToDictionary(c => c.Id, c => c.Type);
+
+        foreach (var rule in rules)
+        {
+            if (visible.TryGetValue(rule.CategoryId, out var categoryType) && categoryType == rule.Type)
+                result[(rule.Type, rule.Key)] = rule.CategoryId;
+        }
+
+        return result;
+    }
+
+    private static (Guid? CategoryId, CategorySuggestionSource? Source) Suggest(
+        string description,
+        TransactionType type,
+        Dictionary<(TransactionType Type, string Key), Guid> learnedRules,
+        List<Category> defaultCategories)
+    {
+        var key = DescriptionNormalizer.ToKey(description);
+        if (key.Length > 0 && learnedRules.TryGetValue((type, key), out var learned))
+            return (learned, CategorySuggestionSource.Rule);
+
+        var byKeyword = SuggestCategory(description, defaultCategories, type);
+        return byKeyword is { } id ? (id, CategorySuggestionSource.Keyword) : (null, null);
     }
 
     // O parser devolve a data mínima quando o período não vem no arquivo

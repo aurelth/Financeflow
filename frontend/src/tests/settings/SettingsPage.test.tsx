@@ -58,6 +58,11 @@ vi.mock('@/store/authStore', () => ({
   }),
 }))
 
+// O cartão de regras tem testes próprios; aqui só não pode ir à rede
+vi.mock('@/features/settings/components/CategoryRulesCard', () => ({
+  default: () => <div data-testid="category-rules-card" />,
+}))
+
 // Mock do i18n
 vi.mock('@/lib/i18n', () => ({
   default: { changeLanguage: vi.fn(), language: 'en-US' },

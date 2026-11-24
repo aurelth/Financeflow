@@ -311,6 +311,7 @@ git push origin develop
 | v0.34.0 | Saldo e conciliação com o extrato (LEDGERBAL), alerta de diferença e saldo por conta no dashboard | ✅ Concluído |
 | v0.35.0 | Dívida técnica: ESLint zerado e bloqueante no CI, tratamento de erro da API tipado, build do backend sem warnings de código | ✅ Concluído |
 | v0.36.0 | AutoMapper removido (3 CVEs de severidade alta): mapeamento manual entidade → DTO, testado diretamente | ✅ Concluído |
+| v0.37.0 | Regras de categorização aprendidas: a categoria confirmada na importação vira regra por usuário (descrição normalizada → categoria), é sugerida nas próximas importações e pode ser esquecida em Configurações | ✅ Concluído |
 
 ---
 

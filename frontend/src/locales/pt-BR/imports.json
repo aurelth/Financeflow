@@ -40,6 +40,7 @@
     "category": "Categoria",
     "value": "Valor",
     "duplicate": "Duplicado",
-    "noCategory": "Sem categoria"
+    "noCategory": "Sem categoria",
+    "learnedSuggestion": "Aprendida das suas importações"
   }
 }

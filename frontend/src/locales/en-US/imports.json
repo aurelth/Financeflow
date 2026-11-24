@@ -10,6 +10,7 @@
   "preview": {
     "title": "Import preview", "selected": "transactions selected", "selectAll": "Select all",
     "description": "Description", "date": "Date", "category": "Category", "value": "Value",
-    "duplicate": "Duplicate", "noCategory": "No category"
+    "duplicate": "Duplicate", "noCategory": "No category",
+    "learnedSuggestion": "Learned from your imports"
   }
 }

@@ -490,4 +490,37 @@ describe('ImportsPreviewPage', () => {
             expect(mockChangeAccountMutate).toHaveBeenCalledWith('acc-2', expect.any(Object))
         })
     })
+    describe('sugestão aprendida', () => {
+        const withSource = (source: 'Rule' | 'Keyword' | null) => ({
+            ...basePreview,
+            transactions: basePreview.transactions.map(t =>
+                t.id === 'bt-1' ? { ...t, suggestionSource: source } : t),
+        })
+
+        it('deve marcar a categoria que veio de uma regra aprendida', () => {
+            mockPreview = withSource('Rule')
+            renderPage()
+
+            expect(screen.getAllByTestId('learned-suggestion')).toHaveLength(1)
+        })
+
+        it('não deve marcar a sugestão vinda de palavra-chave', () => {
+            mockPreview = withSource('Keyword')
+            renderPage()
+
+            expect(screen.queryByTestId('learned-suggestion')).not.toBeInTheDocument()
+        })
+
+        it('deve tirar a marca quando o usuário escolhe outra categoria', async () => {
+            mockPreview = withSource('Rule')
+            renderPage()
+            const user = userEvent.setup()
+
+            await user.selectOptions(
+                screen.getByRole('combobox', { name: 'Categoria de IFOOD RESTAURANTE' }),
+                '')
+
+            expect(screen.queryByTestId('learned-suggestion')).not.toBeInTheDocument()
+        })
+    })
 })

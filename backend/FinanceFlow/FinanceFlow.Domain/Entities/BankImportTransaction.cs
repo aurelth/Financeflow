@@ -18,6 +18,7 @@ public class BankImportTransaction : BaseEntity
     // Categorização sugerida
     public Guid? SuggestedCategoryId { get; set; }
     public Category? SuggestedCategory { get; set; }
+    public CategorySuggestionSource? SuggestionSource { get; set; }
 
     // Status da transação no preview
     public bool IsDuplicate { get; set; } = false;

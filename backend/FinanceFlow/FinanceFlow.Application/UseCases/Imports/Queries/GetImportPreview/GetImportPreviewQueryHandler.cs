@@ -52,7 +52,8 @@ public class GetImportPreviewQueryHandler(
                 Match: t.MatchedTransactionId is { } id && matched.TryGetValue(id, out var m)
                     ? new DuplicateMatchDto(m.Id, m.Date, m.Amount, m.Description)
                     : null,
-                TransferMatch: transferMatches.GetValueOrDefault(t.Id)))
+                TransferMatch: transferMatches.GetValueOrDefault(t.Id),
+                SuggestionSource: t.SuggestedCategoryId.HasValue ? t.SuggestionSource : null))
             .ToList();
 
         return new BankImportPreviewDto(

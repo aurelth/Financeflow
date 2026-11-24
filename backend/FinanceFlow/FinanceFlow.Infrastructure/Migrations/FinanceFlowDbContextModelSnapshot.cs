@@ -244,6 +244,10 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.Property<Guid?>("SuggestedCategoryId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("SuggestionSource")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<Guid?>("TransactionId")
                         .HasColumnType("uniqueidentifier");
 
@@ -375,6 +379,53 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Categories", (string)null);
+                });
+
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.CategoryRule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("HitCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTime>("LastUsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("UserId", "Type", "Key")
+                        .IsUnique();
+
+                    b.ToTable("CategoryRules", (string)null);
                 });
 
             modelBuilder.Entity("FinanceFlow.Domain.Entities.Goal", b =>
@@ -971,6 +1022,17 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.CategoryRule", b =>
+                {
+                    b.HasOne("FinanceFlow.Domain.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("FinanceFlow.Domain.Entities.Goal", b =>

@@ -6,6 +6,7 @@ using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace FinanceFlow.Application.UseCases.Imports.Commands.ConfirmImport;
 
@@ -14,7 +15,9 @@ public class ConfirmImportCommandHandler(
     ITransactionRepository transactionRepository,
     ICategoryRepository categoryRepository,
     ITransferRepository transferRepository,
-    IDashboardCacheInvalidator dashboardCacheInvalidator)
+    ICategoryRuleRepository categoryRuleRepository,
+    IDashboardCacheInvalidator dashboardCacheInvalidator,
+    ILogger<ConfirmImportCommandHandler> logger)
     : IRequestHandler<ConfirmImportCommand, BankImportDto>
 {
     /// <summary>Uma linha aprovada, já validada, pronta para virar lançamento.</summary>
@@ -144,12 +147,17 @@ public class ConfirmImportCommandHandler(
         var imported = 0;
         var errors = 0;
         var touchedDates = new List<DateTime>();
+        var confirmed = new List<(TransactionType Type, string Description, Guid CategoryId)>();
 
         foreach (var item in plan)
         {
             try
             {
                 var importTransaction = item.Row;
+
+                // A categoria final é a do usuário: só continua "aprendida" se ele manteve a sugestão
+                if (importTransaction.SuggestedCategoryId != item.CategoryId)
+                    importTransaction.SuggestionSource = null;
                 importTransaction.SuggestedCategoryId = item.CategoryId;
 
                 var transaction = new Transaction
@@ -191,6 +199,10 @@ public class ConfirmImportCommandHandler(
 
                 importTransaction.TransactionId = transaction.Id;
                 imported++;
+
+                // Transferência tem categoria fixa: não há o que aprender
+                if (item.Type != TransactionType.Transfer && item.CategoryId != WellKnownIds.TransferCategoryId)
+                    confirmed.Add((item.Type, importTransaction.Description, item.CategoryId));
             }
             catch
             {
@@ -208,6 +220,8 @@ public class ConfirmImportCommandHandler(
 
         await bankImportRepository.UpdateAsync(bankImport, cancellationToken);
 
+        await LearnRulesAsync(request.UserId, confirmed, cancellationToken);
+
         // Só a conversão de lançamentos existentes muda números que já estavam no dashboard
         if (touchedDates.Count > 0)
             await dashboardCacheInvalidator.InvalidateAsync(request.UserId, touchedDates, cancellationToken);
@@ -224,6 +238,56 @@ public class ConfirmImportCommandHandler(
             CreatedAt: bankImport.CreatedAt,
             AccountId: bankImport.AccountId,
             AccountName: bankImport.Account?.Name);
+    }
+
+    /// <summary>
+    /// Guarda "descrição normalizada → categoria" para as próximas importações. Quando a mesma descrição
+    /// aparece mais de uma vez no lote vale a última escolha. É um bônus da confirmação: se falhar,
+    /// os lançamentos já gravados continuam valendo e a importação não pode virar erro.
+    /// </summary>
+    private async Task LearnRulesAsync(
+        Guid userId,
+        List<(TransactionType Type, string Description, Guid CategoryId)> confirmed,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var learned = new Dictionary<(TransactionType Type, string Key), (Guid CategoryId, int Times)>();
+
+            foreach (var (type, description, categoryId) in confirmed)
+            {
+                var key = DescriptionNormalizer.ToKey(description);
+                if (key.Length == 0)
+                    continue;
+
+                var slot = (type, key);
+                var times = learned.TryGetValue(slot, out var previous) && previous.CategoryId == categoryId
+                    ? previous.Times + 1
+                    : 1;
+                learned[slot] = (categoryId, times);
+            }
+
+            if (learned.Count == 0)
+                return;
+
+            var existing = (await categoryRuleRepository.GetTrackedByKeysAsync(
+                    userId, learned.Keys.Select(k => k.Key).Distinct().ToList(), cancellationToken))
+                .ToDictionary(r => (r.Type, r.Key));
+
+            foreach (var ((type, key), (categoryId, times)) in learned)
+            {
+                if (existing.TryGetValue((type, key), out var rule))
+                    rule.Reinforce(categoryId, times);
+                else
+                    categoryRuleRepository.Add(CategoryRule.Create(userId, type, key, categoryId, times));
+            }
+
+            await categoryRuleRepository.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Não foi possível gravar as regras de categorização aprendidas na importação.");
+        }
     }
 
     private readonly record struct LinkDecision(

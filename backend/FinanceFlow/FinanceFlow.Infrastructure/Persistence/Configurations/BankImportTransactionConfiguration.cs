@@ -35,6 +35,10 @@ public class BankImportTransactionConfiguration : IEntityTypeConfiguration<BankI
                .HasConversion<string>()
                .HasMaxLength(20);
 
+        builder.Property(t => t.SuggestionSource)
+               .HasConversion<string>()
+               .HasMaxLength(10);
+
         builder.Property(t => t.TransferMatchStatus)
                .HasConversion<string>()
                .HasMaxLength(10);
