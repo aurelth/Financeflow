@@ -14,6 +14,8 @@ const mockPrefs = {
   budgetCriticalEnabled:         true,
   transactionDueTomorrowEnabled: true,
   transactionDueIn3DaysEnabled:  true,
+  transactionDueTodayEnabled:    true,
+  transactionOverdueEnabled:     true,
 }
 
 vi.mock('@/features/settings/api/useSettings', () => ({

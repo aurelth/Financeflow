@@ -41,6 +41,7 @@
     "assistant": "AI Assistant",
     "healthScore": "Financial Health",
     "goals": "Goals",
-    "accounts": "Accounts"
+    "accounts": "Accounts",
+    "calendar": "Calendar"
   }
 }

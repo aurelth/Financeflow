@@ -12,4 +12,8 @@ public class UserNotificationPreferences : BaseEntity
     // Alertas de vencimento de transações
     public bool TransactionDueTomorrowEnabled { get; set; } = true;
     public bool TransactionDueIn3DaysEnabled { get; set; } = true;
+
+    // Lembrete no próprio dia do vencimento e aviso (uma vez) de conta que venceu sem ser paga
+    public bool TransactionDueTodayEnabled { get; set; } = true;
+    public bool TransactionOverdueEnabled { get; set; } = true;
 }

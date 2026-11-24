@@ -11,6 +11,7 @@ import ResetPasswordPage   from '@/features/auth/pages/ResetPasswordPage'
 import CategoriesPage      from '@/features/categories/pages/CategoriesPage'
 import TransactionsPage    from '@/features/transactions/pages/TransactionsPage'
 import BudgetsPage         from '@/features/budgets/pages/BudgetsPage'
+import CalendarPage        from '@/features/calendar/pages/CalendarPage'
 import DashboardPage       from '@/features/dashboard/pages/DashboardPage'
 import ComparisonPage      from '@/features/dashboard/pages/ComparisonPage'
 import ExportsPage         from '@/features/reports/pages/ExportsPage'
@@ -47,6 +48,7 @@ export default function AppRouter() {
           <Route element={<AppLayout />}>
             <Route path="/dashboard"            element={<DashboardPage />} />
             <Route path="/transactions"         element={<TransactionsPage />} />
+            <Route path="/calendar"             element={<CalendarPage />} />
             <Route path="/accounts"             element={<AccountsPage />} />
             <Route path="/categories"           element={<CategoriesPage />} />
             <Route path="/budgets"              element={<BudgetsPage />} />

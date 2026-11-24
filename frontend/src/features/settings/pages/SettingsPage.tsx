@@ -23,6 +23,8 @@ const DEFAULT_PREFS: NotificationPreferences = {
   budgetCriticalEnabled:         true,
   transactionDueTomorrowEnabled: true,
   transactionDueIn3DaysEnabled:  true,
+  transactionDueTodayEnabled:    true,
+  transactionOverdueEnabled:     true,
 }
 
 interface ToggleProps {
@@ -237,6 +239,22 @@ export default function SettingsPage() {
               description="Receba um alerta quando uma despesa vencer em 3 dias"
               checked={currentPrefs.transactionDueIn3DaysEnabled}
               onChange={val => handleToggle('transactionDueIn3DaysEnabled', val)}
+            />
+          </div>
+          <div style={{ borderTop: '1px solid var(--ff-border-subtle)' }}>
+            <Toggle
+              label="Transação vence hoje"
+              description="Receba um lembrete no dia em que uma despesa vence"
+              checked={currentPrefs.transactionDueTodayEnabled}
+              onChange={val => handleToggle('transactionDueTodayEnabled', val)}
+            />
+          </div>
+          <div style={{ borderTop: '1px solid var(--ff-border-subtle)' }}>
+            <Toggle
+              label="Transação vencida"
+              description="Receba um aviso quando uma despesa vencer sem ter sido paga"
+              checked={currentPrefs.transactionOverdueEnabled}
+              onChange={val => handleToggle('transactionOverdueEnabled', val)}
             />
           </div>
         </div>

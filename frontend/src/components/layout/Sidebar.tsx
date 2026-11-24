@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import {
   LayoutDashboard, ArrowLeftRight, Tag, PiggyBank,
-  BarChart3, GitCompare, FileText, Settings, ShieldCheck, Upload, X, TrendingUp, Sparkles, HeartPulse, Target, Landmark,
+  BarChart3, GitCompare, FileText, Settings, ShieldCheck, Upload, X, TrendingUp, Sparkles, HeartPulse, Target, Landmark, CalendarDays,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -51,6 +51,7 @@ export default function Sidebar() {
   const navItems = [
     { to: '/dashboard',    icon: LayoutDashboard, label: t('nav.dashboard')    },
     { to: '/transactions', icon: ArrowLeftRight,  label: t('nav.transactions') },
+    { to: '/calendar',     icon: CalendarDays,    label: t('nav.calendar')     },
     { to: '/accounts',     icon: Landmark,        label: t('nav.accounts')     },
     { to: '/categories',   icon: Tag,             label: t('nav.categories')   },
     { to: '/budgets',      icon: PiggyBank,       label: t('nav.budgets')      },

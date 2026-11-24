@@ -3,6 +3,8 @@ export interface NotificationPreferences {
   budgetCriticalEnabled:         boolean
   transactionDueTomorrowEnabled: boolean
   transactionDueIn3DaysEnabled:  boolean
+  transactionDueTodayEnabled:    boolean
+  transactionOverdueEnabled:     boolean
 }
 
 export interface UpdateNotificationPreferencesRequest {
@@ -10,6 +12,8 @@ export interface UpdateNotificationPreferencesRequest {
   budgetCriticalEnabled:         boolean
   transactionDueTomorrowEnabled: boolean
   transactionDueIn3DaysEnabled:  boolean
+  transactionDueTodayEnabled:    boolean
+  transactionOverdueEnabled:     boolean
 }
 
 export interface DeleteAccountRequest {

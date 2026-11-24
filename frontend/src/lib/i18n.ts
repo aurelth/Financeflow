@@ -13,6 +13,7 @@ import ptBRImports      from '@/locales/pt-BR/imports.json'
 import ptBRSettings     from '@/locales/pt-BR/settings.json'
 import ptBRAdmin        from '@/locales/pt-BR/admin.json'
 import ptBROnboarding   from '@/locales/pt-BR/onboarding.json'
+import ptBRCalendar     from '@/locales/pt-BR/calendar.json'
 import ptBRAccounts     from '@/locales/pt-BR/accounts.json'
 
 import enUSCommon       from '@/locales/en-US/common.json'
@@ -26,6 +27,7 @@ import enUSImports      from '@/locales/en-US/imports.json'
 import enUSSettings     from '@/locales/en-US/settings.json'
 import enUSAdmin        from '@/locales/en-US/admin.json'
 import enUSOnboarding   from '@/locales/en-US/onboarding.json'
+import enUSCalendar     from '@/locales/en-US/calendar.json'
 import enUSAccounts     from '@/locales/en-US/accounts.json'
 
 import esESCommon       from '@/locales/es-ES/common.json'
@@ -39,6 +41,7 @@ import esESImports      from '@/locales/es-ES/imports.json'
 import esESSettings     from '@/locales/es-ES/settings.json'
 import esESAdmin        from '@/locales/es-ES/admin.json'
 import esESOnboarding   from '@/locales/es-ES/onboarding.json'
+import esESCalendar     from '@/locales/es-ES/calendar.json'
 import esESAccounts     from '@/locales/es-ES/accounts.json'
 
 import frFRCommon       from '@/locales/fr-FR/common.json'
@@ -52,6 +55,7 @@ import frFRImports      from '@/locales/fr-FR/imports.json'
 import frFRSettings     from '@/locales/fr-FR/settings.json'
 import frFRAdmin        from '@/locales/fr-FR/admin.json'
 import frFROnboarding   from '@/locales/fr-FR/onboarding.json'
+import frFRCalendar     from '@/locales/fr-FR/calendar.json'
 import frFRAccounts     from '@/locales/fr-FR/accounts.json'
 
 export const SUPPORTED_LANGUAGES = ['pt-BR', 'en-US', 'es-ES', 'fr-FR'] as const
@@ -82,6 +86,7 @@ i18n
         admin:        ptBRAdmin,
         onboarding:   ptBROnboarding,
         accounts:     ptBRAccounts,
+        calendar:     ptBRCalendar,
       },
       'en-US': {
         common:       enUSCommon,
@@ -96,6 +101,7 @@ i18n
         admin:        enUSAdmin,
         onboarding:   enUSOnboarding,
         accounts:     enUSAccounts,
+        calendar:     enUSCalendar,
       },
       'es-ES': {
         common:       esESCommon,
@@ -110,6 +116,7 @@ i18n
         admin:        esESAdmin,
         onboarding:   esESOnboarding,
         accounts:     esESAccounts,
+        calendar:     esESCalendar,
       },
       'fr-FR': {
         common:       frFRCommon,
@@ -124,6 +131,7 @@ i18n
         admin:        frFRAdmin,
         onboarding:   frFROnboarding,
         accounts:     frFRAccounts,
+        calendar:     frFRCalendar,
       },
     },
     detection: {
@@ -135,7 +143,7 @@ i18n
     supportedLngs: SUPPORTED_LANGUAGES,
     defaultNS: 'common',
     ns: [
-      'common', 'auth', 'dashboard', 'transactions', 'categories',
+      'common', 'auth', 'dashboard', 'transactions', 'calendar', 'categories',
       'budgets', 'reports', 'imports', 'settings', 'admin', 'onboarding', 'accounts',
     ],
     interpolation: {

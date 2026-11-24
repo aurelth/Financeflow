@@ -67,6 +67,13 @@ Em **Transações**, um painel recolhido avisa quando o histórico revela lança
 - **Ignorar** esconde a sugestão para aquela descrição; `DELETE /api/recurring/suggestions/dismissed` volta a oferecê-las.
 - API: `GET /api/recurring/suggestions`, `POST /api/recurring/suggestions/confirm`, `POST /api/recurring/suggestions/dismiss`.
 
+## Calendário de contas e lembretes
+
+A página **Calendário** mostra o mês dia a dia: contas a pagar (despesas em aberto), a receber (receitas em aberto) e o que já foi liquidado, com totais do mês. Clicar num dia lista os lançamentos dele, e **Dar baixa** marca como Pago (saldo, dashboard e relatórios passam a contá-lo). Contas vencidas e não pagas dos últimos 90 dias aparecem num painel à parte, de qualquer mês. "Hoje" e "vencida" seguem o fuso configurado no perfil do usuário.
+
+- Lembretes (worker `TransactionDueAlertJob`, só despesas ainda não pagas): vence em 3 dias, vence amanhã, **vence hoje** e **venceu ontem sem pagamento** (avisa uma vez). Cada um tem seu interruptor em Configurações → Notificações. Antes, lançamentos Pendentes eram ignorados pelo job e lançamentos já pagos podiam gerar aviso; agora só o que está em aberto avisa.
+- API: `GET /api/calendar?month=&year=`, `POST /api/transactions/{id}/pay` (idempotente; transferências ficam de fora).
+
 ## Estrutura do projeto
 
 ```

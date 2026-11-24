@@ -10,5 +10,7 @@ public record DueTransactionResponse(
     string RecurrenceType,
     string Type,
     bool NotifyDueTomorrow = true,
-    bool NotifyDueIn3Days = true
+    bool NotifyDueIn3Days = true,
+    bool NotifyDueToday = true,
+    bool NotifyOverdue = true
 );

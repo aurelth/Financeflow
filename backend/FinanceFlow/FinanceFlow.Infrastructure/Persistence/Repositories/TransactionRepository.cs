@@ -106,10 +106,8 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
                 .ThenInclude(u => u.NotificationPreferences)
             .Where(t =>
                 t.DeletedAt == null &&
-                (
-                    t.Status == TransactionStatus.Scheduled ||
-                    t.IsRecurring == true
-                ) &&
+                t.Type != TransactionType.Transfer &&
+                t.Status != TransactionStatus.Paid &&
                 t.Date.Date == targetDateOnly)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
@@ -286,6 +284,49 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
                 t.InstallmentGroupId == null &&
                 (t.IsRecurring || t.Status != TransactionStatus.Scheduled))
             .OrderBy(t => t.Date)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+    public async Task<List<Transaction>> GetByPeriodAsync(
+        Guid userId,
+        DateTime from,
+        DateTime toExclusive,
+        CancellationToken cancellationToken = default) =>
+        await context.Transactions
+            .IgnoreQueryFilters()
+            .Include(t => t.Category)
+            .Include(t => t.Account)
+            .Where(t =>
+                t.UserId == userId &&
+                t.DeletedAt == null &&
+                t.Type != TransactionType.Transfer &&
+                t.Date >= from &&
+                t.Date < toExclusive)
+            .OrderBy(t => t.Date)
+            .ThenBy(t => t.CreatedAt)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+    public async Task<List<Transaction>> GetUnpaidBeforeAsync(
+        Guid userId,
+        DateTime before,
+        DateTime since,
+        int limit,
+        CancellationToken cancellationToken = default) =>
+        await context.Transactions
+            .IgnoreQueryFilters()
+            .Include(t => t.Category)
+            .Include(t => t.Account)
+            .Where(t =>
+                t.UserId == userId &&
+                t.DeletedAt == null &&
+                t.Type != TransactionType.Transfer &&
+                t.Status != TransactionStatus.Paid &&
+                t.Date >= since &&
+                t.Date < before)
+            .OrderBy(t => t.Date)
+            .ThenBy(t => t.CreatedAt)
+            .Take(limit)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 

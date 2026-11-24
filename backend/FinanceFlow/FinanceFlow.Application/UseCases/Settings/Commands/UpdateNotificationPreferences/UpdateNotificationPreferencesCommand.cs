@@ -7,5 +7,7 @@ public record UpdateNotificationPreferencesCommand(
     bool BudgetWarningEnabled,
     bool BudgetCriticalEnabled,
     bool TransactionDueTomorrowEnabled,
-    bool TransactionDueIn3DaysEnabled
+    bool TransactionDueIn3DaysEnabled,
+    bool TransactionDueTodayEnabled = true,
+    bool TransactionOverdueEnabled = true
 ) : IRequest;

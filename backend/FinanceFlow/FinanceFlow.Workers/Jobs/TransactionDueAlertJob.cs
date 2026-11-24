@@ -21,7 +21,27 @@ public class TransactionDueAlertJob(
         PropertyNameCaseInsensitive = true
     };
 
-    private static readonly int[] AlertDaysAhead = [1, 3];
+    /// <summary>
+    /// Os avisos de vencimento. DaysAhead negativo olha para trás: -1 pega o que venceu ontem e ainda não foi pago,
+    /// o que avisa uma única vez (amanhã o lançamento já não cai na janela de ontem).
+    /// </summary>
+    private sealed record Reminder(
+        int DaysAhead,
+        string Type,
+        Func<DueTransactionResponse, bool> IsEnabled,
+        Func<DueTransactionResponse, DateTime, string, string> BuildMessage);
+
+    private static readonly Reminder[] Reminders =
+    [
+        new(0, "TransactionDueToday", t => t.NotifyDueToday,
+            (t, date, amount) => $"🔔 A transação '{t.Description}' vence hoje ({date:dd/MM/yyyy}) — {amount}."),
+        new(1, "TransactionDueTomorrow", t => t.NotifyDueTomorrow,
+            (t, date, amount) => $"⏰ A transação '{t.Description}' vence amanhã ({date:dd/MM/yyyy}) — {amount}."),
+        new(3, "TransactionDueIn3Days", t => t.NotifyDueIn3Days,
+            (t, date, amount) => $"📅 A transação '{t.Description}' vence em 3 dias ({date:dd/MM/yyyy}) — {amount}."),
+        new(-1, "TransactionOverdue", t => t.NotifyOverdue,
+            (t, date, amount) => $"⚠️ A transação '{t.Description}' venceu ontem ({date:dd/MM/yyyy}) e ainda não foi paga — {amount}."),
+    ];
 
     public async Task Execute(IJobExecutionContext context)
     {
@@ -32,16 +52,16 @@ public class TransactionDueAlertJob(
             "TransactionDueAlertJob iniciado — verificando vencimentos para {Date}",
             today.ToString("dd/MM/yyyy"));
 
-        foreach (var daysAhead in AlertDaysAhead)
+        foreach (var reminder in Reminders)
         {
-            var targetDate = today.AddDays(daysAhead);
-            await ProcessDueDateAsync(targetDate, daysAhead, cancellationToken);
+            var targetDate = today.AddDays(reminder.DaysAhead);
+            await ProcessDueDateAsync(targetDate, reminder, cancellationToken);
         }
     }
 
     private async Task ProcessDueDateAsync(
         DateTime targetDate,
-        int daysAhead,
+        Reminder reminder,
         CancellationToken cancellationToken)
     {
         var token = await authService.GetTokenAsync(cancellationToken);
@@ -66,63 +86,53 @@ public class TransactionDueAlertJob(
                 JsonOptions, cancellationToken)
             ?? [];
 
-        var list = transactions.ToList();
-
-        // Filtra apenas despesas
-        var despesas = list
+        // A API só devolve o que ainda não foi pago; os lembretes são de contas a pagar (despesas)
+        var despesas = transactions
             .Where(t => t.Type == "Expense")
             .ToList();
 
         logger.LogInformation(
-            "{Count} despesa(s) com vencimento em {Date} ({Days} dia(s))",
-            despesas.Count, targetDate.ToString("dd/MM/yyyy"), daysAhead);
+            "{Count} despesa(s) em aberto com vencimento em {Date} [{Type}]",
+            despesas.Count, targetDate.ToString("dd/MM/yyyy"), reminder.Type);
+
+        var culture = new CultureInfo("pt-BR");
 
         foreach (var transaction in despesas)
         {
-            var type = daysAhead == 1 ? "TransactionDueTomorrow" : "TransactionDueIn3Days";
-
             // Respeita preferências de notificação do utilizador
-            var preferenceEnabled = daysAhead == 1
-                ? transaction.NotifyDueTomorrow
-                : transaction.NotifyDueIn3Days;
-
-            if (!preferenceEnabled)
+            if (!reminder.IsEnabled(transaction))
             {
                 logger.LogDebug(
                     "Notificação [{Type}] desativada pelo utilizador {UserId} — ignorando.",
-                    type, transaction.UserId);
+                    reminder.Type, transaction.UserId);
                 continue;
             }
 
             var jaEnviada = await deduplicationService.AlreadySentTodayAsync(
-                transaction.Id, type, cancellationToken);
+                transaction.Id, reminder.Type, cancellationToken);
 
             if (jaEnviada)
             {
                 logger.LogDebug(
                     "Notificação [{Type}] já enviada hoje para TransactionId {Id} — ignorando.",
-                    type, transaction.Id);
+                    reminder.Type, transaction.Id);
                 continue;
             }
 
-            var culture = new CultureInfo("pt-BR");
-            var amountFormatted = transaction.Amount.ToString("C", culture);
-
-            var message = daysAhead == 1
-                ? $"⏰ A transação '{transaction.Description}' vence amanhã ({targetDate:dd/MM/yyyy}) — {amountFormatted}."
-                : $"📅 A transação '{transaction.Description}' vence em 3 dias ({targetDate:dd/MM/yyyy}) — {amountFormatted}.";
+            var message = reminder.BuildMessage(
+                transaction, targetDate, transaction.Amount.ToString("C", culture));
 
             var notification = new NotificationEvent(
                 UserId: transaction.UserId,
                 Message: message,
-                Type: type,
+                Type: reminder.Type,
                 CreatedAt: DateTime.UtcNow,
                 ReferenceId: transaction.Id);
 
             await notificationDispatchService.ProcessAsync(notification, cancellationToken);
 
             await deduplicationService.MarkAsSentAsync(
-                transaction.Id, type, cancellationToken);
+                transaction.Id, reminder.Type, cancellationToken);
         }
     }
 }

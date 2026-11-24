@@ -1,0 +1,57 @@
+{
+  "title": "Calendar",
+  "subtitle": "Bills to pay and to receive, day by day",
+  "loading": "Loading…",
+  "loadError": "Could not load the calendar.",
+  "nav": {
+    "prev": "Previous month",
+    "next": "Next month",
+    "today": "Today"
+  },
+  "totals": {
+    "toPay": "To pay",
+    "toReceive": "To receive",
+    "paid": "Paid",
+    "received": "Received"
+  },
+  "weekdays": {
+    "sun": "Sun",
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat"
+  },
+  "grid": {
+    "label": "Month calendar",
+    "dayLabel": "Day {{day}}, {{count}} entry(ies)"
+  },
+  "legend": {
+    "label": "Legend",
+    "overdue": "Overdue",
+    "toPay": "To pay",
+    "toReceive": "To receive",
+    "settled": "Settled"
+  },
+  "overdue": {
+    "title": "Overdue bills",
+    "summary": "{{count}} overdue open bill(s)",
+    "toPay": "— {{amount}} to pay",
+    "toReceive": "— {{amount}} to receive"
+  },
+  "day": {
+    "select": "Select a day to see its entries.",
+    "empty": "No entries on this day."
+  },
+  "entry": {
+    "pay": "Mark as paid",
+    "receive": "Mark as received",
+    "paid": "Paid",
+    "received": "Received",
+    "open": "Open",
+    "overdue": "Overdue",
+    "recurring": "Recurring",
+    "paidToast": "Marked as settled: {{description}}"
+  }
+}

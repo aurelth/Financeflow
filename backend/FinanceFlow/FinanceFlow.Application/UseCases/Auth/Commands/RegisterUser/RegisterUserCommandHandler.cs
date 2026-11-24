@@ -60,6 +60,8 @@ public class RegisterUserCommandHandler(
                 BudgetCriticalEnabled = true,
                 TransactionDueTomorrowEnabled = true,
                 TransactionDueIn3DaysEnabled = true,
+                TransactionDueTodayEnabled = true,
+                TransactionOverdueEnabled = true,
             }
         };
 

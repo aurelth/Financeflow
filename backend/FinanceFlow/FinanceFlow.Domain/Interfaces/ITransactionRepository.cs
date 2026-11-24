@@ -36,8 +36,8 @@ public interface ITransactionRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retorna transações Scheduled ou IsRecurring de todos os usuários
-    /// com Date igual à data alvo — uso interno do Worker.
+    /// Retorna os lançamentos ainda não pagos (Agendados ou Pendentes, exceto transferências) de todos os
+    /// usuários com Date igual à data alvo — uso interno do Worker. Um lançamento já pago não gera lembrete.
     /// </summary>
     Task<IEnumerable<Transaction>> GetDueTransactionsAsync(
         DateTime targetDate,
@@ -73,6 +73,27 @@ public interface ITransactionRepository
     Task<List<Transaction>> GetForRecurrenceAnalysisAsync(
         Guid userId,
         DateTime from,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lançamentos de um período (transferências ficam de fora), com categoria e conta, em ordem de data.
+    /// Somente leitura — alimenta o calendário.
+    /// </summary>
+    Task<List<Transaction>> GetByPeriodAsync(
+        Guid userId,
+        DateTime from,
+        DateTime toExclusive,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lançamentos ainda não pagos com data de <paramref name="since"/> até antes de <paramref name="before"/>
+    /// (transferências ficam de fora), do mais antigo ao mais novo, limitados a <paramref name="limit"/>.
+    /// </summary>
+    Task<List<Transaction>> GetUnpaidBeforeAsync(
+        Guid userId,
+        DateTime before,
+        DateTime since,
+        int limit,
         CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -1,0 +1,57 @@
+{
+  "title": "Calendário",
+  "subtitle": "Contas a pagar e a receber, dia a dia",
+  "loading": "Carregando…",
+  "loadError": "Não foi possível carregar o calendário.",
+  "nav": {
+    "prev": "Mês anterior",
+    "next": "Próximo mês",
+    "today": "Hoje"
+  },
+  "totals": {
+    "toPay": "A pagar",
+    "toReceive": "A receber",
+    "paid": "Pago",
+    "received": "Recebido"
+  },
+  "weekdays": {
+    "sun": "Dom",
+    "mon": "Seg",
+    "tue": "Ter",
+    "wed": "Qua",
+    "thu": "Qui",
+    "fri": "Sex",
+    "sat": "Sáb"
+  },
+  "grid": {
+    "label": "Calendário do mês",
+    "dayLabel": "Dia {{day}}, {{count}} lançamento(s)"
+  },
+  "legend": {
+    "label": "Legenda",
+    "overdue": "Vencida",
+    "toPay": "A pagar",
+    "toReceive": "A receber",
+    "settled": "Liquidado"
+  },
+  "overdue": {
+    "title": "Contas vencidas",
+    "summary": "{{count}} conta(s) vencida(s) e em aberto",
+    "toPay": "— {{amount}} a pagar",
+    "toReceive": "— {{amount}} a receber"
+  },
+  "day": {
+    "select": "Selecione um dia para ver os lançamentos.",
+    "empty": "Nenhum lançamento neste dia."
+  },
+  "entry": {
+    "pay": "Dar baixa",
+    "receive": "Receber",
+    "paid": "Pago",
+    "received": "Recebido",
+    "open": "Em aberto",
+    "overdue": "Vencida",
+    "recurring": "Recorrente",
+    "paidToast": "Baixa registrada: {{description}}"
+  }
+}
