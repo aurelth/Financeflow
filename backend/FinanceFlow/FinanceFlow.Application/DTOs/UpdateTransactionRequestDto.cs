@@ -1,4 +1,5 @@
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 
 namespace FinanceFlow.Application.DTOs;
 
@@ -14,5 +15,6 @@ public record UpdateTransactionRequestDto(
     Guid? SubcategoryId,
     string[] Tags,
     bool PropagateToFuture = false,
-    Guid? AccountId = null
+    Guid? AccountId = null,
+    TransferDirection? TransferDirection = null
 );

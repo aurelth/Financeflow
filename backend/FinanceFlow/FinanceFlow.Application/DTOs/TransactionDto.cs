@@ -1,4 +1,5 @@
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 
 namespace FinanceFlow.Application.DTOs;
 
@@ -24,5 +25,11 @@ public record TransactionDto(
     DateTime CreatedAt,
     DateTime? UpdatedAt,
     Guid AccountId = default,
-    string? AccountName = null
+    string? AccountName = null,
+    // Transferência entre contas: sentido da ponta e, se já pareada, a outra ponta
+    TransferDirection? TransferDirection = null,
+    Guid? TransferLinkId = null,
+    Guid? CounterpartTransactionId = null,
+    Guid? CounterpartAccountId = null,
+    string? CounterpartAccountName = null
 );

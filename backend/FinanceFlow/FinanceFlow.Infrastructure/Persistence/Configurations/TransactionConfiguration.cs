@@ -32,6 +32,7 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 
         builder.Property(t => t.ImportHash).HasMaxLength(64);
         builder.Property(t => t.ExternalId).HasMaxLength(100);
+        builder.Property(t => t.TransferDirection);
 
         builder.HasIndex(t => new { t.AccountId, t.Date });
 

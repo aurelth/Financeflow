@@ -1,5 +1,6 @@
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 using MediatR;
 
 namespace FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
@@ -20,5 +21,6 @@ public record UpdateTransactionCommand(
     bool PropagateToFuture = false,
     string? AttachmentPath = null,
     string? AttachmentName = null,
-    Guid? AccountId = null
+    Guid? AccountId = null,
+    TransferDirection? TransferDirection = null
 ) : IRequest<TransactionDto>;

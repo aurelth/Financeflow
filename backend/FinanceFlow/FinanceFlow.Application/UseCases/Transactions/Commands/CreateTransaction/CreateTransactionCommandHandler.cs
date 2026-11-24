@@ -4,6 +4,7 @@ using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Application.Events;
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +34,11 @@ public class CreateTransactionCommandHandler(
         if (category.Type != request.Type)
             throw new ValidationException(
                 "O tipo da transação não coincide com o tipo da categoria.");
+
+        // Uma transferência avulsa precisa dizer se o dinheiro entra ou sai desta conta; a outra ponta
+        // é lançada na outra conta (ou vinculada depois). Para as duas pontas de uma vez, use POST /api/transfers.
+        if (request.Type == TransactionType.Transfer && request.TransferDirection is null)
+            throw new ValidationException("Informe se a transferência é uma entrada ou uma saída desta conta.");
 
         var account = request.AccountId.HasValue
             ? await accountRepository.GetByIdAsync(request.AccountId.Value, request.UserId, cancellationToken)
@@ -67,6 +73,7 @@ public class CreateTransactionCommandHandler(
             UserId = request.UserId,
             Amount = request.Amount,
             Type = request.Type,
+            TransferDirection = request.Type == TransactionType.Transfer ? request.TransferDirection : null,
             Date = request.Date,
             Description = request.Description,
             Status = request.Status,
@@ -136,6 +143,7 @@ public class CreateTransactionCommandHandler(
                 UserId = origem.UserId,
                 Amount = origem.Amount,
                 Type = origem.Type,
+                TransferDirection = origem.TransferDirection,
                 Date = new DateTime(ano, mes, dia, origem.Date.Hour, origem.Date.Minute, origem.Date.Second),
                 Description = origem.Description,
                 Status = TransactionStatus.Scheduled,

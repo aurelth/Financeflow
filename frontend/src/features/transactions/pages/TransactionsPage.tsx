@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Receipt } from 'lucide-react'
+import { ArrowLeftRight, Plus, Receipt } from 'lucide-react'
 import { useTransactions }           from '../api/useTransactions'
 import { useCategories }             from '../../categories/api/useCategories'
 import { useAccounts }               from '@/features/accounts/api/useAccounts'
@@ -7,6 +7,9 @@ import TransactionTable              from '../components/TransactionTable'
 import TransactionFilters            from '../components/TransactionFilters'
 import TransactionForm               from '../components/TransactionForm'
 import DeleteTransactionDialog       from '../components/DeleteTransactionDialog'
+import TransferFormDialog             from '@/features/transfers/components/TransferFormDialog'
+import UnlinkTransferDialog          from '@/features/transfers/components/UnlinkTransferDialog'
+import PendingTransfersPanel         from '@/features/transfers/components/PendingTransfersPanel'
 import ExportButton                  from '@/features/reports/components/ExportButton'
 import EmptyState                    from '@/components/ui/EmptyState'
 import SkeletonTable                 from '@/components/ui/SkeletonTable'
@@ -29,6 +32,8 @@ export default function TransactionsPage() {
   const [showForm, setShowForm]     = useState(false)
   const [editingTx, setEditingTx]   = useState<Transaction | null>(null)
   const [deletingTx, setDeletingTx] = useState<Transaction | null>(null)
+  const [showTransferForm, setShowTransferForm] = useState(false)
+  const [unlinkingTx, setUnlinkingTx] = useState<Transaction | null>(null)
 
   const { data, isLoading }       = useTransactions(filters)
   const { data: categories = [] } = useCategories()
@@ -76,6 +81,16 @@ export default function TransactionsPage() {
         </div>
         <div className="flex items-center gap-2">
           <ExportButton defaultMonth={filterMonth} defaultYear={filterYear} />
+          {accounts.length > 1 && (
+            <button
+              onClick={() => setShowTransferForm(true)}
+              className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
+              style={{ background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.3)' }}
+            >
+              <ArrowLeftRight size={15} />
+              Transferir entre contas
+            </button>
+          )}
           <button
             onClick={() => setShowForm(true)}
             className="flex items-center gap-2 h-9 px-4 rounded-xl text-sm font-medium transition-colors"
@@ -88,6 +103,9 @@ export default function TransactionsPage() {
           </button>
         </div>
       </div>
+
+      {/* Pontas de transferência sem par (some quando não há nenhuma) */}
+      <PendingTransfersPanel />
 
       {/* Filtros */}
       <TransactionFilters
@@ -106,6 +124,7 @@ export default function TransactionsPage() {
           transactions={transactions}
           onEdit={handleEdit}
           onDelete={tx => setDeletingTx(tx)}
+          onUnlink={tx => setUnlinkingTx(tx)}
           showAccount={accounts.length > 1}
         />
       )}
@@ -190,6 +209,18 @@ export default function TransactionsPage() {
 
       {showForm && (
         <TransactionForm transaction={editingTx ?? undefined} onClose={handleCloseForm} />
+      )}
+
+      {showTransferForm && (
+        <TransferFormDialog onClose={() => setShowTransferForm(false)} />
+      )}
+
+      {unlinkingTx?.transferLinkId && (
+        <UnlinkTransferDialog
+          linkId={unlinkingTx.transferLinkId}
+          summary={`${unlinkingTx.description || 'Transferência'} · ${unlinkingTx.accountName ?? ''} ↔ ${unlinkingTx.counterpartAccountName ?? ''}`}
+          onClose={() => setUnlinkingTx(null)}
+        />
       )}
 
       {deletingTx && (

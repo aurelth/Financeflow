@@ -3,6 +3,7 @@ using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Entities;
+using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
 using System.Text.Json;
@@ -13,6 +14,7 @@ public class UpdateTransactionCommandHandler(
     ITransactionRepository transactionRepository,
     ICategoryRepository categoryRepository,
     IAccountRepository accountRepository,
+    ITransferRepository transferRepository,
     ICacheService cache,
     IMapper mapper)
     : IRequestHandler<UpdateTransactionCommand, TransactionDto>
@@ -32,6 +34,34 @@ public class UpdateTransactionCommandHandler(
         if (category.Type != request.Type)
             throw new ValidationException(
                 "O tipo da transação não coincide com o tipo da categoria.");
+
+        // Transferência vinculada: as duas pontas se sustentam (mesmo valor, contas e sentidos opostos).
+        // Alterar isso numa ponta quebraria a outra; para mudar, é preciso desfazer o vínculo antes.
+        var isLinked = await transferRepository.IsLinkedAsync(transaction.Id, cancellationToken);
+
+        if (isLinked &&
+            (request.Type != transaction.Type ||
+             request.Amount != transaction.Amount ||
+             (request.AccountId.HasValue && request.AccountId.Value != transaction.AccountId) ||
+             (request.TransferDirection.HasValue && request.TransferDirection != transaction.TransferDirection)))
+        {
+            throw new ValidationException(
+                "Esta transferência está vinculada a um lançamento de outra conta. " +
+                "Desfaça o vínculo para alterar o tipo, o valor, a conta ou o sentido.");
+        }
+
+        // Sentido: só existe em transferência. Ao virar transferência precisa ser informado;
+        // ao deixar de ser, é descartado.
+        TransferDirection? transferDirection = null;
+        if (request.Type == TransactionType.Transfer)
+        {
+            transferDirection = isLinked
+                ? transaction.TransferDirection
+                : request.TransferDirection ?? transaction.TransferDirection;
+
+            if (transferDirection is null)
+                throw new ValidationException("Informe se a transferência é uma entrada ou uma saída desta conta.");
+        }
 
         // Troca de conta (opcional): a conta precisa ser do usuário e não estar arquivada
         if (request.AccountId.HasValue && request.AccountId.Value != transaction.AccountId)
@@ -62,6 +92,7 @@ public class UpdateTransactionCommandHandler(
         // Atualiza a transação atual
         transaction.Amount = request.Amount;
         transaction.Type = request.Type;
+        transaction.TransferDirection = transferDirection;
         transaction.Date = request.Date;
         transaction.Description = request.Description;
         transaction.Status = request.Status;

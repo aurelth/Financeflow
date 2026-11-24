@@ -12,6 +12,8 @@ import {
   ArrowLeftRight,
   ChevronDown,
   ChevronRight,
+  Link2,
+  Unlink,
 } from "lucide-react";
 import type {
   BankImportTransactionDto,
@@ -30,6 +32,8 @@ export interface ImportPreviewSummary {
   importAnyway: number;
   /** Linhas selecionadas (novas ou duplicadas) que ainda não têm categoria */
   missingCategory: number;
+  /** Linhas selecionadas que serão vinculadas à outra ponta de uma transferência */
+  linked: number;
 }
 
 interface Props {
@@ -48,6 +52,7 @@ export interface ImportPreviewTableHandle {
     categoryId: string;
     type: string;
     importAnyway?: boolean;
+    transferAction?: "Link" | "Ignore";
   }[];
   getCount: () => { selected: number; total: number };
 }
@@ -82,6 +87,13 @@ type RowType = "Income" | "Expense" | "Transfer";
 
 interface RowState extends BankImportTransactionDto {
   localType: RowType;
+  /** Vincula esta linha à outra ponta (lançamento de outra conta) ao confirmar */
+  linked: boolean;
+}
+
+// Linha vinculada é uma transferência, qualquer que seja o tipo do extrato
+function typeOf(row: RowState): RowType {
+  return row.linked ? "Transfer" : row.localType;
 }
 
 const REASON_TEXT: Record<DuplicateReason, string> = {
@@ -92,19 +104,47 @@ const REASON_TEXT: Record<DuplicateReason, string> = {
 
 // Selecionada, não é transferência e sem categoria → bloqueia a confirmação
 function isMissingCategory(row: RowState) {
-  return row.isSelected && row.localType !== "Transfer" && !row.suggestedCategoryId;
+  return row.isSelected && typeOf(row) !== "Transfer" && !row.suggestedCategoryId;
+}
+
+function SectionTitle({ text, tone }: { text: string; tone: "transfer" | "suggestion" | "plain" }) {
+  const palette = {
+    transfer: { bg: "rgba(99,102,241,0.08)", color: "#818cf8" },
+    suggestion: { bg: "rgba(251,191,36,0.06)", color: "#fbbf24" },
+    plain: { bg: "var(--ff-bg-elevated)", color: "var(--ff-text-muted)" },
+  }[tone];
+
+  return (
+    <p
+      className="px-4 py-2 text-xs font-medium"
+      style={{ background: palette.bg, color: palette.color }}
+    >
+      {text}
+    </p>
+  );
 }
 
 const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
   ({ transactions: initialTransactions, categories, errorIds = [], onSummaryChange }, ref) => {
     const [rows, setRows] = useState<RowState[]>(
-      initialTransactions.map((t) => ({ ...t, localType: t.type as RowType })),
+      initialTransactions.map((t) => ({
+        ...t,
+        localType: t.type as RowType,
+        // Par automático já vem vinculado (dá para desfazer); sugestão só vincula se o usuário aceitar
+        linked: t.transferMatch?.status === "Auto",
+      })),
     );
     const [selectAll, setSelectAll] = useState(true);
     const [showDuplicates, setShowDuplicates] = useState(false);
 
     const newRows = rows.filter((t) => !t.isDuplicate);
     const duplicateRows = rows.filter((t) => t.isDuplicate);
+
+    // Novas linhas separadas por situação: transferências pareadas, pares a decidir e o restante
+    const linkedRows = newRows.filter((t) => t.linked && t.transferMatch);
+    const suggestedRows = newRows.filter((t) => t.transferMatch && !t.linked);
+    const plainRows = newRows.filter((t) => !t.transferMatch);
+    const linkedCount = linkedRows.filter((t) => t.isSelected).length;
 
     const selectedNew = newRows.filter((t) => t.isSelected).length;
     const importAnywayCount = duplicateRows.filter((t) => t.isSelected).length;
@@ -115,9 +155,10 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
         selected: selectedNew,
         importAnyway: importAnywayCount,
         missingCategory: missingCount,
+        linked: linkedCount,
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedNew, importAnywayCount, missingCount]);
+    }, [selectedNew, importAnywayCount, missingCount, linkedCount]);
 
     useImperativeHandle(ref, () => ({
       getSelected: () => rows.filter((t) => t.isSelected).map((t) => t.id),
@@ -129,9 +170,13 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
             id: t.id,
             isSelected: true,
             categoryId: t.suggestedCategoryId ?? EMPTY_GUID,
-            type: t.localType,
+            type: typeOf(t),
             // Só vai no payload quando a linha duplicada foi liberada pelo usuário
             ...(t.isDuplicate ? { importAnyway: true } : {}),
+            // Par de transferência: a decisão do usuário é sempre explícita
+            ...(t.transferMatch
+              ? { transferAction: t.linked ? ("Link" as const) : ("Ignore" as const) }
+              : {}),
           })),
 
       getCount: () => ({
@@ -162,6 +207,10 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
       );
     }
 
+    function setLinked(id: string, linked: boolean) {
+      setRows(rows.map((t) => (t.id === id ? { ...t, linked } : t)));
+    }
+
     function deselectUncategorized() {
       setRows(rows.map((t) => (isMissingCategory(t) ? { ...t, isSelected: false } : t)));
     }
@@ -179,8 +228,10 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
     }
 
     function renderRow(t: RowState) {
-      const isTransfer = t.localType === "Transfer";
+      const rowType = typeOf(t);
+      const isTransfer = rowType === "Transfer";
       const likelyTransfer = isLikelyTransfer(t.description);
+      const pair = t.transferMatch;
       const missing = isMissingCategory(t);
       const rejectedByServer = errorIds.includes(t.id);
       const hasError = missing || rejectedByServer;
@@ -188,9 +239,9 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
       const filteredCategories = isTransfer
         ? categories
         : categories.filter((c) => {
-            if (t.localType === "Income")
+            if (rowType === "Income")
               return c.type === TransactionType.Income;
-            if (t.localType === "Expense")
+            if (rowType === "Expense")
               return c.type === TransactionType.Expense;
             return true;
           });
@@ -281,7 +332,7 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
                 </span>
               )}
               {/* Toggle visível apenas para transações com palavras-chave de transferência */}
-              {likelyTransfer && !t.isDuplicate && (
+              {likelyTransfer && !t.isDuplicate && !pair && (
                 <button
                   onClick={() => toggleTransfer(t.id)}
                   title={
@@ -328,6 +379,47 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
               </div>
             )}
 
+            {/* Par de transferência encontrado em outra conta */}
+            {pair && !t.isDuplicate && (
+              <div
+                data-testid={`transfer-pair-${t.id}`}
+                className="flex flex-wrap items-center gap-2 text-xs pl-6"
+                style={{ color: t.linked ? "#818cf8" : "var(--ff-text-muted)" }}
+              >
+                <span>
+                  {t.linked
+                    ? `Par: ${pair.accountName ?? "outra conta"} · ${formatDate(pair.date)} · ${pair.description || "Sem descrição"}`
+                    : `Possível transferência com ${pair.accountName ?? "outra conta"} · ${formatDate(pair.date)} · ${pair.description || "Sem descrição"}`}
+                  {t.linked && pair.willConvert && " (será convertido em transferência)"}
+                  {" "}
+                  <span style={{ opacity: 0.8 }}>
+                    {pair.status === "Auto" ? "· pareada automaticamente" : "· sugestão"}
+                  </span>
+                </span>
+                {t.linked ? (
+                  <button
+                    type="button"
+                    onClick={() => setLinked(t.id, false)}
+                    aria-label={`Desfazer vínculo: ${t.description}`}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg font-medium"
+                    style={{ border: "1px solid rgba(99,102,241,0.35)", color: "#818cf8" }}
+                  >
+                    <Unlink size={11} /> Desfazer vínculo
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setLinked(t.id, true)}
+                    aria-label={`Vincular: ${t.description}`}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg font-medium"
+                    style={{ border: "1px solid rgba(99,102,241,0.35)", color: "#818cf8" }}
+                  >
+                    <Link2 size={11} /> Vincular
+                  </button>
+                )}
+              </div>
+            )}
+
             {hasError && (
               <p
                 role="alert"
@@ -346,7 +438,15 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
             {formatDate(t.date)}
           </span>
 
-          {/* Categoria */}
+          {/* Categoria: transferência vinculada não tem categoria a escolher */}
+          {t.linked && pair ? (
+            <span
+              className="text-xs px-2 py-1.5"
+              style={{ color: "#818cf8" }}
+            >
+              Transferência
+            </span>
+          ) : (
           <select
             value={t.suggestedCategoryId ?? ""}
             disabled={t.isDuplicate && !t.isSelected}
@@ -372,19 +472,20 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
             ))}
             {filteredCategories.length === 0 && (
               <option value="" disabled>
-                {t.localType === "Expense"
+                {rowType === "Expense"
                   ? "Crie categorias de despesa"
                   : "Crie categorias de receita"}
               </option>
             )}
           </select>
+          )}
 
           {/* Valor */}
           <span
             className="text-sm font-medium text-right"
-            style={{ color: getAmountColor(t.localType) }}
+            style={{ color: getAmountColor(rowType) }}
           >
-            {formatAmount(t.amount, t.localType)}
+            {formatAmount(t.amount, rowType)}
           </span>
         </div>
       );
@@ -405,6 +506,8 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
             transações selecionadas
             {importAnywayCount > 0 &&
               ` (+ ${importAnywayCount} duplicada${importAnywayCount > 1 ? "s" : ""} para importar mesmo assim)`}
+            {linkedCount > 0 &&
+              ` · ${linkedCount} transferência${linkedCount > 1 ? "s" : ""} pareada${linkedCount > 1 ? "s" : ""}`}
           </p>
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -492,7 +595,26 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
           </div>
 
           <div className="divide-y" style={{ borderColor: "var(--ff-border)" }}>
-            {newRows.map(renderRow)}
+            {linkedRows.length > 0 && (
+              <SectionTitle
+                tone="transfer"
+                text={`Transferências entre contas (${linkedRows.length}) — as duas pontas serão vinculadas`}
+              />
+            )}
+            {linkedRows.map(renderRow)}
+
+            {suggestedRows.length > 0 && (
+              <SectionTitle
+                tone="suggestion"
+                text={`Possíveis transferências (${suggestedRows.length}) — decida se vincula`}
+              />
+            )}
+            {suggestedRows.map(renderRow)}
+
+            {(linkedRows.length > 0 || suggestedRows.length > 0) && plainRows.length > 0 && (
+              <SectionTitle tone="plain" text={`Novas transações (${plainRows.length})`} />
+            )}
+            {plainRows.map(renderRow)}
             {newRows.length === 0 && (
               <p
                 className="px-4 py-6 text-sm text-center"

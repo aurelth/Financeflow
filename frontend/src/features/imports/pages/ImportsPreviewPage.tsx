@@ -41,6 +41,7 @@ export default function ImportsPreviewPage() {
     selected: 0,
     importAnyway: 0,
     missingCategory: 0,
+    linked: 0,
   });
   const [errorIds, setErrorIds] = useState<string[]>([]);
 

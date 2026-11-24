@@ -28,6 +28,8 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
             .Include(t => t.Category)
             .Include(t => t.Subcategory)
             .Include(t => t.Account)
+            .Include(t => t.LinkAsOut).ThenInclude(l => l!.InTransaction).ThenInclude(t => t.Account)
+            .Include(t => t.LinkAsIn).ThenInclude(l => l!.OutTransaction).ThenInclude(t => t.Account)
             .Where(t =>
                 t.UserId == userId &&
                 t.DeletedAt == null);
@@ -84,6 +86,8 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
             .Include(t => t.Category)
             .Include(t => t.Subcategory)
             .Include(t => t.Account)
+            .Include(t => t.LinkAsOut).ThenInclude(l => l!.InTransaction).ThenInclude(t => t.Account)
+            .Include(t => t.LinkAsIn).ThenInclude(l => l!.OutTransaction).ThenInclude(t => t.Account)
             .Where(t =>
                 t.Id == id &&
                 t.UserId == userId &&
@@ -240,6 +244,10 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
         Transaction transaction,
         CancellationToken cancellationToken = default)
     {
+        // O vínculo é gerenciado só pelo ITransferRepository: não deixa o grafo carregado na leitura ser regravado
+        transaction.LinkAsOut = null;
+        transaction.LinkAsIn = null;
+
         context.Transactions.Update(transaction);
         await context.SaveChangesAsync(cancellationToken);
     }

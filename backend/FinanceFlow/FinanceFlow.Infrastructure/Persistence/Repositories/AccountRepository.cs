@@ -1,3 +1,4 @@
+using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.Infrastructure.Persistence.Context;
@@ -88,6 +89,9 @@ public class AccountRepository(FinanceFlowDbContext context) : IAccountRepositor
                 Total = g.Sum(t =>
                     t.Type == TransactionType.Income ? t.Amount :
                     t.Type == TransactionType.Expense ? -t.Amount :
+                    // Transferência entra (+) ou sai (-) da conta; sem direção (legado) não move o saldo
+                    t.Type == TransactionType.Transfer && t.TransferDirection == TransferDirection.In ? t.Amount :
+                    t.Type == TransactionType.Transfer && t.TransferDirection == TransferDirection.Out ? -t.Amount :
                     0m),
             })
             .AsNoTracking()

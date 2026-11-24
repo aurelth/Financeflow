@@ -48,6 +48,7 @@ public static class DependencyInjection
         services.AddScoped<IBankImportRepository, BankImportRepository>();
         services.AddScoped<IGoalRepository, GoalRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<ITransferRepository, TransferRepository>();
         services.AddSingleton<IAccountKeyHasher, AccountKeyHasher>();
 
         // Caching

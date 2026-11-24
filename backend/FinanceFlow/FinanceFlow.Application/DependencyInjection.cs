@@ -39,6 +39,8 @@ public static class DependencyInjection
 
         // Importação de extratos
         services.AddScoped<IImportDeduplicationService, ImportDeduplicationService>();
+        services.AddScoped<ITransferMatchingService, TransferMatchingService>();
+        services.AddScoped<IDashboardCacheInvalidator, DashboardCacheInvalidator>();
 
         //Goals
         services.AddScoped<IGoalProgressService, GoalProgressService>();

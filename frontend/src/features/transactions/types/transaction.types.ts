@@ -16,6 +16,9 @@ export enum RecurrenceType {
   Yearly  = 4,
 }
 
+// Sentido de uma ponta de transferência, do ponto de vista da conta do lançamento
+export type TransferDirection = 'In' | 'Out'
+
 // Transação
 
 export interface Transaction {
@@ -33,6 +36,12 @@ export interface Transaction {
   tags:           string[]
   accountId:      string
   accountName:    string | null
+  // Transferência entre contas (só quando type = Transfer)
+  transferDirection?:        TransferDirection | null
+  transferLinkId?:           string | null
+  counterpartTransactionId?: string | null
+  counterpartAccountId?:     string | null
+  counterpartAccountName?:   string | null
   categoryId:     string
   categoryName:   string
   categoryIcon:   string
@@ -67,6 +76,8 @@ export interface CreateTransactionRequest {
   subcategoryId:  string | null
   tags:           string[]
   accountId?:     string
+  // Obrigatório quando type = Transfer: a conta recebe (In) ou envia (Out) o dinheiro
+  transferDirection?: TransferDirection | null
 }
 
 export interface UpdateTransactionRequest {
@@ -81,6 +92,7 @@ export interface UpdateTransactionRequest {
   subcategoryId:  string | null
   tags:           string[]
   accountId?:     string
+  transferDirection?: TransferDirection | null
   propagateToFuture: boolean
 }
 

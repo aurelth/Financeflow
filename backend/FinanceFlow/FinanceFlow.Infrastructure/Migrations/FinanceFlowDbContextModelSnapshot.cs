@@ -231,6 +231,16 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.Property<Guid?>("TransactionId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("TransferMatchScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TransferMatchStatus")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<Guid?>("TransferMatchTransactionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -628,6 +638,9 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasColumnType("nvarchar(500)")
                         .HasDefaultValue("[]");
 
+                    b.Property<int?>("TransferDirection")
+                        .HasColumnType("int");
+
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
@@ -654,6 +667,83 @@ namespace FinanceFlow.Infrastructure.Migrations
                         .HasFilter("[ImportHash] IS NOT NULL");
 
                     b.ToTable("Transactions", (string)null);
+                });
+
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.TransferLink", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("InTransactionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("OutTransactionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("Score")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InTransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("OutTransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TransferLinks", (string)null);
+                });
+
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.TransferRejection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("FirstTransactionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SecondTransactionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "FirstTransactionId", "SecondTransactionId")
+                        .IsUnique();
+
+                    b.ToTable("TransferRejections", (string)null);
                 });
 
             modelBuilder.Entity("FinanceFlow.Domain.Entities.User", b =>
@@ -963,6 +1053,33 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.TransferLink", b =>
+                {
+                    b.HasOne("FinanceFlow.Domain.Entities.Transaction", "InTransaction")
+                        .WithOne("LinkAsIn")
+                        .HasForeignKey("FinanceFlow.Domain.Entities.TransferLink", "InTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FinanceFlow.Domain.Entities.Transaction", "OutTransaction")
+                        .WithOne("LinkAsOut")
+                        .HasForeignKey("FinanceFlow.Domain.Entities.TransferLink", "OutTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FinanceFlow.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("InTransaction");
+
+                    b.Navigation("OutTransaction");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FinanceFlow.Domain.Entities.UserNotificationPreferences", b =>
                 {
                     b.HasOne("FinanceFlow.Domain.Entities.User", "User")
@@ -991,6 +1108,13 @@ namespace FinanceFlow.Infrastructure.Migrations
             modelBuilder.Entity("FinanceFlow.Domain.Entities.Subcategory", b =>
                 {
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.Transaction", b =>
+                {
+                    b.Navigation("LinkAsIn");
+
+                    b.Navigation("LinkAsOut");
                 });
 
             modelBuilder.Entity("FinanceFlow.Domain.Entities.User", b =>
