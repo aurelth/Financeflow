@@ -58,12 +58,12 @@ export default function CalendarPage() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <h1 className="text-xl font-semibold" style={{ color: 'var(--ff-text-primary)' }}>{t('title')}</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>{t('subtitle')}</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full sm:w-auto items-center gap-2">
           <button
             onClick={() => goTo(-1)}
             aria-label={t('nav.prev')}
@@ -74,7 +74,7 @@ export default function CalendarPage() {
           </button>
           <p
             data-testid="calendar-month-label"
-            className="min-w-36 text-center text-sm font-medium capitalize"
+            className="flex-1 sm:flex-none sm:min-w-36 text-center text-sm font-medium capitalize"
             style={{ color: 'var(--ff-text-primary)' }}
           >
             {monthLabel}
@@ -89,7 +89,7 @@ export default function CalendarPage() {
           </button>
           <button
             onClick={goToday}
-            className="h-9 px-3 rounded-xl text-sm font-medium"
+            className="h-9 px-3 rounded-xl text-sm font-medium flex-shrink-0"
             style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--ff-emerald)', border: '1px solid rgba(16,185,129,0.3)' }}
           >
             {t('nav.today')}
@@ -124,7 +124,7 @@ export default function CalendarPage() {
 
           <OverduePanel overdue={data.overdue} onPay={handlePay} payingId={payingId} />
 
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] items-start">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] items-start">
             <CalendarGrid
               year={year}
               month={month}

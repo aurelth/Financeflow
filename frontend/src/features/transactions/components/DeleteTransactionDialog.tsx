@@ -21,7 +21,7 @@ export default function DeleteTransactionDialog({ transaction, onClose }: Delete
   // Modal de escolha para recorrentes
   if (isRecorrente) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex justify-center p-4 !m-0 overflow-y-auto [align-items:safe_center] bg-black/70 backdrop-blur-sm">
         <div
           className="rounded-2xl p-6 w-full max-w-md shadow-2xl"
           style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
@@ -94,7 +94,7 @@ export default function DeleteTransactionDialog({ transaction, onClose }: Delete
 
   // Modal padrão para não recorrentes
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex justify-center p-4 !m-0 overflow-y-auto [align-items:safe_center] bg-black/70 backdrop-blur-sm">
       <div
         className="rounded-2xl p-6 w-full max-w-md shadow-2xl"
         style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}

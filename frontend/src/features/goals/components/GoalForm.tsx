@@ -114,7 +114,7 @@ export default function GoalForm({ goal, onSubmit, isPending, onCancel }: GoalFo
       </div>
 
       {/* Valor alvo e contribuição mensal */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label style={labelStyle}>Valor alvo (R$)</label>
           <input

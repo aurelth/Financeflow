@@ -74,6 +74,7 @@ const readonlyStyle: React.CSSProperties = {
   ...inputStyle,
   cursor: "default",
   color: "var(--ff-text-secondary)",
+  overflowWrap: "anywhere",
 };
 
 const labelStyle: React.CSSProperties = {
@@ -334,22 +335,22 @@ export default function ProfilePage() {
         </div>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1 min-w-0">
               <label style={labelStyle}>{t("profile.name")}</label>
               <div style={readonlyStyle}>{profile?.name ?? "—"}</div>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <label style={labelStyle}>{t("profile.email")}</label>
               <div style={readonlyStyle}>{profile?.email ?? "—"}</div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1 min-w-0">
               <label style={labelStyle}>{t("profile.cpf")}</label>
               <div style={readonlyStyle}>{profile?.cpf || "—"}</div>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <label style={labelStyle}>{t("profile.gender")}</label>
               <div style={readonlyStyle}>
                 {genderLabel(profile?.gender ?? "")}
@@ -392,8 +393,8 @@ export default function ProfilePage() {
           onSubmit={prefForm.handleSubmit((d) => updateProfile(d))}
           className="space-y-4"
         >
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1 min-w-0">
               <label htmlFor="currency" style={labelStyle}>
                 {t("profile.currency")}
               </label>
@@ -421,7 +422,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <label htmlFor="timezone" style={labelStyle}>
                 {t("profile.timezone")}
               </label>
@@ -449,7 +450,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <label htmlFor="language" style={labelStyle}>
                 {t("profile.language")}
               </label>
@@ -522,7 +523,7 @@ export default function ProfilePage() {
           )}
           className="space-y-4"
         >
-          <div className="space-y-1">
+          <div className="space-y-1 min-w-0">
             <label htmlFor="currentPassword" style={labelStyle}>
               {t("profile.currentPassword")}
             </label>
@@ -555,8 +556,8 @@ export default function ProfilePage() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1 min-w-0">
               <label htmlFor="newPassword" style={labelStyle}>
                 {t("profile.newPassword")}
               </label>
@@ -589,7 +590,7 @@ export default function ProfilePage() {
               )}
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <label htmlFor="confirmPassword" style={labelStyle}>
                 {t("profile.confirmPassword")}
               </label>
@@ -656,7 +657,7 @@ export default function ProfilePage() {
               className="rounded-2xl shadow-2xl"
               style={{
                 maxWidth: "80vw",
-                maxHeight: "80vh",
+                maxHeight: "80dvh",
                 objectFit: "contain",
               }}
             />

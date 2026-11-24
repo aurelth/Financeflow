@@ -41,8 +41,8 @@ export default function AccountCard({ account, reconciliation, onEdit, onArchive
             <AccountIcon type={account.type} color={account.color} />
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold truncate" style={{ color: 'var(--ff-text-primary)' }}>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <p className="text-sm font-semibold md:truncate max-md:break-words" style={{ color: 'var(--ff-text-primary)' }}>
                 {account.name}
               </p>
               {account.isDefault && (

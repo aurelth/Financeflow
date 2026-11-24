@@ -112,9 +112,10 @@ export default function CashFlowTab({ data }: Props) {
 
       {/* Tabela de períodos */}
       <div
-        className="rounded-2xl overflow-hidden"
+        className="rounded-2xl overflow-x-auto"
         style={{ border: '1px solid var(--ff-border)' }}
       >
+       <div className="min-w-[560px]">
         <div
           className="grid grid-cols-5 px-4 py-2.5 text-xs font-medium"
           style={{ background: 'var(--ff-bg-elevated)', color: 'var(--ff-text-muted)', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr' }}
@@ -144,6 +145,7 @@ export default function CashFlowTab({ data }: Props) {
             </div>
           ))}
         </div>
+       </div>
       </div>
     </div>
   )

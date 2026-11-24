@@ -36,7 +36,7 @@ export default function CategoryCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="font-medium text-sm truncate" style={{ color: 'var(--ff-text-primary)' }}>
+            <p className="font-medium text-sm md:truncate max-md:break-words" style={{ color: 'var(--ff-text-primary)' }}>
               {category.name}
             </p>
             {category.isDefault && (
@@ -61,7 +61,7 @@ export default function CategoryCard({
             <>
               <button
                 onClick={() => onAddSub(category)}
-                className="p-1.5 rounded-lg transition-all duration-200"
+                className="p-1.5 max-md:p-2 rounded-lg transition-all duration-200"
                 style={{ color: 'var(--ff-text-muted)' }}
                 onMouseEnter={e => {
                   e.currentTarget.style.color = 'var(--ff-emerald)'
@@ -77,7 +77,7 @@ export default function CategoryCard({
               </button>
               <button
                 onClick={() => onEdit(category)}
-                className="p-1.5 rounded-lg transition-all duration-200"
+                className="p-1.5 max-md:p-2 rounded-lg transition-all duration-200"
                 style={{ color: 'var(--ff-text-muted)' }}
                 onMouseEnter={e => {
                   e.currentTarget.style.color = 'var(--ff-text-primary)'
@@ -93,7 +93,7 @@ export default function CategoryCard({
               </button>
               <button
                 onClick={() => onDelete(category)}
-                className="p-1.5 rounded-lg transition-all duration-200"
+                className="p-1.5 max-md:p-2 rounded-lg transition-all duration-200"
                 style={{ color: 'var(--ff-text-muted)' }}
                 onMouseEnter={e => {
                   e.currentTarget.style.color = 'var(--ff-expense)'
@@ -113,7 +113,7 @@ export default function CategoryCard({
           {category.subcategories.length > 0 && (
             <button
               onClick={() => setExpanded(p => !p)}
-              className="p-1.5 rounded-lg transition-all duration-200"
+              className="p-1.5 max-md:p-2 rounded-lg transition-all duration-200"
               style={{ color: 'var(--ff-text-muted)' }}
               onMouseEnter={e => {
                 e.currentTarget.style.color = 'var(--ff-text-primary)'

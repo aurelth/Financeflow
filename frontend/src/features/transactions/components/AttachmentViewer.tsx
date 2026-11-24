@@ -137,9 +137,9 @@ export default function AttachmentViewer({
 
       {/* Modal de preview */}
       {previewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex justify-center p-4 !m-0 overflow-y-auto [align-items:safe_center] bg-black/80 backdrop-blur-sm">
           <div
-            className="w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] rounded-2xl"
+            className="w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-2rem)] rounded-2xl"
             style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
           >
             <div
@@ -233,7 +233,7 @@ export default function AttachmentViewer({
                 </div>
               )}
               {!loading && objectUrl && isPdfContent && (
-                <iframe src={objectUrl} title={fileName} className="w-full h-full min-h-[70vh]" />
+                <iframe src={objectUrl} title={fileName} className="w-full h-full min-h-[70dvh]" />
               )}
               {!loading && objectUrl && !isImageContent && !isPdfContent && (
                 <div className="flex flex-col items-center gap-3 py-12" style={{ color: 'var(--ff-text-muted)' }}>

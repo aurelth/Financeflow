@@ -128,8 +128,8 @@ export default function ImportsPreviewPage() {
   return (
     <div className="space-y-6">
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => navigate("/imports")}
             aria-label="Voltar"
@@ -146,7 +146,7 @@ export default function ImportsPreviewPage() {
           >
             <ArrowLeft size={18} />
           </button>
-          <div>
+          <div className="min-w-0">
             <h1
               className="text-xl font-semibold"
               style={{ color: "var(--ff-text-primary)" }}
@@ -154,7 +154,7 @@ export default function ImportsPreviewPage() {
               Preview da importação
             </h1>
             <p
-              className="text-sm mt-0.5"
+              className="text-sm mt-0.5 break-all"
               style={{ color: "var(--ff-text-muted)" }}
             >
               {preview?.fileName ?? "..."}
@@ -228,11 +228,11 @@ export default function ImportsPreviewPage() {
 
           {/* Conta de destino: duplicatas só fazem sentido dentro de uma conta */}
           {preview.accountId && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs" style={{ color: "var(--ff-text-muted)" }}>
                 Conta de destino
               </span>
-              <div style={{ minWidth: 180 }}>
+              <div className="min-w-[180px] flex-1 sm:flex-none">
                 <AccountSelect
                   value={preview.accountId}
                   onChange={handleChangeAccount}

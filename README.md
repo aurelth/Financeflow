@@ -74,6 +74,16 @@ A página **Calendário** mostra o mês dia a dia: contas a pagar (despesas em a
 - Lembretes (worker `TransactionDueAlertJob`, só despesas ainda não pagas): vence em 3 dias, vence amanhã, **vence hoje** e **venceu ontem sem pagamento** (avisa uma vez). Cada um tem seu interruptor em Configurações → Notificações. Antes, lançamentos Pendentes eram ignorados pelo job e lançamentos já pagos podiam gerar aviso; agora só o que está em aberto avisa.
 - API: `GET /api/calendar?month=&year=`, `POST /api/transactions/{id}/pay` (idempotente; transferências ficam de fora).
 
+## Experiência mobile
+
+O frontend é responsivo de 320 px (celulares pequenos) até desktop, sem rolagem horizontal da página:
+
+- **Layout:** altura dinâmica (`100dvh`), então a barra de endereço do navegador móvel não corta a tela; cabeçalhos de página quebram em linhas (título em cima, botões embaixo) quando faltam espaço.
+- **Listas e tabelas:** transações viram cartões no celular (mesmo DOM da tabela, só CSS); a prévia de importação OFX usa grade por áreas; tabelas largas (fluxo de caixa, admin) rolam na horizontal dentro do próprio cartão.
+- **Diálogos:** rolam internamente quando o conteúdo é maior que a tela (inclusive em paisagem) e nunca ultrapassam a largura da viewport.
+- **Formulários:** campos lado a lado empilham abaixo de 420 px; campos de texto usam 16 px no celular para o iOS Safari não dar zoom ao focar; botões de ação têm área de toque maior.
+- **Verificação:** as páginas foram medidas em 320, 360, 390 e 768 px (overflow da página e dos diálogos) com Playwright; testes automatizados desse comportamento entram na rodada final de testes.
+
 ## Estrutura do projeto
 
 ```

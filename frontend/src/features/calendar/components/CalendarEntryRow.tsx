@@ -86,7 +86,7 @@ export default function CalendarEntryRow({ entry, onPay, isPaying, showDate = fa
             onClick={() => onPay(entry)}
             disabled={isPaying}
             aria-label={`${t(isIncome ? 'entry.receive' : 'entry.pay')} ${entry.description}`}
-            className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium disabled:opacity-50"
+            className="flex items-center gap-1.5 h-10 sm:h-8 px-3 rounded-lg text-xs font-medium disabled:opacity-50"
             style={{ background: 'rgba(16,185,129,0.12)', color: 'var(--ff-emerald)', border: '1px solid rgba(16,185,129,0.3)' }}
           >
             {isPaying && <Loader2 size={12} className="animate-spin" />}

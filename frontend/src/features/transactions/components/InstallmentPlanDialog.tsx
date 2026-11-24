@@ -36,12 +36,12 @@ export default function InstallmentPlanDialog({ groupId, onClose }: InstallmentP
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex justify-center p-4 !m-0 overflow-y-auto [align-items:safe_center] bg-black/70 backdrop-blur-sm">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="installment-plan-title"
-        className="w-full max-w-lg rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-lg rounded-2xl shadow-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto"
         style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
       >
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid var(--ff-border)' }}>
@@ -74,7 +74,7 @@ export default function InstallmentPlanDialog({ groupId, onClose }: InstallmentP
             <>
               <p className="text-sm font-medium" style={{ color: 'var(--ff-text-primary)' }}>{plan.description || '—'}</p>
 
-              <div className="grid grid-cols-3 gap-2 text-center" data-testid="installment-summary">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center" data-testid="installment-summary">
                 {([
                   ['installments.total',     plan.totalAmount],
                   ['installments.paid',      plan.paidAmount],
@@ -82,7 +82,7 @@ export default function InstallmentPlanDialog({ groupId, onClose }: InstallmentP
                 ] as const).map(([key, value]) => (
                   <div key={key} className="rounded-xl px-2 py-2" style={{ background: 'var(--ff-bg-elevated)', border: '1px solid var(--ff-border)' }}>
                     <p className="text-[11px] uppercase tracking-wide" style={{ color: 'var(--ff-text-muted)' }}>{t(key)}</p>
-                    <p className="text-sm font-semibold" style={{ color: 'var(--ff-text-primary)' }}>{formatBRL(value)}</p>
+                    <p className="text-xs sm:text-sm font-semibold break-words" style={{ color: 'var(--ff-text-primary)' }}>{formatBRL(value)}</p>
                   </div>
                 ))}
               </div>

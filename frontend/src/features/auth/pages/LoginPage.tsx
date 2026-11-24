@@ -32,7 +32,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="rounded-2xl p-8 shadow-2xl"
+      className="rounded-2xl p-6 sm:p-8 shadow-2xl"
       style={{ background: 'rgba(17,17,17,0.9)', border: '1px solid var(--ff-border)', backdropFilter: 'blur(20px)' }}
     >
       <div className="text-center mb-8">

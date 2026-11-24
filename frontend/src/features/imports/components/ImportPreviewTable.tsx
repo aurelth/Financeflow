@@ -82,7 +82,6 @@ function formatDate(date: string) {
 }
 
 const EMPTY_GUID = "00000000-0000-0000-0000-000000000000";
-const GRID = "32px 1fr 120px 140px 100px";
 
 type RowType = "Income" | "Expense" | "Transfer";
 
@@ -257,9 +256,8 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
           key={t.id}
           data-testid={`import-row-${t.id}`}
           data-error={hasError ? "true" : undefined}
-          className="grid gap-4 px-4 py-3 items-center transition-colors"
+          className="ff-import-grid grid gap-4 px-4 py-3 items-center transition-colors"
           style={{
-            gridTemplateColumns: GRID,
             background: hasError
               ? "rgba(248,113,113,0.06)"
               : t.isDuplicate
@@ -306,7 +304,7 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
                 />
               )}
               <span
-                className="text-sm truncate"
+                className="text-sm md:truncate max-md:break-words max-md:min-w-0"
                 style={{ color: "var(--ff-text-primary)" }}
                 title={t.description}
               >
@@ -597,9 +595,8 @@ const ImportPreviewTable = forwardRef<ImportPreviewTableHandle, Props>(
         >
           {/* Header */}
           <div
-            className="grid gap-4 px-4 py-2.5 text-xs font-medium"
+            className="ff-import-grid ff-import-head grid gap-4 px-4 py-2.5 text-xs font-medium"
             style={{
-              gridTemplateColumns: GRID,
               background: "var(--ff-bg-elevated)",
               color: "var(--ff-text-muted)",
             }}

@@ -78,11 +78,11 @@ export default function AccountForm({ account, onClose }: AccountFormProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex justify-center p-4 !m-0 overflow-y-auto [align-items:safe_center] bg-black/70 backdrop-blur-sm">
       <div
         role="dialog"
         aria-label={isEditing ? t('form.editTitle') : t('form.createTitle')}
-        className="w-full max-w-md rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-md rounded-2xl shadow-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto"
         style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
       >
         <div
@@ -116,7 +116,7 @@ export default function AccountForm({ account, onClose }: AccountFormProps) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <div>
               <label htmlFor="account-type" style={labelStyle}>{t('form.type')}</label>
               <select
@@ -144,7 +144,7 @@ export default function AccountForm({ account, onClose }: AccountFormProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
             <div>
               <label htmlFor="account-balance" style={labelStyle}>{t('form.initialBalance')}</label>
               <input

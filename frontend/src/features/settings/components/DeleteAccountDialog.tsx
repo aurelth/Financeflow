@@ -29,7 +29,7 @@ export default function DeleteAccountDialog({ onClose }: DeleteAccountDialogProp
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex justify-center p-4 !m-0 overflow-y-auto [align-items:safe_center] bg-black/70 backdrop-blur-sm">
       <div
         className="w-full max-w-md rounded-2xl shadow-2xl"
         style={{ background: 'var(--ff-bg-card)', border: '1px solid rgba(244,63,94,0.3)' }}

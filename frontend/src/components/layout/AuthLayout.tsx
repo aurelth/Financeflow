@@ -4,7 +4,7 @@ import { TrendingUp } from 'lucide-react'
 export default function AuthLayout() {
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 relative"
+      className="min-h-dvh flex flex-col items-center justify-center p-4 relative"
       style={{ background: 'var(--ff-bg-base)' }}
     >
       {/* Decoração sutil com verde esmeralda */}
@@ -20,7 +20,7 @@ export default function AuthLayout() {
       </div>
 
       {/* Logo — ícone TrendingUp */}
-      <div className="absolute top-8 left-8 flex items-center gap-2">
+      <div className="relative mb-6 md:mb-0 md:absolute md:top-8 md:left-8 flex items-center gap-2">
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center"
           style={{ background: 'var(--ff-emerald)' }}

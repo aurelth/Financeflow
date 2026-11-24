@@ -64,8 +64,8 @@ export default function BudgetsPage() {
     <div className="space-y-6">
 
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-xl font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
             Orçamentos
           </h1>
