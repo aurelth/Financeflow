@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { isLikelyTransfer } from '@/lib/transferUtils'
-import { X, Paperclip, FileText, Image, RefreshCw, ArrowLeftRight } from 'lucide-react'
+import { X, Paperclip, FileText, Image, RefreshCw, ArrowLeftRight, Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import type { QuickEntryDraft } from '@/features/quick-entry/types/quickEntry.types'
 import AttachmentViewer from './AttachmentViewer'
 import { useCategories, useGoalCategories } from '../../categories/api/useCategories'
 import {
@@ -25,6 +27,12 @@ import {
 interface TransactionFormProps {
   transaction?: Transaction
   onClose: () => void
+  // Lançamento por IA: valores sugeridos (o usuário confere e salva), o comprovante que os originou
+  // e a posição na fila quando a mesma foto/texto gerou mais de um lançamento
+  draft?: QuickEntryDraft
+  draftAttachment?: File | null
+  draftProgress?: { current: number; total: number }
+  onDiscardDrafts?: () => void
 }
 
 const defaultForm: CreateTransactionRequest = {
@@ -62,7 +70,10 @@ const labelStyle: React.CSSProperties = {
   marginBottom: '6px',
 }
 
-export default function TransactionForm({ transaction, onClose }: TransactionFormProps) {
+export default function TransactionForm({
+  transaction, onClose, draft, draftAttachment, draftProgress, onDiscardDrafts,
+}: TransactionFormProps) {
+  const { t } = useTranslation('transactions')
   const isEditing = !!transaction
 
   const [form, setForm] = useState<CreateTransactionRequest>(
@@ -81,11 +92,20 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
         accountId:      transaction.accountId,
         transferDirection: transaction.transferDirection ?? null,
       }
-      : defaultForm
+      : draft
+        ? {
+          ...defaultForm,
+          amount:      draft.amount,
+          type:        resolveType(draft.type),
+          date:        draft.date.split('T')[0],
+          description: draft.description,
+          categoryId:  draft.categoryId ?? '',
+        }
+        : defaultForm
   )
 
   const [tagInput, setTagInput]                         = useState('')
-  const [attachment, setAttachment]                     = useState<File | null>(null)
+  const [attachment, setAttachment]                     = useState<File | null>(draftAttachment ?? null)
   const [currentAttachmentPath, setCurrentAttachmentPath] = useState<string | null>(transaction?.attachmentPath ?? null)
   const [currentAttachmentName, setCurrentAttachmentName] = useState<string | null>(transaction?.attachmentName ?? null)
   const [showPropagateModal, setShowPropagateModal]     = useState(false)
@@ -233,6 +253,30 @@ export default function TransactionForm({ transaction, onClose }: TransactionFor
 
           {/* Body */}
           <div className="px-6 py-5 space-y-4">
+
+            {/* Rascunho da IA: nada é salvo sem o usuário conferir */}
+            {draft && (
+              <div
+                data-testid="ai-draft-banner"
+                className="flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs"
+                style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', color: 'var(--ff-emerald)' }}
+              >
+                <Sparkles size={14} className="flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p>{t('quickEntry.draftBanner')}</p>
+                  {draftProgress && draftProgress.total > 1 && (
+                    <p className="mt-1 font-medium" data-testid="ai-draft-progress">
+                      {t('quickEntry.draftProgress', { current: draftProgress.current, total: draftProgress.total })}
+                    </p>
+                  )}
+                </div>
+                {onDiscardDrafts && draftProgress && draftProgress.total > 1 && (
+                  <button type="button" onClick={onDiscardDrafts} className="underline whitespace-nowrap">
+                    {t('quickEntry.discardRest')}
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Tipo */}
             <div className="grid grid-cols-3 gap-2">

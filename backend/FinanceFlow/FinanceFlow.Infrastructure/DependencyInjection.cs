@@ -50,6 +50,7 @@ public static class DependencyInjection
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<ITransferRepository, TransferRepository>();
         services.AddScoped<ICategoryRuleRepository, CategoryRuleRepository>();
+        services.AddScoped<IAiUsageRepository, AiUsageRepository>();
         services.AddSingleton<IAccountKeyHasher, AccountKeyHasher>();
 
         // Caching
@@ -76,6 +77,8 @@ public static class DependencyInjection
         services.AddScoped<ILanguageService, LanguageService>();
 
         // IA - Assistente Financeiro
+        services.Configure<FinanceFlow.Application.Services.Ai.AiOptions>(
+            configuration.GetSection(FinanceFlow.Application.Services.Ai.AiOptions.SectionName));
         services.AddScoped<IAnthropicService, AnthropicService>();        
 
         return services;

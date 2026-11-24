@@ -35,6 +35,19 @@ npm install
 npm run dev
 ```
 
+## Lançamento por IA (texto ou foto de comprovante)
+
+Em **Transações → Lançar com IA** o usuário descreve o gasto ou fotografa o comprovante; a IA devolve rascunhos que são conferidos no formulário antes de salvar (nada é gravado sem confirmação). Cada usuário tem um limite diário de usos, renovado à meia-noite no fuso dele.
+
+| Configuração (`Ai:*` / variável `Ai__*`) | Padrão | Descrição |
+|---|---|---|
+| `Ai:DailyLimit` / `Ai__DailyLimit` | 30 | Usos por usuário por dia |
+| `Ai:MaxImageBytes` | 5242880 | Tamanho máximo da foto após a redução no navegador |
+| `Ai:MaxTextLength` | 500 | Tamanho máximo do texto |
+| `Ai:MaxDraftsPerRequest` | 5 | Lançamentos aceitos por chamada |
+
+As fotos não são armazenadas pelo servidor e nem o texto nem as imagens são registrados em log.
+
 ## Estrutura do projeto
 
 ```

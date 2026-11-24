@@ -15,5 +15,27 @@
   },
   "filters": { "all": "All", "income": "Income", "expenses": "Expenses", "search": "Search transactions..." },
   "empty": "No transactions found",
-  "attachment": { "view": "View", "download": "Download", "remove": "Remove" }
+  "attachment": { "view": "View", "download": "Download", "remove": "Remove" },
+  "quickEntry": {
+    "button": "Add with AI",
+    "title": "Add with AI",
+    "subtitle": "Describe the expense or photograph the receipt. AI builds the entry and you review it before saving.",
+    "textLabel": "Entry description",
+    "textPlaceholder": "E.g. lunch 45.90 on iFood yesterday",
+    "addPhoto": "Attach photo",
+    "changePhoto": "Change photo",
+    "removePhoto": "Remove photo",
+    "imageTooLarge": "The photo is too large. Try an image up to 5 MB.",
+    "genericError": "Could not interpret it right now. Please try again.",
+    "nothingFound": "I couldn't find any entry in that content. Try describing it with an amount and date, or use another photo.",
+    "quotaRemaining": "{{remaining}} of {{limit}} uses left today",
+    "quotaExhausted": "You have used all {{limit}} AI entries for today. The limit resets at midnight.",
+    "cancel": "Cancel",
+    "submit": "Interpret",
+    "reading": "Reading…",
+    "close": "Close",
+    "draftBanner": "Suggested by AI — check the details before saving.",
+    "draftProgress": "Entry {{current}} of {{total}}",
+    "discardRest": "Discard remaining"
+  }
 }

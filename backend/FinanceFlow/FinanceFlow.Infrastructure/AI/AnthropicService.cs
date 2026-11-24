@@ -49,4 +49,43 @@ public class AnthropicService : IAnthropicService
 
         return content;
     }
+
+    public async Task<string> SendMessageWithImagesAsync(
+        string systemPrompt,
+        string userMessage,
+        IReadOnlyList<AiImage> images,
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Enviando mensagem com {Count} imagem(ns) para a API Anthropic.", images.Count);
+
+        var content = new List<ContentBase>();
+        foreach (var image in images)
+        {
+            content.Add(new ImageContent
+            {
+                Source = new ImageSource
+                {
+                    MediaType = image.MediaType,
+                    Data = Convert.ToBase64String(image.Data),
+                },
+            });
+        }
+
+        content.Add(new TextContent { Text = userMessage });
+
+        var parameters = new MessageParameters
+        {
+            Model = _model,
+            MaxTokens = _maxTokens,
+            Temperature = 0m,
+            System = [new SystemMessage(systemPrompt)],
+            Messages = [new Message { Role = RoleType.User, Content = content }],
+        };
+
+        var response = await _client.Messages.GetClaudeMessageAsync(parameters, cancellationToken);
+
+        _logger.LogInformation("Resposta recebida da API Anthropic.");
+
+        return response.Content.OfType<TextContent>().FirstOrDefault()?.Text ?? string.Empty;
+    }
 }

@@ -7,5 +7,27 @@
   "actions": { "add": "Nouvelle transaction", "edit": "Modifier la transaction", "delete": "Supprimer la transaction", "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette transaction ?", "deleteFuture": "Supprimer celle-ci et les suivantes", "editFuture": "Mettre à jour celle-ci et les suivantes" },
   "filters": { "all": "Tous", "income": "Revenus", "expenses": "Dépenses", "search": "Rechercher des transactions..." },
   "empty": "Aucune transaction trouvée",
-  "attachment": { "view": "Voir", "download": "Télécharger", "remove": "Supprimer" }
+  "attachment": { "view": "Voir", "download": "Télécharger", "remove": "Supprimer" },
+  "quickEntry": {
+    "button": "Saisir avec l'IA",
+    "title": "Saisir avec l'IA",
+    "subtitle": "Décrivez la dépense ou photographiez le justificatif. L'IA prépare l'écriture et vous la vérifiez avant d'enregistrer.",
+    "textLabel": "Description de l'écriture",
+    "textPlaceholder": "Ex. : déjeuner 45,90 sur iFood hier",
+    "addPhoto": "Joindre une photo",
+    "changePhoto": "Changer la photo",
+    "removePhoto": "Retirer la photo",
+    "imageTooLarge": "La photo est trop volumineuse. Essayez une image de 5 Mo maximum.",
+    "genericError": "Impossible d'interpréter pour le moment. Veuillez réessayer.",
+    "nothingFound": "Je n'ai trouvé aucune écriture dans ce contenu. Essayez de la décrire avec un montant et une date, ou utilisez une autre photo.",
+    "quotaRemaining": "Il vous reste {{remaining}} utilisations sur {{limit}} aujourd'hui",
+    "quotaExhausted": "Vous avez utilisé les {{limit}} saisies par IA d'aujourd'hui. La limite est renouvelée à minuit.",
+    "cancel": "Annuler",
+    "submit": "Interpréter",
+    "reading": "Lecture…",
+    "close": "Fermer",
+    "draftBanner": "Suggéré par l'IA — vérifiez les données avant d'enregistrer.",
+    "draftProgress": "Écriture {{current}} sur {{total}}",
+    "discardRest": "Ignorer le reste"
+  }
 }
