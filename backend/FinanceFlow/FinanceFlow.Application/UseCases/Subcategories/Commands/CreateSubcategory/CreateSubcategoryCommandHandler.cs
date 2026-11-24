@@ -1,16 +1,15 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Subcategories.Commands.CreateSubcategory;
 
 public class CreateSubcategoryCommandHandler(
     ICategoryRepository categoryRepository,
-    ISubcategoryRepository subcategoryRepository,
-    IMapper mapper)
+    ISubcategoryRepository subcategoryRepository)
     : IRequestHandler<CreateSubcategoryCommand, SubcategoryDto>
 {
     public async Task<SubcategoryDto> Handle(
@@ -56,6 +55,6 @@ public class CreateSubcategoryCommandHandler(
 
         await subcategoryRepository.AddAsync(subcategory, cancellationToken);
 
-        return mapper.Map<SubcategoryDto>(subcategory);
+        return subcategory.ToDto();
     }
 }

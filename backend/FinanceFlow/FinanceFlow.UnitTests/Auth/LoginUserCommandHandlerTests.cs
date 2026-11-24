@@ -1,5 +1,3 @@
-using AutoMapper;
-using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Auth.Commands.LoginUser;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
@@ -15,21 +13,13 @@ public class LoginUserCommandHandlerTests
     private readonly Mock<IPasswordService> _passwordService = new();
     private readonly Mock<ITokenService> _tokenService = new();
     private readonly Mock<IRefreshTokenService> _refreshTokenService = new();
-    private readonly IMapper _mapper;
 
-    public LoginUserCommandHandlerTests()
-    {
-        var config = new MapperConfiguration(cfg =>
-            cfg.AddProfile<UserMappingProfile>());
-        _mapper = config.CreateMapper();
-    }
 
     private LoginUserCommandHandler CreateHandler() =>
         new(_userRepository.Object,
             _passwordService.Object,
             _tokenService.Object,
-            _refreshTokenService.Object,
-            _mapper);
+            _refreshTokenService.Object);
 
     [Fact]
     public async Task Handle_DeveRetornarTokens_QuandoCredenciaisSaoValidas()

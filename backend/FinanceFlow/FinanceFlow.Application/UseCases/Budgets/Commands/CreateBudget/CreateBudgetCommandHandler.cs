@@ -1,16 +1,15 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Budgets.Commands.CreateBudget;
 
 public class CreateBudgetCommandHandler(
     IBudgetRepository budgetRepository,
-    ICategoryRepository categoryRepository,
-    IMapper mapper)
+    ICategoryRepository categoryRepository)
     : IRequestHandler<CreateBudgetCommand, BudgetDto>
 {
     public async Task<BudgetDto> Handle(
@@ -42,6 +41,11 @@ public class CreateBudgetCommandHandler(
         var created = await budgetRepository.GetByIdAsync(
             budget.Id, request.UserId, cancellationToken);
 
-        return mapper.Map<BudgetDto>(created);
+        // O registro acabou de ser gravado: se não volta na leitura, algo está errado (ex.: exclusão concorrente)
+        if (created is null)
+            throw new InvalidOperationException(
+                "Orçamento criado, mas não foi possível recarregá-lo para montar a resposta.");
+
+        return created.ToDto();
     }
 }

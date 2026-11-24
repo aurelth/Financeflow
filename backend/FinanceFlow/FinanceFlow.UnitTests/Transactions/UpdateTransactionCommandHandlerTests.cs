@@ -1,7 +1,5 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
-using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
@@ -17,7 +15,6 @@ public class UpdateTransactionCommandHandlerTests
     private readonly Mock<IAccountRepository> _accountRepository = new();
     private readonly Mock<ITransferRepository> _transferRepository = new();
     private readonly Mock<ICacheService> _cache = new();
-    private readonly IMapper _mapper;
 
     private static readonly Guid UserId = Guid.NewGuid();
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -45,7 +42,9 @@ public class UpdateTransactionCommandHandlerTests
         UserId = UserId
     };
 
-    private static readonly Transaction ExistingTransaction = new()
+    // Por instância (e não static): o handler altera o objeto, e um estado compartilhado entre testes
+    // tornaria o resultado dependente da ordem de execução.
+    private readonly Transaction ExistingTransaction = new()
     {
         Id = TransactionId,
         UserId = UserId,
@@ -58,6 +57,14 @@ public class UpdateTransactionCommandHandlerTests
         Category = ValidCategory,
         Tags = "[]"
     };
+
+    // O handler solta Category/Subcategory/Account antes de gravar e depois recarrega a transação; o repositório
+    // real devolve com o Include da categoria. O stub devolve o mesmo objeto, então a categoria é reanexada aqui.
+    private static Transaction Recarregada(Transaction transaction)
+    {
+        transaction.Category = ValidCategory;
+        return transaction;
+    }
 
     private static Transaction CreateRecurringTransaction() => new()
     {
@@ -78,9 +85,6 @@ public class UpdateTransactionCommandHandlerTests
 
     public UpdateTransactionCommandHandlerTests()
     {
-        var config = new MapperConfiguration(cfg =>
-            cfg.AddProfile<TransactionMappingProfile>());
-        _mapper = config.CreateMapper();
 
         // Cache não lança exceção por padrão
         _cache
@@ -93,8 +97,7 @@ public class UpdateTransactionCommandHandlerTests
             _categoryRepository.Object,
             _accountRepository.Object,
             _transferRepository.Object,
-            _cache.Object,
-            _mapper);
+            _cache.Object);
 
     [Fact]
     public async Task Handle_DeveAtualizarTransacao_QuandoDadosSaoValidos()
@@ -300,9 +303,8 @@ public class UpdateTransactionCommandHandlerTests
             .Returns(Task.CompletedTask);
 
         _transactionRepository
-            .SetupSequence(r => r.GetByIdAsync(TransactionId, UserId, default))
-            .ReturnsAsync(transactionWithAttachment)
-            .ReturnsAsync(transactionWithAttachment);
+            .Setup(r => r.GetByIdAsync(TransactionId, UserId, default))
+            .ReturnsAsync(() => Recarregada(transactionWithAttachment));
 
         // Act
         await CreateHandler().Handle(command, default);
@@ -560,9 +562,8 @@ public class UpdateTransactionCommandHandlerTests
             Tags: []);
 
         _transactionRepository
-            .SetupSequence(r => r.GetByIdAsync(TransactionId, UserId, default))
-            .ReturnsAsync(ExistingTransaction)
-            .ReturnsAsync(ExistingTransaction);
+            .Setup(r => r.GetByIdAsync(TransactionId, UserId, default))
+            .ReturnsAsync(() => Recarregada(ExistingTransaction));
 
         _categoryRepository
             .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
@@ -579,5 +580,39 @@ public class UpdateTransactionCommandHandlerTests
         _cache.Verify(c =>
             c.RemoveAsync(It.IsAny<string>(), default),
             Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task Handle_DeveLancarInvalidOperation_QuandoATransacaoNaoVoltaNaLeitura()
+    {
+        var command = new UpdateTransactionCommand(
+            Id: TransactionId,
+            UserId: UserId,
+            Amount: 200.00m,
+            Type: TransactionType.Expense,
+            Date: DateTime.UtcNow,
+            Description: "Atualizado",
+            Status: TransactionStatus.Paid,
+            IsRecurring: false,
+            RecurrenceType: RecurrenceType.None,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: []);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+        _transactionRepository
+            .Setup(r => r.UpdateAsync(It.IsAny<Transaction>(), default))
+            .Returns(Task.CompletedTask);
+        _transactionRepository
+            .SetupSequence(r => r.GetByIdAsync(TransactionId, UserId, default))
+            .ReturnsAsync(ExistingTransaction)
+            .ReturnsAsync((Transaction?)null);
+
+        var act = () => CreateHandler().Handle(command, default);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*não foi possível recarregá-la*");
     }
 }

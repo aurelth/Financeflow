@@ -1,7 +1,5 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
-using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
@@ -26,7 +24,6 @@ public class TransferTransactionRulesTests
     private readonly Mock<IAttachmentService> _attachmentService = new();
     private readonly Mock<IConfiguration> _configuration = new();
     private readonly Mock<ICacheService> _cache = new();
-    private readonly IMapper _mapper;
 
     private readonly Guid _userId = Guid.NewGuid();
     private readonly Guid _accountId = Guid.NewGuid();
@@ -53,7 +50,6 @@ public class TransferTransactionRulesTests
 
     public TransferTransactionRulesTests()
     {
-        _mapper = new MapperConfiguration(cfg => cfg.AddProfile<TransactionMappingProfile>()).CreateMapper();
 
         _configuration.Setup(c => c["Kafka:Topics:TransactionCreated"]).Returns("finance.transactions.created");
         _eventPublisher
@@ -80,7 +76,7 @@ public class TransferTransactionRulesTests
     private CreateTransactionCommandHandler CreateHandler() =>
         new(_transactionRepository.Object, _categoryRepository.Object, _accountRepository.Object,
             _eventPublisher.Object, _attachmentService.Object, _configuration.Object,
-            _cache.Object, _mapper);
+            _cache.Object);
 
     private CreateTransactionCommand CreateCommand(
         TransactionType type, Guid categoryId, TransferDirection? direction) => new(
@@ -150,7 +146,7 @@ public class TransferTransactionRulesTests
 
     private UpdateTransactionCommandHandler UpdateHandler() =>
         new(_transactionRepository.Object, _categoryRepository.Object, _accountRepository.Object,
-            _transferRepository.Object, _cache.Object, _mapper);
+            _transferRepository.Object, _cache.Object);
 
     private Transaction ExistingTransfer(TransferDirection direction = TransferDirection.Out) => new()
     {
@@ -168,11 +164,21 @@ public class TransferTransactionRulesTests
         Tags = "[]",
     };
 
+    // O handler solta a categoria antes de gravar e depois recarrega a transação; o repositório real devolve
+    // com o Include. O stub devolve o mesmo objeto, então a categoria correspondente é reanexada aqui.
+    private Transaction Recarregada(Transaction transaction)
+    {
+        transaction.Category = transaction.CategoryId == WellKnownIds.TransferCategoryId
+            ? TransferCategory
+            : ExpenseCategory;
+        return transaction;
+    }
+
     private void SetupExisting(Transaction transaction, bool linked)
     {
         _transactionRepository
             .Setup(r => r.GetByIdAsync(transaction.Id, _userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(transaction);
+            .ReturnsAsync(() => Recarregada(transaction));
         _transferRepository
             .Setup(r => r.IsLinkedAsync(transaction.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(linked);

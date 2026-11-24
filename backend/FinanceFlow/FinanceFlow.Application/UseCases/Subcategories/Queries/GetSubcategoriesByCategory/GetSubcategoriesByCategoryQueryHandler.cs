@@ -1,15 +1,14 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Subcategories.Queries.GetSubcategoriesByCategory;
 
 public class GetSubcategoriesByCategoryQueryHandler(
     ICategoryRepository categoryRepository,
-    ISubcategoryRepository subcategoryRepository,
-    IMapper mapper)
+    ISubcategoryRepository subcategoryRepository)
     : IRequestHandler<GetSubcategoriesByCategoryQuery, IEnumerable<SubcategoryDto>>
 {
     public async Task<IEnumerable<SubcategoryDto>> Handle(
@@ -26,6 +25,6 @@ public class GetSubcategoriesByCategoryQueryHandler(
         var subcategories = await subcategoryRepository
             .GetByCategoryIdAsync(request.CategoryId, cancellationToken);
 
-        return mapper.Map<IEnumerable<SubcategoryDto>>(subcategories);
+        return subcategories.ToDtos();
     }
 }

@@ -1,4 +1,3 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs;
@@ -9,6 +8,7 @@ using FinanceFlow.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransaction;
 
@@ -19,8 +19,7 @@ public class CreateTransactionCommandHandler(
     IEventPublisher eventPublisher,
     IAttachmentService attachmentService,
     IConfiguration configuration,
-    ICacheService cache,
-    IMapper mapper)
+    ICacheService cache)
     : IRequestHandler<CreateTransactionCommand, TransactionDto>
 {
     public async Task<TransactionDto> Handle(
@@ -120,7 +119,12 @@ public class CreateTransactionCommandHandler(
         var created = await transactionRepository.GetByIdAsync(
             transaction.Id, request.UserId, cancellationToken);
 
-        return mapper.Map<TransactionDto>(created);
+        // O registro acabou de ser gravado: se não volta na leitura, algo está errado (ex.: exclusão concorrente)
+        if (created is null)
+            throw new InvalidOperationException(
+                "Transação criada, mas não foi possível recarregá-la para montar a resposta.");
+
+        return created.ToDto();
     }
 
     // Gera cópias mensais para os meses restantes do ano corrente

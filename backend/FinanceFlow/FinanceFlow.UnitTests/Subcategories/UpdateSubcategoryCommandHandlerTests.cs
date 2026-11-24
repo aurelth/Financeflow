@@ -1,6 +1,4 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
-using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Subcategories.Commands.UpdateSubcategory;
 using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.UnitTests.Common;
@@ -13,17 +11,10 @@ public class UpdateSubcategoryCommandHandlerTests
 {
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
     private readonly Mock<ISubcategoryRepository> _subcategoryRepository = new();
-    private readonly IMapper _mapper;
 
-    public UpdateSubcategoryCommandHandlerTests()
-    {
-        var config = new MapperConfiguration(cfg =>
-            cfg.AddProfile<CategoryMappingProfile>());
-        _mapper = config.CreateMapper();
-    }
 
     private UpdateSubcategoryCommandHandler CreateHandler() =>
-        new(_categoryRepository.Object, _subcategoryRepository.Object, _mapper);
+        new(_categoryRepository.Object, _subcategoryRepository.Object);
 
     [Fact]
     public async Task Handle_DeveAtualizarSubcategoria_QuandoDadosSaoValidos()

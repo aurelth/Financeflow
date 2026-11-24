@@ -1,6 +1,4 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
-using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Budgets.Commands.UpdateBudget;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
@@ -12,7 +10,6 @@ namespace FinanceFlow.UnitTests.Budgets;
 public class UpdateBudgetCommandHandlerTests
 {
     private readonly Mock<IBudgetRepository> _budgetRepository = new();
-    private readonly IMapper _mapper;
 
     private static readonly Guid UserId = Guid.NewGuid();
     private static readonly Guid BudgetId = Guid.NewGuid();
@@ -28,15 +25,9 @@ public class UpdateBudgetCommandHandlerTests
         UserId = UserId
     };
 
-    public UpdateBudgetCommandHandlerTests()
-    {
-        var config = new MapperConfiguration(cfg =>
-            cfg.AddProfile<BudgetMappingProfile>());
-        _mapper = config.CreateMapper();
-    }
 
     private UpdateBudgetCommandHandler CreateHandler() =>
-        new(_budgetRepository.Object, _mapper);
+        new(_budgetRepository.Object);
 
     [Fact]
     public async Task Handle_DeveAtualizarLimite_QuandoDadosSaoValidos()
@@ -114,5 +105,30 @@ public class UpdateBudgetCommandHandlerTests
 
         _budgetRepository.Verify(r =>
             r.UpdateAsync(It.IsAny<Budget>(), default), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_DeveLancarInvalidOperation_QuandoOOrcamentoNaoVoltaNaLeitura()
+    {
+        var command = new UpdateBudgetCommand(Id: BudgetId, UserId: UserId, LimitAmount: 800.00m);
+
+        var existingBudget = new Budget
+        {
+            Id = BudgetId, UserId = UserId, CategoryId = CategoryId, Category = ValidCategory,
+            Month = 3, Year = 2026, LimitAmount = 500.00m
+        };
+
+        _budgetRepository
+            .Setup(r => r.UpdateAsync(It.IsAny<Budget>(), default))
+            .Returns(Task.CompletedTask);
+        _budgetRepository
+            .SetupSequence(r => r.GetByIdAsync(BudgetId, UserId, default))
+            .ReturnsAsync(existingBudget)
+            .ReturnsAsync((Budget?)null);
+
+        var act = () => CreateHandler().Handle(command, default);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*não foi possível recarregá-lo*");
     }
 }

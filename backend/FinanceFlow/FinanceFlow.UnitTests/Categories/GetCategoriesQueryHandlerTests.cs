@@ -1,5 +1,3 @@
-using AutoMapper;
-using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Categories.Queries.GetCategories;
 using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.UnitTests.Common;
@@ -11,17 +9,10 @@ namespace FinanceFlow.UnitTests.Categories;
 public class GetCategoriesQueryHandlerTests
 {
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
-    private readonly IMapper _mapper;
 
-    public GetCategoriesQueryHandlerTests()
-    {
-        var config = new MapperConfiguration(cfg =>
-            cfg.AddProfile<CategoryMappingProfile>());
-        _mapper = config.CreateMapper();
-    }
 
     private GetCategoriesQueryHandler CreateHandler() =>
-        new(_categoryRepository.Object, _mapper);
+        new(_categoryRepository.Object);
 
     [Fact]
     public async Task Handle_DeveRetornarCategorias_QuandoExistemCategorias()

@@ -1,5 +1,3 @@
-using AutoMapper;
-using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Budgets.Queries.GetBudgets;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
@@ -11,7 +9,6 @@ namespace FinanceFlow.UnitTests.Budgets;
 public class GetBudgetsQueryHandlerTests
 {
     private readonly Mock<IBudgetRepository> _budgetRepository = new();
-    private readonly IMapper _mapper;
 
     private static readonly Guid UserId = Guid.NewGuid();
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -26,15 +23,9 @@ public class GetBudgetsQueryHandlerTests
         UserId = UserId
     };
 
-    public GetBudgetsQueryHandlerTests()
-    {
-        var config = new MapperConfiguration(cfg =>
-            cfg.AddProfile<BudgetMappingProfile>());
-        _mapper = config.CreateMapper();
-    }
 
     private GetBudgetsQueryHandler CreateHandler() =>
-        new(_budgetRepository.Object, _mapper);
+        new(_budgetRepository.Object);
 
     [Fact]
     public async Task Handle_DeveRetornarOrcamentos_QuandoExistemParaOPeriodo()
