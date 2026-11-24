@@ -1,10 +1,12 @@
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs;
+using FinanceFlow.Application.UseCases.Transactions.Commands.CancelInstallments;
 using FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Commands.RemoveAttachment;
 using FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetDueTransactions;
+using FinanceFlow.Application.UseCases.Transactions.Queries.GetInstallmentPlan;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetTransactionById;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetTransactions;
 using FinanceFlow.Domain.Entities;
@@ -77,6 +79,7 @@ public class TransactionsController(
         [FromForm] string[] tags,
         [FromForm] string? accountId,
         [FromForm] string? transferDirection,
+        [FromForm] int? installmentCount,
         IFormFile? attachment,
         CancellationToken cancellationToken)
     {
@@ -109,7 +112,8 @@ public class TransactionsController(
             AttachmentContentType: attachmentContentType,
             TransferDirection: Enum.TryParse<TransferDirection>(transferDirection, ignoreCase: true, out var direction)
                 ? direction
-                : null);
+                : null,
+            InstallmentCount: installmentCount);
 
         var result = await Mediator.Send(command, cancellationToken);
 
@@ -162,6 +166,30 @@ public class TransactionsController(
         var command = new DeleteTransactionCommand(id, CurrentUserId, deleteFuture);
         await Mediator.Send(command, cancellationToken);
         return NoContent();
+    }
+
+    /// <summary>Plano de uma compra parcelada: parcelas, vencimentos, valores e quanto já foi pago.</summary>
+    [HttpGet("installments/{groupId:guid}")]
+    [ProducesResponseType(typeof(InstallmentPlanDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetInstallmentPlan(
+        Guid groupId,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new GetInstallmentPlanQuery(groupId, CurrentUserId), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Cancela a compra parcelada: remove as parcelas ainda não pagas e mantém as já pagas.</summary>
+    [HttpDelete("installments/{groupId:guid}")]
+    [ProducesResponseType(typeof(CancelInstallmentsResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CancelInstallments(
+        Guid groupId,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new CancelInstallmentsCommand(groupId, CurrentUserId), cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>Faz upload ou substituição de anexo numa transação existente.</summary>

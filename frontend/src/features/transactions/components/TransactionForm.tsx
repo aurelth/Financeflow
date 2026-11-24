@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { isLikelyTransfer } from '@/lib/transferUtils'
-import { X, Paperclip, FileText, Image, RefreshCw, ArrowLeftRight, Sparkles } from 'lucide-react'
+import { X, Paperclip, FileText, Image, RefreshCw, ArrowLeftRight, Sparkles, CreditCard } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { QuickEntryDraft } from '@/features/quick-entry/types/quickEntry.types'
 import AttachmentViewer from './AttachmentViewer'
@@ -13,6 +13,9 @@ import {
 } from '../api/useTransactions'
 import { TransactionType } from '../../categories/types/category.types'
 import { resolveType } from '@/lib/enumUtils'
+import {
+  MAX_INSTALLMENTS, MIN_INSTALLMENTS, formatBRL, isTotalEnoughFor, isValidInstallmentCount, splitInstallments,
+} from '../lib/installments'
 import CategorySelect from './CategorySelect'
 import AccountSelect from '@/features/accounts/components/AccountSelect'
 import { useAccounts } from '@/features/accounts/api/useAccounts'
@@ -109,6 +112,9 @@ export default function TransactionForm({
   const [currentAttachmentPath, setCurrentAttachmentPath] = useState<string | null>(transaction?.attachmentPath ?? null)
   const [currentAttachmentName, setCurrentAttachmentName] = useState<string | null>(transaction?.attachmentName ?? null)
   const [showPropagateModal, setShowPropagateModal]     = useState(false)
+  // Compra parcelada (só na criação): o valor digitado passa a ser o TOTAL, dividido em N parcelas mensais
+  const [installmentsEnabled, setInstallmentsEnabled]   = useState(false)
+  const [installmentCountInput, setInstallmentCountInput] = useState('12')
 
   const attachmentInputRef = useRef<HTMLInputElement>(null)
 
@@ -123,6 +129,17 @@ export default function TransactionForm({
   // Transferência vinculada: tipo, valor, conta e sentido sustentam a outra ponta e ficam travados
   const isTransferForm = resolveType(form.type) === TransactionType.Transfer
   const isLinkedTransfer = !!transaction?.transferLinkId
+  const isInstallment = !!transaction?.installmentGroupId
+
+  const installmentCount = Number(installmentCountInput)
+  const installmentsOn   = !isEditing && installmentsEnabled && !isTransferForm && !form.isRecurring
+  const installmentCountValid = isValidInstallmentCount(installmentCount)
+  const installmentTotalValid = installmentCountValid && isTotalEnoughFor(form.amount, installmentCount)
+  const installmentParts = installmentsOn && installmentCountValid && form.amount > 0
+    ? splitInstallments(form.amount, installmentCount)
+    : []
+  const installmentsBlocked = installmentsOn && (!installmentCountValid || !installmentTotalValid)
+
   const showAccountSelect = accounts.length > 1 || (!!transaction && !!transaction.accountId && accounts.every(a => a.id !== transaction.accountId))
 
   const createTransaction = useCreateTransaction()
@@ -166,7 +183,7 @@ export default function TransactionForm({
   const subcategoriaAlterada = transaction && form.subcategoryId !== transaction.subcategoryId
 
   const devePerguntar = isEditing
-    && transaction?.recurrenceGroupId
+    && (transaction?.recurrenceGroupId || transaction?.installmentGroupId)
     && (amountAlterado || descricaoAlterada || categoriaAlterada || subcategoriaAlterada)
 
   function handleSubmit() {
@@ -199,8 +216,12 @@ export default function TransactionForm({
 
   function handleCreate() {
     if (isTransferForm && !form.transferDirection) return
+    if (installmentsBlocked) return
     createTransaction.mutate(
-      { data: form, attachment: attachment ?? undefined },
+      {
+        data: installmentsOn ? { ...form, installmentCount } : form,
+        attachment: attachment ?? undefined,
+      },
       { onSuccess: onClose }
     )
   }
@@ -254,6 +275,20 @@ export default function TransactionForm({
           {/* Body */}
           <div className="px-6 py-5 space-y-4">
 
+            {/* Parcela de uma compra parcelada */}
+            {isInstallment && transaction && (
+              <div
+                data-testid="installment-edit-banner"
+                className="flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs"
+                style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8' }}
+              >
+                <CreditCard size={14} className="flex-shrink-0 mt-0.5" />
+                <span>
+                  {t('installments.editBanner', { number: transaction.installmentNumber, count: transaction.installmentCount })}
+                </span>
+              </div>
+            )}
+
             {/* Rascunho da IA: nada é salvo sem o usuário conferir */}
             {draft && (
               <div
@@ -289,7 +324,7 @@ export default function TransactionForm({
                     // Transferência precisa de sentido; os outros tipos não têm
                     transferDirection: t === TransactionType.Transfer ? (f.transferDirection ?? 'Out') : null,
                   }))}
-                  disabled={isLinkedTransfer}
+                  disabled={isLinkedTransfer || isInstallment}
                   className="py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                   style={form.type === t
                     ? t === TransactionType.Income
@@ -359,7 +394,7 @@ export default function TransactionForm({
 
             {/* Valor */}
             <div>
-              <label style={labelStyle}>Valor</label>
+              <label style={labelStyle}>{installmentsOn ? t('installments.totalAmount') : 'Valor'}</label>
               <input
                 type="number" min="0" step="0.01"
                 disabled={isLinkedTransfer}
@@ -477,13 +512,14 @@ export default function TransactionForm({
               </div>
             )}
 
-            {/* Recorrência — oculta para Transfer */}
-            {form.type !== TransactionType.Transfer && (
+            {/* Recorrência — oculta para Transfer e para parcelas (parcelar e repetir são conceitos diferentes) */}
+            {form.type !== TransactionType.Transfer && !isInstallment && (
               <div className="space-y-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.isRecurring}
+                    disabled={installmentsOn}
                     onChange={e => setForm(f => ({
                       ...f,
                       isRecurring:    e.target.checked,
@@ -508,6 +544,71 @@ export default function TransactionForm({
                     <option value={RecurrenceType.Monthly}>Mensal</option>
                     <option value={RecurrenceType.Yearly}>Anual</option>
                   </select>
+                )}
+              </div>
+            )}
+
+            {/* Parcelamento — só na criação, e não junto com recorrência */}
+            {!isEditing && form.type !== TransactionType.Transfer && !form.isRecurring && (
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={installmentsEnabled}
+                    onChange={e => setInstallmentsEnabled(e.target.checked)}
+                    style={{ accentColor: 'var(--ff-emerald)', width: 16, height: 16 }}
+                  />
+                  <span className="text-sm" style={{ color: 'var(--ff-text-secondary)' }}>
+                    {t('installments.toggle')}
+                  </span>
+                </label>
+
+                {installmentsEnabled && (
+                  <div className="space-y-2">
+                    <div>
+                      <label htmlFor="installment-count" style={labelStyle}>{t('installments.count')}</label>
+                      <input
+                        id="installment-count"
+                        type="number"
+                        min={MIN_INSTALLMENTS}
+                        max={MAX_INSTALLMENTS}
+                        step={1}
+                        value={installmentCountInput}
+                        onChange={e => setInstallmentCountInput(e.target.value)}
+                        style={inputStyle}
+                        onFocus={e => (e.target.style.borderColor = 'var(--ff-emerald)')}
+                        onBlur={e => (e.target.style.borderColor  = 'var(--ff-border)')}
+                      />
+                    </div>
+
+                    {!installmentCountValid && (
+                      <p role="alert" className="text-xs" style={{ color: 'var(--ff-expense)' }}>
+                        {t('installments.invalidCount')}
+                      </p>
+                    )}
+                    {installmentCountValid && !installmentTotalValid && form.amount > 0 && (
+                      <p role="alert" className="text-xs" style={{ color: 'var(--ff-expense)' }}>
+                        {t('installments.tooSmall')}
+                      </p>
+                    )}
+
+                    {installmentParts.length > 0 && (
+                      <div
+                        data-testid="installment-preview"
+                        className="rounded-xl px-3 py-2.5 text-xs"
+                        style={{ background: 'var(--ff-bg-elevated)', border: '1px solid var(--ff-border)', color: 'var(--ff-text-secondary)' }}
+                      >
+                        {installmentParts[0] === installmentParts[installmentParts.length - 1]
+                          ? t('installments.previewEqual', { count: installmentCount, amount: formatBRL(installmentParts[0]) })
+                          : t('installments.previewUneven', {
+                              count: installmentCount,
+                              first: formatBRL(installmentParts[0]),
+                              rest:  formatBRL(installmentParts[installmentParts.length - 1]),
+                            })}
+                        <p className="mt-1" style={{ color: 'var(--ff-text-muted)' }}>{t('installments.hint')}</p>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             )}
@@ -679,7 +780,7 @@ export default function TransactionForm({
             </button>
             <button
               onClick={isEditing ? handleSubmit : handleCreate}
-              disabled={isPending || !form.categoryId || form.amount <= 0}
+              disabled={isPending || !form.categoryId || form.amount <= 0 || installmentsBlocked}
               className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
               style={{ background: 'var(--ff-emerald)', color: 'var(--ff-emerald-subtle)' }}
               onMouseEnter={e => { if (!isPending) e.currentTarget.style.background = 'var(--ff-emerald-hover)' }}
@@ -706,10 +807,12 @@ export default function TransactionForm({
             </div>
 
             <h2 className="font-semibold text-lg mb-1" style={{ color: 'var(--ff-text-primary)' }}>
-              Editar transação recorrente
+              {isInstallment ? t('installments.propagateTitle') : 'Editar transação recorrente'}
             </h2>
             <p className="text-sm mb-6" style={{ color: 'var(--ff-text-muted)' }}>
-              Esta transação faz parte de um grupo recorrente. Como deseja aplicar as alterações?
+              {isInstallment
+                ? t('installments.propagateBody')
+                : 'Esta transação faz parte de um grupo recorrente. Como deseja aplicar as alterações?'}
             </p>
 
             <div className="flex flex-col gap-2">
@@ -721,9 +824,11 @@ export default function TransactionForm({
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-bg-elevated)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
-                <p className="font-semibold">Apenas esta</p>
+                <p className="font-semibold">{isInstallment ? t('installments.propagateOnly') : 'Apenas esta'}</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
-                  Altera somente esta ocorrência. As futuras permanecem inalteradas.
+                  {isInstallment
+                    ? t('installments.propagateOnlyDesc')
+                    : 'Altera somente esta ocorrência. As futuras permanecem inalteradas.'}
                 </p>
               </button>
               <button
@@ -739,10 +844,12 @@ export default function TransactionForm({
                 onMouseLeave={e => (e.currentTarget.style.background = 'rgba(16,185,129,0.05)')}
               >
                 <p className="font-semibold" style={{ color: 'var(--ff-emerald)' }}>
-                  Esta e todas as futuras
+                  {isInstallment ? t('installments.propagateFuture') : 'Esta e todas as futuras'}
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
-                  Aplica as alterações a todas as ocorrências futuras do grupo.
+                  {isInstallment
+                    ? t('installments.propagateFutureDesc')
+                    : 'Aplica as alterações a todas as ocorrências futuras do grupo.'}
                 </p>
               </button>
               <button

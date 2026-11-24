@@ -48,6 +48,16 @@ Em **Transações → Lançar com IA** o usuário descreve o gasto ou fotografa 
 
 As fotos não são armazenadas pelo servidor e nem o texto nem as imagens são registrados em log.
 
+## Compras parceladas
+
+Em **Transações → Nova transação**, marcar **Parcelar compra** e informar de 2 a 60 parcelas lança a compra de uma vez: o valor informado é o **total**, dividido em centavos (a sobra vai para as primeiras parcelas) e uma parcela por mês, sempre ancorada no dia da primeira (31/jan → 28/fev → 31/mar).
+
+- A 1ª parcela segue o status escolhido e leva o comprovante; as demais ficam **Agendadas** e não alteram saldo, dashboard nem relatórios até serem pagas, mas já entram no orçamento do mês em que vencem.
+- Editar ou remover uma parcela pergunta se vale só para ela ou também para as seguintes. As parcelas **já pagas nunca são alteradas em massa**.
+- O selo `N/M` na lista abre o plano da compra (total, pago, restante) e permite **cancelar a compra**: as parcelas não pagas saem, as pagas permanecem no histórico.
+- Transferências e transações recorrentes não podem ser parceladas, e o tipo de uma parcela não pode ser trocado.
+- API: `POST /api/transactions` (campo `installmentCount`), `GET|DELETE /api/transactions/installments/{groupId}`.
+
 ## Estrutura do projeto
 
 ```

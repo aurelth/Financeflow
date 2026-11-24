@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
 import { getApiErrorMessage } from '@/lib/apiError'
+import type { CancelInstallmentsResult, InstallmentPlan } from '../types/installment.types'
 import type {
   Transaction,
   PagedResult,
@@ -61,6 +62,9 @@ export const useCreateTransaction = () => {
       if (data.transferDirection)
         formData.append('transferDirection', data.transferDirection)
 
+      if (data.installmentCount)
+        formData.append('installmentCount', String(data.installmentCount))
+
       data.tags.forEach(tag => formData.append('tags', tag))
 
       if (attachment)
@@ -75,6 +79,8 @@ export const useCreateTransaction = () => {
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       // O saldo da conta e a conciliação com o extrato mudam a cada lançamento
       qc.invalidateQueries({ queryKey: ['accounts'] })
+      // Parcelas futuras entram no orçamento dos meses em que vencem
+      qc.invalidateQueries({ queryKey: ['budgets'] })
       toast.success('Transação criada com sucesso!')
     },
     onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao criar transação. Tente novamente.')),
@@ -92,6 +98,7 @@ export const useUpdateTransaction = (id: string) => {
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       // O saldo da conta e a conciliação com o extrato mudam a cada lançamento
       qc.invalidateQueries({ queryKey: ['accounts'] })
+      qc.invalidateQueries({ queryKey: ['budgets'] })
       toast.success('Transação atualizada com sucesso!')
     },
     onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao atualizar transação. Tente novamente.')),
@@ -112,9 +119,38 @@ export const useDeleteTransaction = () => {
       qc.invalidateQueries({ queryKey: ['dashboard'] })
       // O saldo da conta e a conciliação com o extrato mudam a cada lançamento
       qc.invalidateQueries({ queryKey: ['accounts'] })
+      qc.invalidateQueries({ queryKey: ['budgets'] })
       toast.success('Transação removida com sucesso!')
     },
     onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao remover transação. Tente novamente.')),
+  })
+}
+
+// Compras parceladas
+
+export const useInstallmentPlan = (groupId: string | null) =>
+  useQuery({
+    queryKey: ['transactions', 'installments', groupId],
+    queryFn:  () =>
+      api.get<InstallmentPlan>(`/api/transactions/installments/${groupId}`).then(r => r.data),
+    enabled:  !!groupId,
+    staleTime: 0,
+  })
+
+// Cancela as parcelas ainda não pagas; as pagas ficam no histórico
+export const useCancelInstallments = () => {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: (groupId: string) =>
+      api.delete<CancelInstallmentsResult>(`/api/transactions/installments/${groupId}`).then(r => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
+      qc.invalidateQueries({ queryKey: ['accounts'] })
+      qc.invalidateQueries({ queryKey: ['budgets'] })
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao cancelar a compra parcelada. Tente novamente.')),
   })
 }
 

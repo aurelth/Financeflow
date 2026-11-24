@@ -1,3 +1,4 @@
+using FinanceFlow.Application.Services;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
@@ -97,7 +98,7 @@ public class UpdateTransactionCommandHandlerTests
             _categoryRepository.Object,
             _accountRepository.Object,
             _transferRepository.Object,
-            _cache.Object);
+            new DashboardCacheInvalidator(_cache.Object));
 
     [Fact]
     public async Task Handle_DeveAtualizarTransacao_QuandoDadosSaoValidos()
@@ -371,6 +372,10 @@ public class UpdateTransactionCommandHandlerTests
             .Returns(Task.CompletedTask);
 
         _transactionRepository
+            .Setup(r => r.UpdateRangeAsync(It.IsAny<IEnumerable<Transaction>>(), default))
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
             .Setup(r => r.GetFutureRecurringAsync(RecurrenceGroup, It.IsAny<DateTime>(), default))
             .ReturnsAsync(new List<Transaction> { futura });
 
@@ -378,14 +383,15 @@ public class UpdateTransactionCommandHandlerTests
         await CreateHandler().Handle(command, default);
 
         // Assert
+        // A atual é gravada à parte; as futuras do grupo, num único SaveChanges
         _transactionRepository.Verify(r =>
-            r.UpdateAsync(It.IsAny<Transaction>(), default), Times.Exactly(2));
+            r.UpdateAsync(It.IsAny<Transaction>(), default), Times.Once);
 
         _transactionRepository.Verify(r =>
-            r.UpdateAsync(
-                It.Is<Transaction>(t => t.Amount == 250.00m),
+            r.UpdateRangeAsync(
+                It.Is<IEnumerable<Transaction>>(ts => ts.Count() == 1 && ts.All(t => t.Amount == 250.00m)),
                 default),
-            Times.AtLeastOnce);
+            Times.Once);
     }
 
     [Fact]
@@ -438,6 +444,10 @@ public class UpdateTransactionCommandHandlerTests
             .Returns(Task.CompletedTask);
 
         _transactionRepository
+            .Setup(r => r.UpdateRangeAsync(It.IsAny<IEnumerable<Transaction>>(), default))
+            .Returns(Task.CompletedTask);
+
+        _transactionRepository
             .Setup(r => r.GetFutureRecurringAsync(RecurrenceGroup, It.IsAny<DateTime>(), default))
             .ReturnsAsync(new List<Transaction> { futura });
 
@@ -446,10 +456,9 @@ public class UpdateTransactionCommandHandlerTests
 
         // Assert
         _transactionRepository.Verify(r =>
-            r.UpdateAsync(
-                It.Is<Transaction>(t =>
-                    t.Id == futura.Id &&
-                    t.CategoryId == CategoryId2),
+            r.UpdateRangeAsync(
+                It.Is<IEnumerable<Transaction>>(ts =>
+                    ts.Any(t => t.Id == futura.Id && t.CategoryId == CategoryId2)),
                 default),
             Times.Once);
     }

@@ -1,4 +1,5 @@
-import { Trash2, RefreshCw } from 'lucide-react'
+import { Trash2, RefreshCw, CreditCard } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useDeleteTransaction } from '../api/useTransactions'
 import type { Transaction } from '../types/transaction.types'
 
@@ -8,8 +9,10 @@ interface DeleteTransactionDialogProps {
 }
 
 export default function DeleteTransactionDialog({ transaction, onClose }: DeleteTransactionDialogProps) {
+  const { t } = useTranslation('transactions')
   const deleteTransaction = useDeleteTransaction()
-  const isRecorrente      = !!transaction.recurrenceGroupId
+  const isParcela         = !!transaction.installmentGroupId
+  const isRecorrente      = !!transaction.recurrenceGroupId || isParcela
 
   function handleDelete(deleteFuture: boolean) {
     deleteTransaction.mutate({ id: transaction.id, deleteFuture }, { onSuccess: onClose })
@@ -27,17 +30,19 @@ export default function DeleteTransactionDialog({ transaction, onClose }: Delete
             className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
             style={{ background: 'var(--ff-emerald-subtle)', border: '1px solid rgba(16,185,129,0.2)' }}
           >
-            <RefreshCw size={22} style={{ color: 'var(--ff-emerald)' }} />
+            {isParcela
+              ? <CreditCard size={22} style={{ color: '#818cf8' }} />
+              : <RefreshCw size={22} style={{ color: 'var(--ff-emerald)' }} />}
           </div>
 
           <h2 className="font-semibold text-lg mb-1" style={{ color: 'var(--ff-text-primary)' }}>
-            Remover transação recorrente
+            {isParcela ? t('installments.deleteTitle') : 'Remover transação recorrente'}
           </h2>
           <p className="text-sm mb-6" style={{ color: 'var(--ff-text-muted)' }}>
             <span className="font-medium" style={{ color: 'var(--ff-text-primary)' }}>
               "{transaction.description || 'Esta transação'}"
             </span>{' '}
-            faz parte de um grupo recorrente. O que deseja remover?
+            {isParcela ? t('installments.deleteBody') : 'faz parte de um grupo recorrente. O que deseja remover?'}
           </p>
 
           <div className="flex flex-col gap-2">
@@ -49,9 +54,9 @@ export default function DeleteTransactionDialog({ transaction, onClose }: Delete
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-bg-elevated)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
-              <p className="font-semibold">Apenas esta</p>
+              <p className="font-semibold">{isParcela ? t('installments.deleteOnly') : 'Apenas esta'}</p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
-                Remove somente esta ocorrência. As futuras permanecem.
+                {isParcela ? t('installments.deleteOnlyDesc') : 'Remove somente esta ocorrência. As futuras permanecem.'}
               </p>
             </button>
             <button
@@ -66,10 +71,10 @@ export default function DeleteTransactionDialog({ transaction, onClose }: Delete
               onMouseLeave={e => (e.currentTarget.style.background = 'rgba(244,63,94,0.05)')}
             >
               <p className="font-semibold" style={{ color: 'var(--ff-expense)' }}>
-                Esta e todas as futuras
+                {isParcela ? t('installments.deleteFuture') : 'Esta e todas as futuras'}
               </p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
-                Remove esta ocorrência e todas as próximas do grupo.
+                {isParcela ? t('installments.deleteFutureDesc') : 'Remove esta ocorrência e todas as próximas do grupo.'}
               </p>
             </button>
             <button

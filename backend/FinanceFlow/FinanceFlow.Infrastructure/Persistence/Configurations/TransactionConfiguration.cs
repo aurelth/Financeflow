@@ -36,6 +36,10 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 
         builder.HasIndex(t => new { t.AccountId, t.Date });
 
+        // Compras parceladas: busca do grupo (plano de parcelas, cancelamento, propagação)
+        builder.HasIndex(t => new { t.InstallmentGroupId, t.InstallmentNumber })
+               .HasFilter("[InstallmentGroupId] IS NOT NULL");
+
         // Índices usados pela deduplicação de importações (por conta)
         builder.HasIndex(t => new { t.AccountId, t.ImportHash })
                .HasFilter("[ImportHash] IS NOT NULL");

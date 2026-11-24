@@ -8,6 +8,7 @@ import TransactionTable              from '../components/TransactionTable'
 import TransactionFilters            from '../components/TransactionFilters'
 import TransactionForm               from '../components/TransactionForm'
 import DeleteTransactionDialog       from '../components/DeleteTransactionDialog'
+import InstallmentPlanDialog         from '../components/InstallmentPlanDialog'
 import TransferFormDialog             from '@/features/transfers/components/TransferFormDialog'
 import UnlinkTransferDialog          from '@/features/transfers/components/UnlinkTransferDialog'
 import PendingTransfersPanel         from '@/features/transfers/components/PendingTransfersPanel'
@@ -39,6 +40,7 @@ export default function TransactionsPage() {
   const [showTransferForm, setShowTransferForm] = useState(false)
   const [unlinkingTx, setUnlinkingTx] = useState<Transaction | null>(null)
   const [showQuickEntry, setShowQuickEntry] = useState(false)
+  const [planGroupId, setPlanGroupId] = useState<string | null>(null)
   // Fila de rascunhos da IA: o formulário abre um por vez, em ordem
   const [aiBatch, setAiBatch]       = useState<QuickEntryBatch | null>(null)
   const [aiIndex, setAiIndex]       = useState(0)
@@ -153,6 +155,7 @@ export default function TransactionsPage() {
           onEdit={handleEdit}
           onDelete={tx => setDeletingTx(tx)}
           onUnlink={tx => setUnlinkingTx(tx)}
+          onShowInstallments={tx => setPlanGroupId(tx.installmentGroupId ?? null)}
           showAccount={accounts.length > 1}
         />
       )}
@@ -264,6 +267,10 @@ export default function TransactionsPage() {
           summary={`${unlinkingTx.description || 'Transferência'} · ${unlinkingTx.accountName ?? ''} ↔ ${unlinkingTx.counterpartAccountName ?? ''}`}
           onClose={() => setUnlinkingTx(null)}
         />
+      )}
+
+      {planGroupId && (
+        <InstallmentPlanDialog groupId={planGroupId} onClose={() => setPlanGroupId(null)} />
       )}
 
       {deletingTx && (

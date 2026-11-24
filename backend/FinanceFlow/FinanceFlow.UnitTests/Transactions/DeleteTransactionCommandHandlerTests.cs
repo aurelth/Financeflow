@@ -1,3 +1,4 @@
+using FinanceFlow.Application.Services;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransaction;
@@ -28,7 +29,7 @@ public class DeleteTransactionCommandHandlerTests
     private DeleteTransactionCommandHandler CreateHandler() =>
         new(_transactionRepository.Object,
             _transferRepository.Object,
-            _cache.Object);
+            new DashboardCacheInvalidator(_cache.Object));
 
     [Fact]
     public async Task Handle_DeveDeletarTransacao_QuandoExiste()
