@@ -26,7 +26,9 @@ public class GetDueTransactionsQueryHandler(
             Type: t.Type.ToString(),
             // Injeta preferências do utilizador (default true se não existir)
             NotifyDueTomorrow: t.User?.NotificationPreferences?.TransactionDueTomorrowEnabled ?? true,
-            NotifyDueIn3Days: t.User?.NotificationPreferences?.TransactionDueIn3DaysEnabled ?? true
+            NotifyDueIn3Days: t.User?.NotificationPreferences?.TransactionDueIn3DaysEnabled ?? true,
+            NotifyDueToday: t.User?.NotificationPreferences?.TransactionDueTodayEnabled ?? true,
+            NotifyOverdue: t.User?.NotificationPreferences?.TransactionOverdueEnabled ?? true
         ));
     }
 }

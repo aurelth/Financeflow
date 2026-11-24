@@ -29,6 +29,14 @@ public class UserNotificationPreferencesConfiguration
                .IsRequired()
                .HasDefaultValue(true);
 
+        builder.Property(p => p.TransactionDueTodayEnabled)
+               .IsRequired()
+               .HasDefaultValue(true);
+
+        builder.Property(p => p.TransactionOverdueEnabled)
+               .IsRequired()
+               .HasDefaultValue(true);
+
         // Relação 1-to-1 com User
         builder.HasOne(p => p.User)
                .WithOne(u => u.NotificationPreferences)

@@ -19,6 +19,8 @@ public class UpdateNotificationPreferencesCommandHandler(
         prefs.BudgetCriticalEnabled = request.BudgetCriticalEnabled;
         prefs.TransactionDueTomorrowEnabled = request.TransactionDueTomorrowEnabled;
         prefs.TransactionDueIn3DaysEnabled = request.TransactionDueIn3DaysEnabled;
+        prefs.TransactionDueTodayEnabled = request.TransactionDueTodayEnabled;
+        prefs.TransactionOverdueEnabled = request.TransactionOverdueEnabled;
 
         await repository.UpdateAsync(prefs, cancellationToken);
     }

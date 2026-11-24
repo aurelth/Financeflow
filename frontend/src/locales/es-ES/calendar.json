@@ -1,0 +1,57 @@
+{
+  "title": "Calendario",
+  "subtitle": "Cuentas por pagar y por cobrar, día a día",
+  "loading": "Cargando…",
+  "loadError": "No se pudo cargar el calendario.",
+  "nav": {
+    "prev": "Mes anterior",
+    "next": "Mes siguiente",
+    "today": "Hoy"
+  },
+  "totals": {
+    "toPay": "Por pagar",
+    "toReceive": "Por cobrar",
+    "paid": "Pagado",
+    "received": "Cobrado"
+  },
+  "weekdays": {
+    "sun": "Dom",
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mié",
+    "thu": "Jue",
+    "fri": "Vie",
+    "sat": "Sáb"
+  },
+  "grid": {
+    "label": "Calendario del mes",
+    "dayLabel": "Día {{day}}, {{count}} movimiento(s)"
+  },
+  "legend": {
+    "label": "Leyenda",
+    "overdue": "Vencida",
+    "toPay": "Por pagar",
+    "toReceive": "Por cobrar",
+    "settled": "Liquidado"
+  },
+  "overdue": {
+    "title": "Cuentas vencidas",
+    "summary": "{{count}} cuenta(s) vencida(s) sin liquidar",
+    "toPay": "— {{amount}} por pagar",
+    "toReceive": "— {{amount}} por cobrar"
+  },
+  "day": {
+    "select": "Selecciona un día para ver sus movimientos.",
+    "empty": "Ningún movimiento en este día."
+  },
+  "entry": {
+    "pay": "Marcar como pagado",
+    "receive": "Marcar como cobrado",
+    "paid": "Pagado",
+    "received": "Cobrado",
+    "open": "Pendiente",
+    "overdue": "Vencida",
+    "recurring": "Recurrente",
+    "paidToast": "Liquidado: {{description}}"
+  }
+}

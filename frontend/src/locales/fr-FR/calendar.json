@@ -1,0 +1,57 @@
+{
+  "title": "Calendrier",
+  "subtitle": "Factures à payer et à encaisser, jour par jour",
+  "loading": "Chargement…",
+  "loadError": "Impossible de charger le calendrier.",
+  "nav": {
+    "prev": "Mois précédent",
+    "next": "Mois suivant",
+    "today": "Aujourd'hui"
+  },
+  "totals": {
+    "toPay": "À payer",
+    "toReceive": "À encaisser",
+    "paid": "Payé",
+    "received": "Encaissé"
+  },
+  "weekdays": {
+    "sun": "Dim",
+    "mon": "Lun",
+    "tue": "Mar",
+    "wed": "Mer",
+    "thu": "Jeu",
+    "fri": "Ven",
+    "sat": "Sam"
+  },
+  "grid": {
+    "label": "Calendrier du mois",
+    "dayLabel": "Jour {{day}}, {{count}} opération(s)"
+  },
+  "legend": {
+    "label": "Légende",
+    "overdue": "En retard",
+    "toPay": "À payer",
+    "toReceive": "À encaisser",
+    "settled": "Réglé"
+  },
+  "overdue": {
+    "title": "Factures en retard",
+    "summary": "{{count}} facture(s) en retard non réglée(s)",
+    "toPay": "— {{amount}} à payer",
+    "toReceive": "— {{amount}} à encaisser"
+  },
+  "day": {
+    "select": "Sélectionnez un jour pour voir ses opérations.",
+    "empty": "Aucune opération ce jour-là."
+  },
+  "entry": {
+    "pay": "Marquer comme payé",
+    "receive": "Marquer comme encaissé",
+    "paid": "Payé",
+    "received": "Encaissé",
+    "open": "En attente",
+    "overdue": "En retard",
+    "recurring": "Récurrent",
+    "paidToast": "Réglé : {{description}}"
+  }
+}

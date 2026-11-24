@@ -42,7 +42,9 @@ public class SettingsController(IMediator mediator) : ControllerBase
             BudgetWarningEnabled: request.BudgetWarningEnabled,
             BudgetCriticalEnabled: request.BudgetCriticalEnabled,
             TransactionDueTomorrowEnabled: request.TransactionDueTomorrowEnabled,
-            TransactionDueIn3DaysEnabled: request.TransactionDueIn3DaysEnabled
+            TransactionDueIn3DaysEnabled: request.TransactionDueIn3DaysEnabled,
+            TransactionDueTodayEnabled: request.TransactionDueTodayEnabled,
+            TransactionOverdueEnabled: request.TransactionOverdueEnabled
         ), cancellationToken);
 
         return NoContent();

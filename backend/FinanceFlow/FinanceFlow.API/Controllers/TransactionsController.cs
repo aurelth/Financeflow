@@ -3,6 +3,7 @@ using FinanceFlow.Application.DTOs;
 using FinanceFlow.Application.UseCases.Transactions.Commands.CancelInstallments;
 using FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransaction;
+using FinanceFlow.Application.UseCases.Transactions.Commands.PayTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Commands.RemoveAttachment;
 using FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Queries.GetDueTransactions;
@@ -313,6 +314,17 @@ public class TransactionsController(
             AccountId: filters.AccountId);
 
         var result = await Mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Dá baixa no lançamento: Pendente/Agendado vira Pago. Repetir a chamada não tem efeito.</summary>
+    [HttpPost("{id:guid}/pay")]
+    [ProducesResponseType(typeof(TransactionDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> Pay(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new PayTransactionCommand(id, CurrentUserId), cancellationToken);
         return Ok(result);
     }
 
