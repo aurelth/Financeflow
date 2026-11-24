@@ -310,7 +310,7 @@ git push origin develop
 | v0.33.0 | Transferências entre contas (pareamento automático, vínculo manual e desfazer, painel de pendências) | ✅ Concluído |
 | v0.34.0 | Saldo e conciliação com o extrato (LEDGERBAL), alerta de diferença e saldo por conta no dashboard | ✅ Concluído |
 | v0.35.0 | Dívida técnica: ESLint zerado e bloqueante no CI, tratamento de erro da API tipado, build do backend sem warnings de código | ✅ Concluído |
-| v0.36.0 | Remoção do AutoMapper (CVE) com mapeamento manual | 🔜 Planejado |
+| v0.36.0 | AutoMapper removido (3 CVEs de severidade alta): mapeamento manual entidade → DTO, testado diretamente | ✅ Concluído |
 
 ---
 

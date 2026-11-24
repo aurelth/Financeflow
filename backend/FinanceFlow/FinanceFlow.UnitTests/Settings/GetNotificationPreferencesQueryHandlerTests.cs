@@ -1,4 +1,3 @@
-using AutoMapper;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Application.UseCases.Settings.Queries.GetNotificationPreferences;
 using FinanceFlow.Domain.Entities;

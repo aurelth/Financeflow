@@ -1,14 +1,13 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Users.Commands.UpdateUserProfile;
 
 public class UpdateUserProfileCommandHandler(
-    IUserRepository userRepository,
-    IMapper mapper)
+    IUserRepository userRepository)
     : IRequestHandler<UpdateUserProfileCommand, UserProfileDto>
 {
     private static readonly HashSet<string> SupportedLanguages =
@@ -32,6 +31,6 @@ public class UpdateUserProfileCommandHandler(
 
         await userRepository.UpdateAsync(user, cancellationToken);
 
-        return mapper.Map<UserProfileDto>(user);
+        return user.ToProfileDto();
     }
 }

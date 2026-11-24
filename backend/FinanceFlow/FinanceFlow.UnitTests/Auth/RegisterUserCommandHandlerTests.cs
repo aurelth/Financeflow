@@ -1,6 +1,4 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
-using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Auth.Commands.RegisterUser;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
@@ -13,19 +11,12 @@ public class RegisterUserCommandHandlerTests
 {
     private readonly Mock<IUserRepository> _userRepository = new();
     private readonly Mock<IPasswordService> _passwordService = new();
-    private readonly IMapper _mapper;
 
     private static readonly string ValidCpf = "529.982.247-25"; // CPF válido para testes
 
-    public RegisterUserCommandHandlerTests()
-    {
-        var config = new MapperConfiguration(cfg =>
-            cfg.AddProfile<UserMappingProfile>());
-        _mapper = config.CreateMapper();
-    }
 
     private RegisterUserCommandHandler CreateHandler() =>
-        new(_userRepository.Object, _passwordService.Object, _mapper);
+        new(_userRepository.Object, _passwordService.Object);
 
     private RegisterUserCommand BuildCommand(
         string email = "aurel@teste.com",

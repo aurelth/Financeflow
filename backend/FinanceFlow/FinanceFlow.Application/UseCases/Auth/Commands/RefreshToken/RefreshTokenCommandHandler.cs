@@ -1,16 +1,15 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Auth.Commands.RefreshToken;
 
 public class RefreshTokenCommandHandler(
     IUserRepository userRepository,
     ITokenService tokenService,
-    IRefreshTokenService refreshTokenService,
-    IMapper mapper)
+    IRefreshTokenService refreshTokenService)
     : IRequestHandler<RefreshTokenCommand, AuthResponseDto>
 {
     public async Task<AuthResponseDto> Handle(
@@ -49,7 +48,7 @@ public class RefreshTokenCommandHandler(
             RefreshToken: newRefreshToken,
             TokenType: "Bearer",
             ExpiresIn: 15 * 60,
-            User: mapper.Map<UserProfileDto>(user)
+            User: user.ToProfileDto()
         );
     }
 }

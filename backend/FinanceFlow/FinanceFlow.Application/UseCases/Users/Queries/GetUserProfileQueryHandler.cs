@@ -1,14 +1,13 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Users.Queries.GetUserProfile;
 
 public class GetUserProfileQueryHandler(
-    IUserRepository userRepository,
-    IMapper mapper)
+    IUserRepository userRepository)
     : IRequestHandler<GetUserProfileQuery, UserProfileDto>
 {
     public async Task<UserProfileDto> Handle(
@@ -21,6 +20,6 @@ public class GetUserProfileQueryHandler(
         if (user is null)
             throw new NotFoundException("Utilizador", request.UserId);
 
-        return mapper.Map<UserProfileDto>(user);
+        return user.ToProfileDto();
     }
 }

@@ -1,15 +1,14 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Categories.Commands.CreateCategory;
 
 public class CreateCategoryCommandHandler(
-    ICategoryRepository categoryRepository,
-    IMapper mapper)
+    ICategoryRepository categoryRepository)
     : IRequestHandler<CreateCategoryCommand, CategoryDto>
 {
     public async Task<CategoryDto> Handle(
@@ -43,6 +42,6 @@ public class CreateCategoryCommandHandler(
 
         await categoryRepository.AddAsync(category, cancellationToken);
 
-        return mapper.Map<CategoryDto>(category);
+        return category.ToDto();
     }
 }

@@ -1,16 +1,15 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Auth.Commands.RegisterUser;
 
 public class RegisterUserCommandHandler(
     IUserRepository userRepository,
-    IPasswordService passwordService,
-    IMapper mapper)
+    IPasswordService passwordService)
     : IRequestHandler<RegisterUserCommand, UserProfileDto>
 {
     public async Task<UserProfileDto> Handle(
@@ -65,6 +64,6 @@ public class RegisterUserCommandHandler(
         };
 
         await userRepository.AddAsync(user, cancellationToken);
-        return mapper.Map<UserProfileDto>(user);
+        return user.ToProfileDto();
     }
 }

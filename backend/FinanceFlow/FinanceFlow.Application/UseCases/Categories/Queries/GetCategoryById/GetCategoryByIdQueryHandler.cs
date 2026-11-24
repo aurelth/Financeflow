@@ -1,14 +1,13 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Categories.Queries.GetCategoryById;
 
 public class GetCategoryByIdQueryHandler(
-    ICategoryRepository categoryRepository,
-    IMapper mapper)
+    ICategoryRepository categoryRepository)
     : IRequestHandler<GetCategoryByIdQuery, CategoryDto>
 {
     public async Task<CategoryDto> Handle(
@@ -21,6 +20,6 @@ public class GetCategoryByIdQueryHandler(
         if (category is null)
             throw new NotFoundException("Categoria", request.CategoryId);
 
-        return mapper.Map<CategoryDto>(category);
+        return category.ToDto();
     }
 }

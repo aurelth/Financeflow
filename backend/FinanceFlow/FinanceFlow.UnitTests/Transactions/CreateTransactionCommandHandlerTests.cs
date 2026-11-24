@@ -1,7 +1,5 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
-using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransaction;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
@@ -20,7 +18,6 @@ public class CreateTransactionCommandHandlerTests
     private readonly Mock<IAttachmentService> _attachmentService = new();
     private readonly Mock<IConfiguration> _configuration = new();
     private readonly Mock<ICacheService> _cache = new();
-    private readonly IMapper _mapper;
 
     private static readonly Guid UserId = Guid.NewGuid();
     private static readonly Guid CategoryId = Guid.NewGuid();
@@ -37,9 +34,6 @@ public class CreateTransactionCommandHandlerTests
 
     public CreateTransactionCommandHandlerTests()
     {
-        var config = new MapperConfiguration(cfg =>
-            cfg.AddProfile<TransactionMappingProfile>());
-        _mapper = config.CreateMapper();
 
         _configuration
             .Setup(c => c["Kafka:Topics:TransactionCreated"])
@@ -63,6 +57,14 @@ public class CreateTransactionCommandHandlerTests
             .Returns(Task.CompletedTask);
     }
 
+    // O repositório real recarrega a transação do banco com o Include da categoria; o stub devolve a entidade
+    // em memória (só com CategoryId), então a navegação é anexada aqui para o DTO poder ser montado.
+    private Transaction Recarregada(Transaction transaction)
+    {
+        transaction.Category = ValidCategory;
+        return transaction;
+    }
+
     private CreateTransactionCommandHandler CreateHandler() =>
         new(_transactionRepository.Object,
             _categoryRepository.Object,
@@ -70,8 +72,7 @@ public class CreateTransactionCommandHandlerTests
             _eventPublisher.Object,
             _attachmentService.Object,
             _configuration.Object,
-            _cache.Object,
-            _mapper);
+            _cache.Object);
 
     [Fact]
     public async Task Handle_DeveCriarTransacao_QuandoDadosSaoValidos()
@@ -312,7 +313,7 @@ public class CreateTransactionCommandHandlerTests
 
         _transactionRepository
             .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
-            .ReturnsAsync(() => transactionSalva!);
+            .ReturnsAsync(() => Recarregada(transactionSalva!));
 
         // Act
         await CreateHandler().Handle(command, default);
@@ -353,7 +354,7 @@ public class CreateTransactionCommandHandlerTests
 
         _transactionRepository
             .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
-            .ReturnsAsync(() => transactionSalva!);
+            .ReturnsAsync(() => Recarregada(transactionSalva!));
 
         // Act
         await CreateHandler().Handle(command, default);
@@ -392,7 +393,7 @@ public class CreateTransactionCommandHandlerTests
 
         _transactionRepository
             .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
-            .ReturnsAsync(() => todasTransactions.First());
+            .ReturnsAsync(() => Recarregada(todasTransactions.First()));
 
         // Act
         await CreateHandler().Handle(command, default);
@@ -437,7 +438,7 @@ public class CreateTransactionCommandHandlerTests
 
         _transactionRepository
             .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
-            .ReturnsAsync(() => todasTransactions.First());
+            .ReturnsAsync(() => Recarregada(todasTransactions.First()));
 
         // Act
         await CreateHandler().Handle(command, default);
@@ -476,7 +477,7 @@ public class CreateTransactionCommandHandlerTests
 
         _transactionRepository
             .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
-            .ReturnsAsync(() => todasTransactions.First());
+            .ReturnsAsync(() => Recarregada(todasTransactions.First()));
 
         // Act
         await CreateHandler().Handle(command, default);
@@ -619,5 +620,37 @@ public class CreateTransactionCommandHandlerTests
 
         // Assert
         _accountRepository.Verify(r => r.GetOrCreateDefaultAsync(UserId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_DeveLancarInvalidOperation_QuandoATransacaoNaoVoltaNaLeitura()
+    {
+        var command = new CreateTransactionCommand(
+            UserId: UserId,
+            Amount: 100.00m,
+            Type: TransactionType.Expense,
+            Date: DateTime.UtcNow,
+            Description: "Compra",
+            Status: TransactionStatus.Paid,
+            IsRecurring: false,
+            RecurrenceType: RecurrenceType.None,
+            CategoryId: CategoryId,
+            SubcategoryId: null,
+            Tags: []);
+
+        _categoryRepository
+            .Setup(r => r.GetByIdAsync(CategoryId, UserId, default))
+            .ReturnsAsync(ValidCategory);
+        _transactionRepository
+            .Setup(r => r.AddAsync(It.IsAny<Transaction>(), default))
+            .Returns(Task.CompletedTask);
+        _transactionRepository
+            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), UserId, default))
+            .ReturnsAsync((Transaction?)null);
+
+        var act = () => CreateHandler().Handle(command, default);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*não foi possível recarregá-la*");
     }
 }

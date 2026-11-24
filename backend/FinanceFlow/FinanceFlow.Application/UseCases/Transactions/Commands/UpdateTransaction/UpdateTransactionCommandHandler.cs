@@ -1,4 +1,3 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs;
@@ -7,6 +6,7 @@ using FinanceFlow.Domain.Enums;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
 using System.Text.Json;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Transactions.Commands.UpdateTransaction;
 
@@ -15,8 +15,7 @@ public class UpdateTransactionCommandHandler(
     ICategoryRepository categoryRepository,
     IAccountRepository accountRepository,
     ITransferRepository transferRepository,
-    ICacheService cache,
-    IMapper mapper)
+    ICacheService cache)
     : IRequestHandler<UpdateTransactionCommand, TransactionDto>
 {
     public async Task<TransactionDto> Handle(
@@ -142,7 +141,12 @@ public class UpdateTransactionCommandHandler(
         var updated = await transactionRepository.GetByIdAsync(
             transaction.Id, request.UserId, cancellationToken);
 
-        return mapper.Map<TransactionDto>(updated);
+        // O registro acabou de ser gravado: se não volta na leitura, algo está errado (ex.: exclusão concorrente)
+        if (updated is null)
+            throw new InvalidOperationException(
+                "Transação atualizada, mas não foi possível recarregá-la para montar a resposta.");
+
+        return updated.ToDto();
     }
 
     // Invalida todas as chaves de cache do dashboard para o mês/ano da transação

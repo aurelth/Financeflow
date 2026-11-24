@@ -1,13 +1,12 @@
-using AutoMapper;
 using FinanceFlow.Application.DTOs;
 using FinanceFlow.Domain.Interfaces;
 using MediatR;
+using FinanceFlow.Application.Common.Mappings;
 
 namespace FinanceFlow.Application.UseCases.Transactions.Queries.GetTransactions;
 
 public class GetTransactionsQueryHandler(
-    ITransactionRepository transactionRepository,
-    IMapper mapper)
+    ITransactionRepository transactionRepository)
     : IRequestHandler<GetTransactionsQuery, PagedResultDto<TransactionDto>>
 {
     public async Task<PagedResultDto<TransactionDto>> Handle(
@@ -30,7 +29,7 @@ public class GetTransactionsQueryHandler(
             accountId: request.AccountId,
             cancellationToken: cancellationToken);
 
-        var dtos = mapper.Map<IEnumerable<TransactionDto>>(items);
+        var dtos = items.ToDtos();
         var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
 
         return new PagedResultDto<TransactionDto>(

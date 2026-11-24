@@ -1,6 +1,4 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
-using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Categories.Commands.CreateCategory;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Interfaces;
@@ -12,17 +10,10 @@ namespace FinanceFlow.UnitTests.Categories;
 public class CreateCategoryCommandHandlerTests
 {
     private readonly Mock<ICategoryRepository> _categoryRepository = new();
-    private readonly IMapper _mapper;
 
-    public CreateCategoryCommandHandlerTests()
-    {
-        var config = new MapperConfiguration(cfg =>
-            cfg.AddProfile<CategoryMappingProfile>());
-        _mapper = config.CreateMapper();
-    }
 
     private CreateCategoryCommandHandler CreateHandler() =>
-        new(_categoryRepository.Object, _mapper);
+        new(_categoryRepository.Object);
 
     [Fact]
     public async Task Handle_DeveCriarCategoria_QuandoDadosSaoValidos()

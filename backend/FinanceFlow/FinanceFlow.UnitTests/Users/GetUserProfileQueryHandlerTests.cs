@@ -1,6 +1,4 @@
-using AutoMapper;
 using FinanceFlow.Application.Common.Exceptions;
-using FinanceFlow.Application.Common.Mappings;
 using FinanceFlow.Application.UseCases.Users.Queries.GetUserProfile;
 using FinanceFlow.Domain.Interfaces;
 using FinanceFlow.UnitTests.Common;
@@ -12,17 +10,10 @@ namespace FinanceFlow.UnitTests.Users;
 public class GetUserProfileQueryHandlerTests
 {
     private readonly Mock<IUserRepository> _userRepository = new();
-    private readonly IMapper _mapper;
 
-    public GetUserProfileQueryHandlerTests()
-    {
-        var config = new MapperConfiguration(cfg =>
-            cfg.AddProfile<UserMappingProfile>());
-        _mapper = config.CreateMapper();
-    }
 
     private GetUserProfileQueryHandler CreateHandler() =>
-        new(_userRepository.Object, _mapper);
+        new(_userRepository.Object);
 
     [Fact]
     public async Task Handle_DeveRetornarPerfil_QuandoUtilizadorExiste()
