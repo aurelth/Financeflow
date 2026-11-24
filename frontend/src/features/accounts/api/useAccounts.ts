@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import api from '@/lib/axios'
 import type {
   Account,
+  AccountReconciliation,
   CreateAccountRequest,
   UpdateAccountRequest,
 } from '../types/account.types'
@@ -15,6 +16,16 @@ export const useAccounts = (includeArchived = false) =>
     queryFn:  () =>
       api.get<Account[]>('/api/accounts', { params: { includeArchived } })
         .then(r => r.data),
+    staleTime: 60 * 1000,
+  })
+
+// Conciliação de todas as contas ativas com o último extrato confirmado de cada uma.
+// A chave começa com 'accounts', então qualquer invalidação de contas também a atualiza.
+export const useAccountsReconciliation = () =>
+  useQuery({
+    queryKey: ['accounts', 'reconciliation'],
+    queryFn:  () =>
+      api.get<AccountReconciliation[]>('/api/accounts/reconciliation').then(r => r.data),
     staleTime: 60 * 1000,
   })
 

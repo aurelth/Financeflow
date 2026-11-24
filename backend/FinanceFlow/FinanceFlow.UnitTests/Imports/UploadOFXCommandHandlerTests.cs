@@ -106,6 +106,56 @@ public class UploadOFXCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_DeveGuardarSaldoEPeriodoDoExtrato_QuandoOFXTrazLedgerBalance()
+    {
+        var userId = Guid.NewGuid();
+        var parseResult = new OFXParseResult(
+            AccountId: "12345",
+            BankId: "001",
+            StartDate: new DateTime(2026, 2, 1),
+            EndDate: new DateTime(2026, 2, 28),
+            Transactions: [new("FIT001", new DateTime(2026, 2, 10), -10m, "UBER", "DEBIT")],
+            LedgerBalance: 1234.56m,
+            LedgerBalanceDate: new DateTime(2026, 2, 28));
+
+        _ofxParserService.Setup(s => s.Parse(It.IsAny<Stream>())).Returns(parseResult);
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([]);
+
+        await CreateHandler().Handle(
+            new UploadOFXCommand(userId, new MemoryStream(Encoding.UTF8.GetBytes("ofx")), "fev.ofx"), default);
+
+        _bankImportRepository.Verify(r => r.AddAsync(It.Is<BankImport>(b =>
+            b.LedgerBalance == 1234.56m &&
+            b.LedgerBalanceDate == new DateTime(2026, 2, 28) &&
+            b.StatementStart == new DateTime(2026, 2, 1) &&
+            b.StatementEnd == new DateTime(2026, 2, 28) &&
+            b.ConfirmedAt == null), default), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_DeveDeixarSaldoVazio_QuandoOFXNaoTrazLedgerBalance()
+    {
+        var parseResult = new OFXParseResult(
+            AccountId: "12345",
+            BankId: "001",
+            StartDate: default,
+            EndDate: default,
+            Transactions: [new("FIT001", new DateTime(2026, 2, 10), -10m, "UBER", "DEBIT")]);
+
+        _ofxParserService.Setup(s => s.Parse(It.IsAny<Stream>())).Returns(parseResult);
+        _categoryRepository.Setup(r => r.GetAllDefaultAsync(default)).ReturnsAsync([]);
+
+        await CreateHandler().Handle(
+            new UploadOFXCommand(Guid.NewGuid(), new MemoryStream(Encoding.UTF8.GetBytes("ofx")), "fev.ofx"), default);
+
+        _bankImportRepository.Verify(r => r.AddAsync(It.Is<BankImport>(b =>
+            b.LedgerBalance == null &&
+            b.LedgerBalanceDate == null &&
+            b.StatementStart == null &&
+            b.StatementEnd == null), default), Times.Once);
+    }
+
+    [Fact]
     public async Task Handle_DeveCalcularHashCorretamente()
     {
         // Arrange

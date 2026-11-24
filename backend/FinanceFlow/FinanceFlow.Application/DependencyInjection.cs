@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IImportDeduplicationService, ImportDeduplicationService>();
         services.AddScoped<ITransferMatchingService, TransferMatchingService>();
         services.AddScoped<IDashboardCacheInvalidator, DashboardCacheInvalidator>();
+        services.AddScoped<IAccountReconciliationService, AccountReconciliationService>();
 
         //Goals
         services.AddScoped<IGoalProgressService, GoalProgressService>();

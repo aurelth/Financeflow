@@ -111,6 +111,22 @@ public class BankImportRepository(FinanceFlowDbContext context) : IBankImportRep
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<BankImport?> GetLatestStatementAsync(
+        Guid userId,
+        Guid accountId,
+        CancellationToken cancellationToken = default) =>
+        await context.BankImports
+            .AsNoTracking()
+            .Where(b =>
+                b.UserId == userId &&
+                b.AccountId == accountId &&
+                b.ConfirmedAt != null &&
+                b.LedgerBalance != null &&
+                b.LedgerBalanceDate != null)
+            .OrderByDescending(b => b.LedgerBalanceDate)
+            .ThenByDescending(b => b.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+
     public async Task DeleteAsync(
         Guid id,
         Guid userId,

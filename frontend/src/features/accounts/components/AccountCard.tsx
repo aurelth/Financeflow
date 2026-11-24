@@ -2,16 +2,18 @@ import { Pencil, Archive, RotateCcw, Star, ShieldCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '@/lib/format'
 import AccountIcon from './AccountIcon'
-import type { Account } from '../types/account.types'
+import ReconciliationStatusLine from './ReconciliationStatusLine'
+import type { Account, AccountReconciliation } from '../types/account.types'
 
 interface AccountCardProps {
-  account:   Account
-  onEdit:    (account: Account) => void
-  onArchive: (account: Account) => void
-  onRestore: (account: Account) => void
+  account:         Account
+  reconciliation?: AccountReconciliation
+  onEdit:          (account: Account) => void
+  onArchive:       (account: Account) => void
+  onRestore:       (account: Account) => void
 }
 
-export default function AccountCard({ account, onEdit, onArchive, onRestore }: AccountCardProps) {
+export default function AccountCard({ account, reconciliation, onEdit, onArchive, onRestore }: AccountCardProps) {
   const { t, i18n } = useTranslation('accounts')
 
   const subtitle = [
@@ -120,6 +122,11 @@ export default function AccountCard({ account, onEdit, onArchive, onRestore }: A
           {formatCurrency(account.balance, i18n.language, account.currency)}
         </p>
       </div>
+
+      {/* Conciliação só faz sentido para contas ativas */}
+      {!account.isArchived && (
+        <ReconciliationStatusLine reconciliation={reconciliation} currency={account.currency} />
+      )}
 
       <p className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--ff-text-muted)' }}>
         <ShieldCheck size={12} style={{ color: account.hasBankKey ? 'var(--ff-emerald)' : 'var(--ff-text-muted)' }} />

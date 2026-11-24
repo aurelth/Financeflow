@@ -305,7 +305,7 @@ git push origin develop
 | v0.31.0 | Contas (múltiplas contas, saldo por conta, conta no upload de OFX) | ✅ Concluído |
 | v0.32.0 | Deduplicação por conta e FITID, categoria obrigatória na importação, relatórios por conta | ✅ Concluído |
 | v0.33.0 | Transferências entre contas (pareamento automático, vínculo manual e desfazer, painel de pendências) | ✅ Concluído |
-| v0.34.0 | Saldo e conciliação com o extrato | 🔜 Planejado |
+| v0.34.0 | Saldo e conciliação com o extrato (LEDGERBAL), alerta de diferença e saldo por conta no dashboard | ✅ Concluído |
 
 ---
 

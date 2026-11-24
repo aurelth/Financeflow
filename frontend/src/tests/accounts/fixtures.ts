@@ -1,4 +1,4 @@
-import type { Account } from '@/features/accounts/types/account.types'
+import type { Account, AccountReconciliation } from '@/features/accounts/types/account.types'
 
 export const makeAccount = (overrides: Partial<Account> = {}): Account => ({
   id:                 'acc-1',
@@ -27,4 +27,20 @@ export const nubank = makeAccount({
 
 export const itau = makeAccount({
   id: 'acc-3', name: 'Itaú', isDefault: false, balance: -300,
+})
+
+
+export const makeReconciliation = (overrides: Partial<AccountReconciliation> = {}): AccountReconciliation => ({
+  accountId:         'acc-1',
+  status:            'Matched',
+  importId:          'imp-1',
+  fileName:          'fevereiro.ofx',
+  statementDate:     '2026-02-28T00:00:00',
+  statementStart:    '2026-02-01T00:00:00',
+  statementEnd:      '2026-02-28T00:00:00',
+  statementBalance:  1400,
+  calculatedBalance: 1400,
+  difference:        0,
+  message:           null,
+  ...overrides,
 })

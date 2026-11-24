@@ -38,5 +38,14 @@ public interface IBankImportRepository
         IReadOnlyCollection<Guid> ids,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Retorna a importação confirmada mais recente da conta que trouxe o saldo do extrato
+    /// (maior data de saldo; empate pela criação). Não rastreada e sem os lançamentos.
+    /// </summary>
+    Task<BankImport?> GetLatestStatementAsync(
+        Guid userId,
+        Guid accountId,
+        CancellationToken cancellationToken = default);
+
     Task DeleteAsync(Guid id, Guid userId, CancellationToken cancellationToken = default);
 }

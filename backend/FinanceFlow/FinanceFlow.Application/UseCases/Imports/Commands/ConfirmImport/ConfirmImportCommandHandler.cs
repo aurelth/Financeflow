@@ -201,6 +201,11 @@ public class ConfirmImportCommandHandler(
         bankImport.Imported = imported;
         bankImport.Errors = errors;
 
+        // Com erro e nada importado o usuário ainda pode confirmar de novo; o extrato só vale para
+        // a conciliação quando os lançamentos realmente passaram a existir na conta
+        if (imported > 0 || errors == 0)
+            bankImport.ConfirmedAt = DateTime.UtcNow;
+
         await bankImportRepository.UpdateAsync(bankImport, cancellationToken);
 
         // Só a conversão de lançamentos existentes muda números que já estavam no dashboard

@@ -35,6 +35,16 @@ public interface IAccountRepository
         Guid userId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Soma das movimentações de uma conta até o fim do dia informado (inclusive), com a mesma regra
+    /// do saldo atual. Usada para saber qual era o saldo calculado na data de um extrato.
+    /// </summary>
+    Task<decimal> GetMovementTotalUntilAsync(
+        Guid userId,
+        Guid accountId,
+        DateTime until,
+        CancellationToken cancellationToken = default);
+
     Task<bool> NameExistsAsync(
         Guid userId,
         string name,

@@ -45,3 +45,21 @@ export interface UpdateAccountRequest extends CreateAccountRequest {
 
 // Como a conta de um arquivo OFX foi resolvida no upload
 export type AccountResolution = 'Provided' | 'Recognized' | 'Learned' | 'Defaulted'
+
+// Resultado da comparação entre o saldo do extrato (LEDGERBAL) e o saldo calculado da conta
+export type ReconciliationStatus = 'NoStatement' | 'Unavailable' | 'Matched' | 'Divergent'
+
+export interface AccountReconciliation {
+  accountId:         string
+  status:            ReconciliationStatus
+  importId:          string | null
+  fileName:          string | null
+  statementDate:     string | null
+  statementStart:    string | null
+  statementEnd:      string | null
+  statementBalance:  number | null
+  calculatedBalance: number | null
+  // Saldo do extrato menos o saldo calculado: positivo = faltam entradas no FinanceFlow
+  difference:        number | null
+  message:           string | null
+}
