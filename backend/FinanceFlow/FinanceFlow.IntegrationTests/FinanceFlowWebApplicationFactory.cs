@@ -71,6 +71,12 @@ public class FinanceFlowWebApplicationFactory
                 ["IpRateLimiting:GeneralRules:2:Limit"] = "10000",
                 ["IpRateLimiting:GeneralRules:3:Period"] = "1h",
                 ["IpRateLimiting:GeneralRules:3:Limit"] = "10000",
+                // reset-password (índice 4) e a regra geral "*" de 20 req/s (índice 5): os testes rodam em
+                // paralelo e partem todos do mesmo IP, então sem isto o CI devolve 429 de forma intermitente
+                ["IpRateLimiting:GeneralRules:4:Period"] = "1h",
+                ["IpRateLimiting:GeneralRules:4:Limit"] = "10000",
+                ["IpRateLimiting:GeneralRules:5:Period"] = "1h",
+                ["IpRateLimiting:GeneralRules:5:Limit"] = "1000000",
                 // Credenciais do Admin de teste
                 ["AdminSeed:Name"] = "Admin Teste",
                 ["AdminSeed:Email"] = "admin@financeflow.com",
