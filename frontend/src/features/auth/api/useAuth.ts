@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
+import { getApiErrorMessage } from '@/lib/apiError'
 import { useAuthStore } from '@/store/authStore'
 import i18n from '@/lib/i18n'
 import type {
@@ -15,11 +16,10 @@ import type {
   UserProfile,
 } from '../types/auth.types'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getApiError = (err: any, fallback: string): string => {
-  const errors = err?.response?.data?.errors
-  if (errors) return Object.values(errors).flat().join(' ')
-  return err?.response?.data?.message ?? err?.response?.data?.title ?? fallback
+// Na autenticação o `title` do ProblemDetails também é uma mensagem válida (ex.: credenciais inválidas)
+const getApiError = (err: unknown, fallback: string): string => {
+  const title = (err as { response?: { data?: { title?: string } } } | null | undefined)?.response?.data?.title
+  return getApiErrorMessage(err, title ?? fallback)
 }
 
 // Register
@@ -33,8 +33,7 @@ export const useRegister = () => {
       toast.success('Conta criada com sucesso! Faça login para continuar.')
       navigate('/login')
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       toast.error(getApiError(err, 'Erro ao criar conta. Tente novamente.'))
     },
   })
@@ -57,8 +56,7 @@ export const useLogin = () => {
       toast.success(`Bem-vindo, ${data.user.name}!`)
       navigate('/dashboard')
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       toast.error(getApiError(err, 'Email ou senha incorreto.'))
     },
   })
@@ -109,8 +107,7 @@ export const useUpdateProfile = () => {
       qc.invalidateQueries({ queryKey: ['user', 'profile'] })
       toast.success('Perfil atualizado com sucesso!')
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       toast.error(getApiError(err, 'Erro ao atualizar perfil. Tente novamente.'))
     },
   })
@@ -124,8 +121,7 @@ export const useChangePassword = () =>
     onSuccess: () => {
       toast.success('Senha alterada com sucesso!')
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       toast.error(getApiError(err, 'Erro ao alterar senha. Tente novamente.'))
     },
   })
@@ -138,8 +134,7 @@ export const useForgotPassword = () =>
     onSuccess: () => {
       toast.success('Se o email existir, receberá um link em breve.')
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       toast.error(getApiError(err, 'Erro ao processar solicitação. Tente novamente.'))
     },
   })
@@ -155,8 +150,7 @@ export const useResetPassword = () => {
       toast.success('Senha redefinida com sucesso! Faça login para continuar.')
       navigate('/login')
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       toast.error(getApiError(err, 'Token inválido ou expirado.'))
     },
   })
@@ -182,8 +176,7 @@ export const useUploadAvatar = () => {
       qc.invalidateQueries({ queryKey: ['user', 'profile'] })
       toast.success('Foto de perfil atualizada!')
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       toast.error(getApiError(err, 'Erro ao atualizar foto. Tente novamente.'))
     },
   })
@@ -203,8 +196,7 @@ export const useDeleteAvatar = () => {
       qc.invalidateQueries({ queryKey: ['user', 'profile'] })
       toast.success('Foto de perfil removida!')
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       toast.error(getApiError(err, 'Erro ao remover foto. Tente novamente.'))
     },
   })

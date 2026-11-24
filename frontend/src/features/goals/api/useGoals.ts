@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
+import { getApiErrorMessage } from '@/lib/apiError'
 import type {
   GoalsSummaryResultDto,
   GoalProgressResultDto,
@@ -41,15 +41,7 @@ export const useCreateGoal = () => {
       qc.invalidateQueries({ queryKey: ['categories', 'goals'] })
       toast.success('Meta criada com sucesso!')
     },
-    onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error(err.response?.data?.message ?? 'Erro ao criar meta. Tente novamente.')
-      }
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao criar meta. Tente novamente.')),
   })
 }
 
@@ -65,15 +57,7 @@ export const useUpdateGoal = (id: string) => {
       qc.invalidateQueries({ queryKey: ['categories', 'goals'] })
       toast.success('Meta atualizada com sucesso!')
     },
-    onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error(err.response?.data?.message ?? 'Erro ao atualizar meta. Tente novamente.')
-      }
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao atualizar meta. Tente novamente.')),
   })
 }
 
@@ -89,9 +73,6 @@ export const useDeleteGoal = () => {
       qc.invalidateQueries({ queryKey: ['categories', 'goals'] })
       toast.success('Meta removida com sucesso!')
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.message
-      toast.error(msg ?? 'Erro ao remover meta. Tente novamente.')
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao remover meta. Tente novamente.')),
   })
 }

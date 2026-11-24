@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
+import { getApiErrorMessage } from '@/lib/apiError'
 import type {
   Transaction,
   PagedResult,
@@ -76,17 +77,7 @@ export const useCreateTransaction = () => {
       qc.invalidateQueries({ queryKey: ['accounts'] })
       toast.success('Transação criada com sucesso!')
     },
-    onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error(
-          err.response?.data?.message ?? 'Erro ao criar transação. Tente novamente.'
-        )
-      }
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao criar transação. Tente novamente.')),
   })
 }
 
@@ -103,17 +94,7 @@ export const useUpdateTransaction = (id: string) => {
       qc.invalidateQueries({ queryKey: ['accounts'] })
       toast.success('Transação atualizada com sucesso!')
     },
-    onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error(
-          err.response?.data?.message ?? 'Erro ao atualizar transação. Tente novamente.'
-        )
-      }
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao atualizar transação. Tente novamente.')),
   })
 }
 
@@ -133,10 +114,7 @@ export const useDeleteTransaction = () => {
       qc.invalidateQueries({ queryKey: ['accounts'] })
       toast.success('Transação removida com sucesso!')
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.message
-      toast.error(msg ?? 'Erro ao remover transação. Tente novamente.')
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao remover transação. Tente novamente.')),
   })
 }
 
@@ -157,10 +135,7 @@ export const useUploadAttachment = (id: string) => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
       toast.success('Anexo enviado com sucesso!')
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.message
-      toast.error(msg ?? 'Erro ao enviar anexo. Tente novamente.')
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao enviar anexo. Tente novamente.')),
   })
 }
 
@@ -174,10 +149,7 @@ export const useRemoveAttachment = (id: string) => {
       qc.invalidateQueries({ queryKey: ['transactions'] })
       toast.success('Comprovante removido com sucesso!')
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.message
-      toast.error(msg ?? 'Erro ao remover comprovante. Tente novamente.')
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao remover comprovante. Tente novamente.')),
   })
 }
 

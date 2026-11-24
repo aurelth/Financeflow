@@ -36,7 +36,7 @@ export default function AttachmentViewer({
       setObjectUrl(null)
       setZoom(100)
     }
-  }, [previewOpen])
+  }, [previewOpen, objectUrl])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -79,7 +79,9 @@ export default function AttachmentViewer({
       link.download  = fileName
       link.click()
       URL.revokeObjectURL(link.href)
-    } catch {}
+    } catch {
+      // Falha de rede/permissão: nenhum arquivo é gerado e não há estado a desfazer
+    }
   }
 
   const isImageContent = contentType.startsWith('image/')

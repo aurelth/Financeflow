@@ -40,11 +40,11 @@ jobs:
         run: npm ci
         working-directory: frontend
 
-      # Type check
-      - name: Type check
-        run: npm run tsc --noEmit
+      # Lint (bloqueante). A checagem de tipos roda no passo de build via `tsc -b`:
+      # o tsconfig raiz usa project references, então `tsc --noEmit` nele não verifica nada.
+      - name: Lint
+        run: npm run lint
         working-directory: frontend
-        continue-on-error: true
 
       # Build
       - name: Build

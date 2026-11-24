@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Bell, LogOut, Trash2, Loader2, TriangleAlert, Globe, PlayCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -14,6 +14,15 @@ import {
   useLogoutAll,
 } from '../api/useSettings'
 import DeleteAccountDialog from '../components/DeleteAccountDialog'
+import type { NotificationPreferences } from '../types/settings.types'
+
+// Antes de o servidor responder (e para quem nunca alterou), todas as notificações vêm ligadas
+const DEFAULT_PREFS: NotificationPreferences = {
+  budgetWarningEnabled:          true,
+  budgetCriticalEnabled:         true,
+  transactionDueTomorrowEnabled: true,
+  transactionDueIn3DaysEnabled:  true,
+}
 
 interface ToggleProps {
   label:       string
@@ -61,48 +70,36 @@ export default function SettingsPage() {
 
   const user                               = useAuthStore(s => s.user)
   const { mutate: updateProfile, isPending: isSavingLang } = useUpdateProfile()
-  const [selectedLanguage, setSelectedLanguage] = useState(
-    user?.language ?? i18n.language ?? 'en-US'
-  )
+  // Idioma escolhido nesta tela; enquanto não houver escolha, vale o do perfil
+  const [languageOverride, setLanguageOverride] = useState<string | null>(null)
+  const selectedLanguage = languageOverride ?? user?.language ?? i18n.language ?? 'en-US'
 
  
   const navigate          = useNavigate()
   const { resetTour }     = useOnboarding()
 
-  const [budgetWarning,  setBudgetWarning]  = useState(true)
-  const [budgetCritical, setBudgetCritical] = useState(true)
-  const [dueTomorrow,    setDueTomorrow]    = useState(true)
-  const [dueIn3Days,     setDueIn3Days]     = useState(true)
+  // Estado derivado: preferências do servidor + o que o usuário acabou de alternar.
+  // Evita espelhar dados do servidor em useState via useEffect (render extra e risco de sobrescrever a edição).
+  const [localPrefs, setLocalPrefs] = useState<Partial<NotificationPreferences>>({})
+  const currentPrefs: NotificationPreferences = { ...DEFAULT_PREFS, ...prefs, ...localPrefs }
 
-  useEffect(() => {
-    if (prefs) {
-      setBudgetWarning(prefs.budgetWarningEnabled)
-      setBudgetCritical(prefs.budgetCriticalEnabled)
-      setDueTomorrow(prefs.transactionDueTomorrowEnabled)
-      setDueIn3Days(prefs.transactionDueIn3DaysEnabled)
-    }
-  }, [prefs])
-
-  useEffect(() => {
-    if (user?.language) setSelectedLanguage(user.language)
-  }, [user?.language])
-
-  function handleToggle(
-    setter: (val: boolean) => void,
-    field:  keyof typeof currentPrefs,
-    value:  boolean
-  ) {
-    setter(value)
-    updatePrefs.mutate({
-      budgetWarningEnabled:          field === 'budgetWarningEnabled'          ? value : budgetWarning,
-      budgetCriticalEnabled:         field === 'budgetCriticalEnabled'         ? value : budgetCritical,
-      transactionDueTomorrowEnabled: field === 'transactionDueTomorrowEnabled' ? value : dueTomorrow,
-      transactionDueIn3DaysEnabled:  field === 'transactionDueIn3DaysEnabled'  ? value : dueIn3Days,
-    })
+  function handleToggle(field: keyof NotificationPreferences, value: boolean) {
+    setLocalPrefs(prev => ({ ...prev, [field]: value }))
+    updatePrefs.mutate(
+      { ...currentPrefs, [field]: value },
+      {
+        // Se a gravação falhar, o toggle volta ao valor que o servidor tem
+        onError: () => setLocalPrefs(prev => {
+          const rest = { ...prev }
+          delete rest[field]
+          return rest
+        }),
+      },
+    )
   }
 
   function handleLanguageChange(lang: string) {
-    setSelectedLanguage(lang)
+    setLanguageOverride(lang)
     i18n.changeLanguage(lang)
     localStorage.setItem('ff_language', lang)
     if (user) {
@@ -126,13 +123,6 @@ export default function SettingsPage() {
       })
       driverObj.drive()
     }, 600)
-  }
-
-  const currentPrefs = {
-    budgetWarningEnabled:          budgetWarning,
-    budgetCriticalEnabled:         budgetCritical,
-    transactionDueTomorrowEnabled: dueTomorrow,
-    transactionDueIn3DaysEnabled:  dueIn3Days,
   }
 
   if (isLoading) {
@@ -221,31 +211,31 @@ export default function SettingsPage() {
           <Toggle
             label="Aviso de orçamento (80%)"
             description="Receba um alerta quando atingir 80% do limite de um orçamento"
-            checked={budgetWarning}
-            onChange={val => handleToggle(setBudgetWarning, 'budgetWarningEnabled', val)}
+            checked={currentPrefs.budgetWarningEnabled}
+            onChange={val => handleToggle('budgetWarningEnabled', val)}
           />
           <div style={{ borderTop: '1px solid var(--ff-border-subtle)' }}>
             <Toggle
               label="Limite de orçamento atingido (100%)"
               description="Receba um alerta quando ultrapassar o limite de um orçamento"
-              checked={budgetCritical}
-              onChange={val => handleToggle(setBudgetCritical, 'budgetCriticalEnabled', val)}
+              checked={currentPrefs.budgetCriticalEnabled}
+              onChange={val => handleToggle('budgetCriticalEnabled', val)}
             />
           </div>
           <div style={{ borderTop: '1px solid var(--ff-border-subtle)' }}>
             <Toggle
               label="Transação vence amanhã"
               description="Receba um alerta quando uma despesa vencer no dia seguinte"
-              checked={dueTomorrow}
-              onChange={val => handleToggle(setDueTomorrow, 'transactionDueTomorrowEnabled', val)}
+              checked={currentPrefs.transactionDueTomorrowEnabled}
+              onChange={val => handleToggle('transactionDueTomorrowEnabled', val)}
             />
           </div>
           <div style={{ borderTop: '1px solid var(--ff-border-subtle)' }}>
             <Toggle
               label="Transação vence em 3 dias"
               description="Receba um alerta quando uma despesa vencer em 3 dias"
-              checked={dueIn3Days}
-              onChange={val => handleToggle(setDueIn3Days, 'transactionDueIn3DaysEnabled', val)}
+              checked={currentPrefs.transactionDueIn3DaysEnabled}
+              onChange={val => handleToggle('transactionDueIn3DaysEnabled', val)}
             />
           </div>
         </div>

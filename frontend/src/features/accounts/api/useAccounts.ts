@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
+import { getApiErrorMessage } from '@/lib/apiError'
 import type {
   Account,
   AccountReconciliation,
@@ -29,12 +29,6 @@ export const useAccountsReconciliation = () =>
     staleTime: 60 * 1000,
   })
 
-function extractError(err: any, fallback: string): string {
-  const errors = err.response?.data?.errors
-  if (errors) return Object.values(errors).flat().join(' ')
-  return err.response?.data?.message ?? fallback
-}
-
 // Lançamentos e dashboard dependem do saldo das contas, por isso também são invalidados
 function invalidateAccountDependents(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: ['accounts'] })
@@ -49,7 +43,7 @@ export const useCreateAccount = () => {
     mutationFn: (data: CreateAccountRequest) =>
       api.post<Account>('/api/accounts', data).then(r => r.data),
     onSuccess: () => invalidateAccountDependents(qc),
-    onError: (err: any) => toast.error(extractError(err, 'Erro ao criar conta.')),
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao criar conta.')),
   })
 }
 
@@ -60,7 +54,7 @@ export const useUpdateAccount = (id: string) => {
     mutationFn: (data: UpdateAccountRequest) =>
       api.put<Account>(`/api/accounts/${id}`, data).then(r => r.data),
     onSuccess: () => invalidateAccountDependents(qc),
-    onError: (err: any) => toast.error(extractError(err, 'Erro ao atualizar conta.')),
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao atualizar conta.')),
   })
 }
 
@@ -71,7 +65,7 @@ export const useArchiveAccount = () => {
   return useMutation({
     mutationFn: (id: string) => api.delete(`/api/accounts/${id}`),
     onSuccess: () => invalidateAccountDependents(qc),
-    onError: (err: any) => toast.error(extractError(err, 'Erro ao arquivar conta.')),
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao arquivar conta.')),
   })
 }
 
@@ -93,6 +87,6 @@ export const useRestoreAccount = () => {
         isArchived:         false,
       } satisfies UpdateAccountRequest).then(r => r.data),
     onSuccess: () => invalidateAccountDependents(qc),
-    onError: (err: any) => toast.error(extractError(err, 'Erro ao reativar conta.')),
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao reativar conta.')),
   })
 }

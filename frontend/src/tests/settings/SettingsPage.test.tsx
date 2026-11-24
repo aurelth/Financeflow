@@ -124,9 +124,28 @@ describe('SettingsPage', () => {
 
     await waitFor(() => {
       expect(mockUpdatePrefs).toHaveBeenCalledWith(
-        expect.objectContaining({ budgetWarningEnabled: false })
+        expect.objectContaining({ budgetWarningEnabled: false }),
+        expect.objectContaining({ onError: expect.any(Function) }),
       )
     })
+  })
+
+  it('deve reverter o toggle quando a gravação das preferências falha', async () => {
+    // A mutation simulada falha de imediato: o componente precisa voltar ao valor do servidor
+    mockUpdatePrefs.mockImplementationOnce((_body: unknown, opts?: { onError?: () => void }) => opts?.onError?.())
+    renderPage()
+    const user = userEvent.setup()
+
+    const getFirstToggle = () =>
+      screen.getAllByRole('button').filter(btn => btn.className.includes('rounded-full'))[0]
+    const isOn = () => getFirstToggle().querySelector('span')?.style.transform === 'translateX(20px)'
+
+    expect(isOn()).toBe(true)
+
+    await user.click(getFirstToggle())
+
+    await waitFor(() => expect(mockUpdatePrefs).toHaveBeenCalled())
+    expect(isOn()).toBe(true)
   })
 
   it('deve chamar logoutAll ao clicar em encerrar sessões', async () => {

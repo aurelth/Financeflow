@@ -19,12 +19,10 @@ public class FinanceFlowWebApplicationFactory
 {
     private const string TestJwtSecret = "integration-test-secret-key-min32chars!!";
 
-    private readonly RedisContainer _redisContainer = new RedisBuilder()
-        .WithImage("redis:7.2-alpine")
+    private readonly RedisContainer _redisContainer = new RedisBuilder("redis:7.2-alpine")
         .Build();
 
-    private readonly MsSqlContainer _sqlContainer = new MsSqlBuilder()
-        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+    private readonly MsSqlContainer _sqlContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("Test@12345!")
         .Build();
 

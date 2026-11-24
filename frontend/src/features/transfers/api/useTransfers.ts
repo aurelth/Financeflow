@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
+import { getApiErrorMessage } from '@/lib/apiError'
 import type {
   CreateTransferRequest,
   LinkTransfersRequest,
@@ -9,12 +9,6 @@ import type {
   TransferLink,
   UnlinkTransferRequest,
 } from '../types/transfer.types'
-
-function extractError(err: any, fallback: string): string {
-  const errors = err.response?.data?.errors
-  if (errors && Object.keys(errors).length > 0) return Object.values(errors).flat().join(' ')
-  return err.response?.data?.message ?? fallback
-}
 
 // Transferências mexem em saldos, lançamentos e relatórios
 function invalidateTransferDependents(qc: ReturnType<typeof useQueryClient>) {
@@ -43,7 +37,7 @@ export const useCreateTransfer = () => {
       invalidateTransferDependents(qc)
       toast.success('Transferência registrada!')
     },
-    onError: (err: any) => toast.error(extractError(err, 'Erro ao registrar a transferência.')),
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao registrar a transferência.')),
   })
 }
 
@@ -58,7 +52,7 @@ export const useLinkTransfers = () => {
       invalidateTransferDependents(qc)
       toast.success('Transferência vinculada!')
     },
-    onError: (err: any) => toast.error(extractError(err, 'Não foi possível vincular os lançamentos.')),
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Não foi possível vincular os lançamentos.')),
   })
 }
 
@@ -73,6 +67,6 @@ export const useUnlinkTransfer = (linkId: string) => {
       invalidateTransferDependents(qc)
       toast.success('Vínculo desfeito.')
     },
-    onError: (err: any) => toast.error(extractError(err, 'Não foi possível desfazer o vínculo.')),
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Não foi possível desfazer o vínculo.')),
   })
 }

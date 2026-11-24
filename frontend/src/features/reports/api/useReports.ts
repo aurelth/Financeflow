@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
+import { getApiErrorMessage } from '@/lib/apiError'
 import type { Report, CreateReportRequest } from '../types/report.types'
 
 export const useReports = () =>
@@ -21,21 +22,8 @@ export const useRequestReport = () => {
       qc.invalidateQueries({ queryKey: ['reports'] })
       toast.success('Relatório solicitado! Você será notificado quando estiver pronto.')
     },
-    onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      const message = err.response?.data?.message
-
-      const hasErrors = errors && Object.keys(errors).length > 0
-
-      if (hasErrors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else if (message) {
-        toast.error(message)
-      } else {
-        toast.error('Erro ao solicitar relatório. Tente novamente.')
-      }
-    },
+    onError: (err: unknown) =>
+      toast.error(getApiErrorMessage(err, 'Erro ao solicitar relatório. Tente novamente.')),
   })
 }
 

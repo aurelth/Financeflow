@@ -29,7 +29,7 @@ public class ReportsController(IMediator mediator) : BaseController(mediator)
     [HttpPost("request")]
     [ProducesResponseType(typeof(ReportDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-    public async Task<IActionResult> Request(
+    public async Task<IActionResult> RequestReport(
         [FromBody] CreateReportRequestDto request,
         CancellationToken cancellationToken)
     {

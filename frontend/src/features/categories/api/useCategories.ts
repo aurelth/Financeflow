@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
+import { getApiErrorMessage } from '@/lib/apiError'
 import type {
   Category,
   Subcategory,
@@ -61,15 +61,7 @@ export const useCreateCategory = () => {
       qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Categoria criada com sucesso!')
     },
-    onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error('Erro ao criar categoria. Tente novamente.')
-      }
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao criar categoria. Tente novamente.')),
   })
 }
 
@@ -83,15 +75,7 @@ export const useUpdateCategory = (id: string) => {
       qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Categoria atualizada com sucesso!')
     },
-    onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error('Erro ao atualizar categoria. Tente novamente.')
-      }
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao atualizar categoria. Tente novamente.')),
   })
 }
 
@@ -105,10 +89,7 @@ export const useDeleteCategory = () => {
       qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Categoria removida com sucesso!')
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.message
-      toast.error(msg ?? 'Erro ao remover categoria. Tente novamente.')
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao remover categoria. Tente novamente.')),
   })
 }
 
@@ -126,15 +107,7 @@ export const useCreateSubcategory = (categoryId: string) => {
       qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Subcategoria criada com sucesso!')
     },
-    onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error('Erro ao criar subcategoria. Tente novamente.')
-      }
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao criar subcategoria. Tente novamente.')),
   })
 }
 
@@ -150,15 +123,7 @@ export const useUpdateSubcategory = (categoryId: string, subcategoryId: string) 
       qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Subcategoria atualizada com sucesso!')
     },
-    onError: (err: any) => {
-      const errors = err.response?.data?.errors
-      if (errors) {
-        const msgs = Object.values(errors).flat().join(' ')
-        toast.error(msgs)
-      } else {
-        toast.error('Erro ao atualizar subcategoria. Tente novamente.')
-      }
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao atualizar subcategoria. Tente novamente.')),
   })
 }
 
@@ -172,10 +137,7 @@ export const useDeleteSubcategory = (categoryId: string) => {
       qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Subcategoria removida com sucesso!')
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.message
-      toast.error(msg ?? 'Erro ao remover subcategoria. Tente novamente.')
-    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao remover subcategoria. Tente novamente.')),
   })
 }
 

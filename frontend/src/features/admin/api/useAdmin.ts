@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/axios'
+import { getApiErrorMessage } from '@/lib/apiError'
 import type {
   AdminUserList,
   AdminCategory,
@@ -8,12 +9,6 @@ import type {
   CreateDefaultCategoryRequest,
   UpdateDefaultCategoryRequest,
 } from '../types/admin.types'
-
-const getApiError = (err: any, fallback: string): string => {
-  const errors = err?.response?.data?.errors
-  if (errors) return Object.values(errors).flat().join(' ')
-  return err?.response?.data?.message ?? err?.response?.data?.title ?? fallback
-}
 
 // GET /api/admin/users
 export function useAdminUsers(
@@ -47,8 +42,8 @@ export function useDeactivateUser() {
       qc.invalidateQueries({ queryKey: ['admin', 'users'] })
       toast.success('Usuário desativado com sucesso.')
     },
-    onError: (err: any) => {
-      toast.error(getApiError(err, 'Erro ao desativar usuário.'))
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Erro ao desativar usuário.'))
     },
   })
 }
@@ -63,8 +58,8 @@ export function useReactivateUser() {
       qc.invalidateQueries({ queryKey: ['admin', 'users'] })
       toast.success('Usuário reativado com sucesso.')
     },
-    onError: (err: any) => {
-      toast.error(getApiError(err, 'Erro ao reativar usuário.'))
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Erro ao reativar usuário.'))
     },
   })
 }
@@ -79,8 +74,8 @@ export function usePromoteUser() {
       qc.invalidateQueries({ queryKey: ['admin', 'users'] })
       toast.success('Usuário promovido a Admin.')
     },
-    onError: (err: any) => {
-      toast.error(getApiError(err, 'Erro ao promover usuário.'))
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Erro ao promover usuário.'))
     },
   })
 }
@@ -95,8 +90,8 @@ export function useDemoteUser() {
       qc.invalidateQueries({ queryKey: ['admin', 'users'] })
       toast.success('Admin rebaixado a usuário comum.')
     },
-    onError: (err: any) => {
-      toast.error(getApiError(err, 'Erro ao rebaixar Admin.'))
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Erro ao rebaixar Admin.'))
     },
   })
 }
@@ -124,8 +119,8 @@ export function useCreateDefaultCategory() {
       qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Categoria padrão criada com sucesso.')
     },
-    onError: (err: any) => {
-      toast.error(getApiError(err, 'Erro ao criar categoria padrão.'))
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Erro ao criar categoria padrão.'))
     },
   })
 }
@@ -142,8 +137,8 @@ export function useUpdateDefaultCategory() {
       qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Categoria padrão atualizada com sucesso.')
     },
-    onError: (err: any) => {
-      toast.error(getApiError(err, 'Erro ao atualizar categoria padrão.'))
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Erro ao atualizar categoria padrão.'))
     },
   })
 }
@@ -159,8 +154,8 @@ export function useDeleteDefaultCategory() {
       qc.invalidateQueries({ queryKey: ['categories'] })
       toast.success('Categoria padrão excluída com sucesso.')
     },
-    onError: (err: any) => {
-      toast.error(getApiError(err, 'Erro ao excluir categoria padrão.'))
+    onError: (err: unknown) => {
+      toast.error(getApiErrorMessage(err, 'Erro ao excluir categoria padrão.'))
     },
   })
 }

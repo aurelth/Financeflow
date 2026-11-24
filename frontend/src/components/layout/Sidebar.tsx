@@ -46,7 +46,7 @@ export default function Sidebar() {
 
   useEffect(() => {
     close()
-  }, [location.pathname])
+  }, [location.pathname, close])
 
   const navItems = [
     { to: '/dashboard',    icon: LayoutDashboard, label: t('nav.dashboard')    },

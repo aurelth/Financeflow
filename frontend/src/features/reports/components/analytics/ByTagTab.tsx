@@ -96,7 +96,7 @@ export default function ByTagTab({ data }: Props) {
                     fontSize: '12px',
                     color: '#a1a1aa',
                   }}
-                  formatter={(value: any) => [formatCurrency(Number(value))]}
+                  formatter={(value) => [formatCurrency(Number(value))]}
                 />
                 <Bar dataKey="Valor" radius={[0, 4, 4, 0]} maxBarSize={24}>
                   {chartData.map((_, i) => (

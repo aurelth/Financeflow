@@ -33,7 +33,6 @@ export function useReportHub() {
 
     connection
       .start()
-      .then(() => console.log('SignalR conectado'))
       .catch(err => console.warn('SignalR connection failed:', err))
 
     return () => {
