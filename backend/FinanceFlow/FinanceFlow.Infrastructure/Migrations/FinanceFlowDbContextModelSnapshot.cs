@@ -460,6 +460,42 @@ namespace FinanceFlow.Infrastructure.Migrations
                     b.ToTable("CategoryRules", (string)null);
                 });
 
+            modelBuilder.Entity("FinanceFlow.Domain.Entities.DismissedRecurrence", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Type", "Key")
+                        .IsUnique();
+
+                    b.ToTable("DismissedRecurrences", (string)null);
+                });
+
             modelBuilder.Entity("FinanceFlow.Domain.Entities.Goal", b =>
                 {
                     b.Property<Guid>("Id")

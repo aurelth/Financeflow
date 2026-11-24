@@ -51,6 +51,7 @@ public static class DependencyInjection
         services.AddScoped<ITransferRepository, TransferRepository>();
         services.AddScoped<ICategoryRuleRepository, CategoryRuleRepository>();
         services.AddScoped<IAiUsageRepository, AiUsageRepository>();
+        services.AddScoped<IDismissedRecurrenceRepository, DismissedRecurrenceRepository>();
         services.AddSingleton<IAccountKeyHasher, AccountKeyHasher>();
 
         // Caching

@@ -13,6 +13,7 @@ import TransferFormDialog             from '@/features/transfers/components/Tran
 import UnlinkTransferDialog          from '@/features/transfers/components/UnlinkTransferDialog'
 import PendingTransfersPanel         from '@/features/transfers/components/PendingTransfersPanel'
 import QuickEntryDialog              from '@/features/quick-entry/components/QuickEntryDialog'
+import RecurringSuggestionsPanel     from '@/features/recurring/components/RecurringSuggestionsPanel'
 import ExportButton                  from '@/features/reports/components/ExportButton'
 import EmptyState                    from '@/components/ui/EmptyState'
 import SkeletonTable                 from '@/components/ui/SkeletonTable'
@@ -136,6 +137,9 @@ export default function TransactionsPage() {
 
       {/* Pontas de transferência sem par (some quando não há nenhuma) */}
       <PendingTransfersPanel />
+
+      {/* Assinaturas e contas recorrentes detectadas no histórico (some quando não há nenhuma) */}
+      <RecurringSuggestionsPanel />
 
       {/* Filtros */}
       <TransactionFilters
