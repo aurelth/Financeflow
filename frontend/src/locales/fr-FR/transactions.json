@@ -66,5 +66,21 @@
     "deleteOnlyDesc": "Supprime uniquement cette échéance. Les autres restent.",
     "deleteFuture": "Celle-ci et les suivantes",
     "deleteFutureDesc": "Supprime cette échéance et les suivantes non payées."
+  },
+  "recurring": {
+    "title": "Récurrences détectées",
+    "summary": "{{count}} abonnement(s) ou facture(s) récurrente(s) possible(s) détecté(s)",
+    "monthlyTotal": "— environ {{amount}} par mois de dépenses",
+    "cadence": {
+      "weekly": "Hebdomadaire",
+      "monthly": "Mensuel",
+      "yearly": "Annuel"
+    },
+    "occurrences": "{{count}} opérations",
+    "next": "prochaine le {{date}}",
+    "varies": "montant variable",
+    "confirm": "Confirmer",
+    "dismiss": "Ignorer",
+    "confirmed": "Récurrence confirmée : {{count}} opération(s) planifiée(s)."
   }
 }

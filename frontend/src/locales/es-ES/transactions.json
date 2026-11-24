@@ -66,5 +66,21 @@
     "deleteOnlyDesc": "Elimina solo esta cuota. Las demás permanecen.",
     "deleteFuture": "Esta y las siguientes",
     "deleteFutureDesc": "Elimina esta cuota y las siguientes aún no pagadas."
+  },
+  "recurring": {
+    "title": "Recurrencias detectadas",
+    "summary": "{{count}} posible(s) suscripción(es) o cuenta(s) recurrente(s) detectada(s)",
+    "monthlyTotal": "— unos {{amount}} al mes en gastos",
+    "cadence": {
+      "weekly": "Semanal",
+      "monthly": "Mensual",
+      "yearly": "Anual"
+    },
+    "occurrences": "{{count}} movimientos",
+    "next": "próxima el {{date}}",
+    "varies": "importe variable",
+    "confirm": "Confirmar",
+    "dismiss": "Ignorar",
+    "confirmed": "Recurrencia confirmada: {{count}} movimiento(s) programado(s)."
   }
 }

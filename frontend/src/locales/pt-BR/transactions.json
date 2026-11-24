@@ -106,5 +106,21 @@
     "deleteOnlyDesc": "Remove somente esta parcela. As outras permanecem.",
     "deleteFuture": "Esta e as seguintes",
     "deleteFutureDesc": "Remove esta parcela e as seguintes ainda não pagas."
+  },
+  "recurring": {
+    "title": "Recorrências detectadas",
+    "summary": "{{count}} possível(is) assinatura(s) ou conta(s) recorrente(s) detectada(s)",
+    "monthlyTotal": "— cerca de {{amount}} por mês em despesas",
+    "cadence": {
+      "weekly": "Semanal",
+      "monthly": "Mensal",
+      "yearly": "Anual"
+    },
+    "occurrences": "{{count}} lançamentos",
+    "next": "próxima em {{date}}",
+    "varies": "valor variável",
+    "confirm": "Confirmar",
+    "dismiss": "Ignorar",
+    "confirmed": "Recorrência confirmada: {{count}} lançamento(s) agendado(s)."
   }
 }

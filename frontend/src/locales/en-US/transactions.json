@@ -74,5 +74,21 @@
     "deleteOnlyDesc": "Removes only this installment. The others stay.",
     "deleteFuture": "This and the following",
     "deleteFutureDesc": "Removes this installment and the following unpaid ones."
+  },
+  "recurring": {
+    "title": "Detected recurring items",
+    "summary": "{{count}} possible subscription(s) or recurring bill(s) detected",
+    "monthlyTotal": "— about {{amount}} per month in expenses",
+    "cadence": {
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "occurrences": "{{count}} entries",
+    "next": "next on {{date}}",
+    "varies": "variable amount",
+    "confirm": "Confirm",
+    "dismiss": "Dismiss",
+    "confirmed": "Recurrence confirmed: {{count}} upcoming entry(ies) scheduled."
   }
 }

@@ -270,6 +270,47 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<List<Transaction>> GetForRecurrenceAnalysisAsync(
+        Guid userId,
+        DateTime from,
+        CancellationToken cancellationToken = default) =>
+        await context.Transactions
+            .IgnoreQueryFilters()
+            .Include(t => t.Category)
+            .Include(t => t.Account)
+            .Where(t =>
+                t.UserId == userId &&
+                t.DeletedAt == null &&
+                t.Date >= from &&
+                t.Type != TransactionType.Transfer &&
+                t.InstallmentGroupId == null &&
+                (t.IsRecurring || t.Status != TransactionStatus.Scheduled))
+            .OrderBy(t => t.Date)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+    public async Task SaveRecurringSeriesAsync(
+        IEnumerable<Transaction> linked,
+        IEnumerable<Transaction> projected,
+        CancellationToken cancellationToken = default)
+    {
+        var toUpdate = linked.ToList();
+
+        // Lidos com Include para a tela: sem soltar o grafo, o Update regravaria categoria e conta como alteradas
+        foreach (var transaction in toUpdate)
+        {
+            transaction.Category = null!;
+            transaction.Account = null!;
+            transaction.Subcategory = null;
+            transaction.LinkAsOut = null;
+            transaction.LinkAsIn = null;
+        }
+
+        context.Transactions.UpdateRange(toUpdate);
+        await context.Transactions.AddRangeAsync(projected, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task AddRangeAsync(
         IEnumerable<Transaction> transactions,
         CancellationToken cancellationToken = default)

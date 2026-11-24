@@ -66,6 +66,25 @@ public interface ITransactionRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Lançamentos que servem de base para detectar recorrências: desde <paramref name="from"/>, sem transferências
+    /// nem parcelas. Traz os já recorrentes (para a detecção não duplicar uma série existente) e deixa de fora
+    /// os agendados avulsos. Somente leitura, com categoria e conta para a tela.
+    /// </summary>
+    Task<List<Transaction>> GetForRecurrenceAnalysisAsync(
+        Guid userId,
+        DateTime from,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Transforma lançamentos em uma série recorrente: atualiza os existentes (vínculo com o grupo) e grava as
+    /// ocorrências futuras, tudo num único SaveChanges.
+    /// </summary>
+    Task SaveRecurringSeriesAsync(
+        IEnumerable<Transaction> linked,
+        IEnumerable<Transaction> projected,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retorna resumo financeiro do utilizador para um mês/ano específico.
     /// </summary>
     Task<(decimal TotalIncome, decimal TotalExpense, IEnumerable<Transaction> LastTen)> GetMonthlySummaryAsync(

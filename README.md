@@ -58,6 +58,15 @@ Em **Transações → Nova transação**, marcar **Parcelar compra** e informar 
 - Transferências e transações recorrentes não podem ser parceladas, e o tipo de uma parcela não pode ser trocado.
 - API: `POST /api/transactions` (campo `installmentCount`), `GET|DELETE /api/transactions/installments/{groupId}`.
 
+## Detecção de assinaturas e recorrências
+
+Em **Transações**, um painel recolhido avisa quando o histórico revela lançamentos que se repetem em intervalo regular (semanal, mensal ou anual) e ainda não são uma série: assinaturas de valor fixo, contas de valor variável (luz, água) e receitas fixas (salário). A detecção é recalculada pelo servidor a cada consulta, sem job nem tabela de resultados; só as sugestões dispensadas ficam gravadas.
+
+- Critérios: mesma descrição normalizada e mesmo tipo; no mínimo 4 ocorrências (semanal), 3 (mensal) ou 2 (anual), com ao menos 75% dos intervalos na janela da cadência; valor dentro de 5% da mediana (fixo) ou 40% (variável); séries sem ocorrência recente são tratadas como encerradas. Transferências e parcelas ficam de fora.
+- **Confirmar** liga o histórico a um grupo de recorrência e agenda as próximas ocorrências (12 semanais/mensais, 2 anuais) como *Agendadas*; elas passam a gerar os alertas de vencimento e a contar no orçamento do mês. Editar ou remover "esta e as futuras" funciona como em qualquer recorrência.
+- **Ignorar** esconde a sugestão para aquela descrição; `DELETE /api/recurring/suggestions/dismissed` volta a oferecê-las.
+- API: `GET /api/recurring/suggestions`, `POST /api/recurring/suggestions/confirm`, `POST /api/recurring/suggestions/dismiss`.
+
 ## Estrutura do projeto
 
 ```
