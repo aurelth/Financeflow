@@ -115,5 +115,18 @@
     "uploaded": "File imported! Check the preview.",
     "skipped": "{{count}} rows in the file were skipped.",
     "uploadError": "Error importing the CSV."
+  },
+  "paste": {
+    "tab": "Paste text",
+    "label": "Statement text",
+    "placeholder": "Paste the OFX or CSV content here...",
+    "tip": "Tip: ask the AI to \"convert this statement to OFX\" and paste the whole answer. Code fences and extra text are ignored.",
+    "fromClipboard": "Paste from clipboard",
+    "clear": "Clear",
+    "detected": "Detected format: {{format}}",
+    "unknown": "We couldn't recognize OFX or CSV in this text.",
+    "tooBig": "The text is over 5 MB.",
+    "continue": "Continue",
+    "clipboardDenied": "Couldn't read the clipboard. Paste directly into the box."
   }
 }

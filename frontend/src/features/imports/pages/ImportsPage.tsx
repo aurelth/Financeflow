@@ -3,10 +3,13 @@ import { Upload, FileText, CheckCircle, XCircle, Clock, Loader2, RefreshCw, Tras
 import { useImports, useUploadOFX, useDeleteImport } from '../api/useImports'
 import OFXUploadZone from '../components/OFXUploadZone'
 import CsvImport from '../components/CsvImport'
+import PasteImport from '../components/PasteImport'
 import type { BankImportDto, BankImportStatus } from '../types/imports.types'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+
+type ImportMode = 'ofx' | 'csv' | 'paste'
 
 function StatusBadge({ status }: { status: BankImportStatus }) {
   const map: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
@@ -126,11 +129,19 @@ function ImportHistoryRow({ item, onPreview, onDelete, isDeleting }: ImportHisto
 export default function ImportsPage() {
   const navigate                                    = useNavigate()
   const { t }                                       = useTranslation('accounts')
+  const { t: tImports }                             = useTranslation('imports')
   const { data: imports = [], isLoading, refetch } = useImports()
   const { mutate: upload, isPending }              = useUploadOFX()
   const { mutate: deleteImport, isPending: isDeleting } = useDeleteImport()
   const [uploading, setUploading]                  = useState(false)
-  const [format, setFormat]                        = useState<'ofx' | 'csv'>('ofx')
+  const [mode, setMode]                          = useState<ImportMode>('ofx')
+  // Texto colado que já virou arquivo: segue para o formato detectado já escolhido
+  const [pastedFile, setPastedFile]                = useState<File | undefined>()
+
+  function selectMode(next: ImportMode) {
+    setPastedFile(undefined)
+    setMode(next)
+  }
   const [deletingId, setDeletingId]                = useState<string | null>(null)
 
   // Informa como a conta foi decidida, para o utilizador poder corrigir antes de confirmar, e abre o preview
@@ -228,30 +239,42 @@ export default function ImportsPage() {
             className="inline-flex p-0.5 rounded-xl"
             style={{ background: 'var(--ff-bg-elevated)', border: '1px solid var(--ff-border)' }}
           >
-            {(['ofx', 'csv'] as const).map(f => (
+            {(['ofx', 'csv', 'paste'] as const).map(m => (
               <button
-                key={f}
+                key={m}
                 type="button"
                 role="tab"
-                aria-selected={format === f}
-                onClick={() => setFormat(f)}
+                aria-selected={mode === m}
+                onClick={() => selectMode(m)}
                 className="h-8 px-4 rounded-[10px] text-xs font-semibold transition-colors"
                 style={
-                  format === f
+                  mode === m
                     ? { background: 'var(--ff-emerald-subtle)', color: 'var(--ff-emerald)' }
                     : { color: 'var(--ff-text-muted)' }
                 }
               >
-                {f.toUpperCase()}
+                {m === 'paste' ? tImports('paste.tab') : m.toUpperCase()}
               </button>
             ))}
           </div>
         </div>
 
-        {format === 'ofx'
-          ? <OFXUploadZone onFileSelect={handleFileSelect} isLoading={isPending || uploading} />
-          : <CsvImport onImported={openPreview} />
-        }
+        {mode === 'ofx' && (
+          <OFXUploadZone
+            onFileSelect={handleFileSelect}
+            isLoading={isPending || uploading}
+            initialFile={pastedFile}
+          />
+        )}
+        {mode === 'csv' && <CsvImport onImported={openPreview} initialFile={pastedFile} />}
+        {mode === 'paste' && (
+          <PasteImport
+            onReady={(format, file) => {
+              setPastedFile(file)
+              setMode(format)
+            }}
+          />
+        )}
       </div>
 
       {/* Histórico */}

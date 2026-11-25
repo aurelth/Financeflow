@@ -7,16 +7,18 @@ import { useAccounts } from '@/features/accounts/api/useAccounts'
 interface Props {
   onFileSelect: (file: File, accountId?: string) => void
   isLoading: boolean
+  // Arquivo que já chega escolhido (ex.: texto colado na aba "Colar texto")
+  initialFile?: File
 }
 
-export default function OFXUploadZone({ onFileSelect, isLoading }: Props) {
+export default function OFXUploadZone({ onFileSelect, isLoading, initialFile }: Props) {
   const { t } = useTranslation('accounts')
   // '' = reconhecer automaticamente (OFX → conta já aprendida → conta principal)
   const [accountId, setAccountId]   = useState('')
   const { data: accounts = [] }     = useAccounts()
   const showAccountQuestion         = accounts.length > 1
   const [dragging, setDragging]     = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(initialFile ?? null)
   const [error, setError]           = useState<string | null>(null)
 
   function validateAndSelect(file: File) {
