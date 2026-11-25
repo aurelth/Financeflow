@@ -24,5 +24,33 @@
     "prev": "← Back",
     "done": "Get Started ✓",
     "skip": "Skip tour"
+  },
+  "checklist": {
+    "title": "Getting started",
+    "progress": "{{done}} of {{total}} completed",
+    "doneTitle": "All set! 🎉",
+    "doneDescription": "You've used the essential features of FinanceFlow.",
+    "completed": "completed",
+    "dismiss": "Dismiss checklist",
+    "close": "Close",
+    "restore": "Show getting started checklist",
+    "steps": {
+      "transaction": {
+        "title": "Record your first transaction",
+        "description": "Add an income or expense to bring the dashboard to life."
+      },
+      "import": {
+        "title": "Import a statement",
+        "description": "Bring in your bank transactions via OFX, CSV or by pasting the text."
+      },
+      "budget": {
+        "title": "Set a budget",
+        "description": "Limit spending on a category and get alerts."
+      },
+      "goal": {
+        "title": "Create a goal",
+        "description": "Save money for something, like a trip."
+      }
+    }
   }
 }

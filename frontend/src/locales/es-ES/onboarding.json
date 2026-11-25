@@ -24,5 +24,33 @@
     "prev": "← Anterior",
     "done": "Empezar ✓",
     "skip": "Saltar tour"
+  },
+  "checklist": {
+    "title": "Primeros pasos",
+    "progress": "{{done}} de {{total}} completados",
+    "doneTitle": "¡Todo listo! 🎉",
+    "doneDescription": "Ya has usado las funciones esenciales de FinanceFlow.",
+    "completed": "completado",
+    "dismiss": "Descartar lista",
+    "close": "Cerrar",
+    "restore": "Mostrar la lista de primeros pasos",
+    "steps": {
+      "transaction": {
+        "title": "Registra tu primera transacción",
+        "description": "Añade un ingreso o un gasto para dar vida al panel."
+      },
+      "import": {
+        "title": "Importa un extracto",
+        "description": "Trae las transacciones del banco en OFX, CSV o pegando el texto."
+      },
+      "budget": {
+        "title": "Define un presupuesto",
+        "description": "Limita el gasto de una categoría y recibe alertas."
+      },
+      "goal": {
+        "title": "Crea una meta",
+        "description": "Ahorra para un objetivo, como un viaje."
+      }
+    }
   }
 }
