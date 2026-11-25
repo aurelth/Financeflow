@@ -2,13 +2,16 @@ import { useState } from 'react'
 import { FileDown, X } from 'lucide-react'
 import { useRequestReport } from '../api/useReports'
 import MonthYearPicker from '@/components/ui/MonthYearPicker'
+import { cn } from '@/lib/utils'
 
 interface ExportButtonProps {
   defaultMonth?: number
   defaultYear?:  number
+  // Ajustes de tamanho/posição de quem usa o botão (ex.: alinhar com os vizinhos de um cabeçalho)
+  className?:    string
 }
 
-export default function ExportButton({ defaultMonth, defaultYear }: ExportButtonProps) {
+export default function ExportButton({ defaultMonth, defaultYear, className }: ExportButtonProps) {
   const now          = new Date()
   const initialMonth = defaultMonth ?? now.getMonth() + 1
   const initialYear  = defaultYear  ?? now.getFullYear()
@@ -29,7 +32,7 @@ export default function ExportButton({ defaultMonth, defaultYear }: ExportButton
     <>
       <button
         onClick={() => setShowModal(true)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors whitespace-nowrap"
+        className={cn('flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors whitespace-nowrap', className)}
         style={{ border: '1px solid var(--ff-border)', color: 'var(--ff-text-secondary)' }}
         onMouseEnter={e => {
           e.currentTarget.style.background = 'var(--ff-bg-elevated)'
