@@ -13,6 +13,7 @@ import { useNavigate }     from 'react-router-dom'
 import { useTranslation }  from 'react-i18next'
 import { useSidebarStore } from '@/store/sidebarStore'
 import NotificationDropdown from '@/features/notifications/components/NotificationDropdown'
+import SidebarToggle from './SidebarToggle'
 
 export default function Header() {
   const { t }              = useTranslation('common')
@@ -36,25 +37,25 @@ export default function Header() {
         borderBottom: '1px solid var(--ff-border)',
       }}
     >
-      {/* Botão hamburger em mobile */}
-      <button
-        onClick={toggle}
-        className="lg:hidden p-2 rounded-xl transition-colors"
-        style={{ color: 'var(--ff-text-muted)' }}
-        onMouseEnter={e => {
-          e.currentTarget.style.color      = 'var(--ff-text-primary)'
-          e.currentTarget.style.background = 'var(--ff-bg-elevated)'
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.color      = 'var(--ff-text-muted)'
-          e.currentTarget.style.background = 'transparent'
-        }}
-      >
-        <Menu size={20} />
-      </button>
-
-      {/* Espaçador desktop */}
-      <div className="hidden lg:block" />
+      {/* Menu: hambúrguer no celular/tablet, recolher/expandir no desktop */}
+      <div className="flex items-center">
+        <button
+          onClick={toggle}
+          className="lg:hidden p-2 rounded-xl transition-colors"
+          style={{ color: 'var(--ff-text-muted)' }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color      = 'var(--ff-text-primary)'
+            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color      = 'var(--ff-text-muted)'
+            e.currentTarget.style.background = 'transparent'
+          }}
+        >
+          <Menu size={20} />
+        </button>
+        <SidebarToggle className="hidden lg:flex" />
+      </div>
 
       <div className="flex items-center gap-3">
         <NotificationDropdown />

@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import {
   LayoutDashboard, ArrowLeftRight, Tag, PiggyBank,
   BarChart3, GitCompare, FileText, Settings, ShieldCheck, Upload, X, TrendingUp, Sparkles, HeartPulse, Target, Landmark, CalendarDays,
-  PanelLeftClose, PanelLeftOpen,
   type LucideIcon,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -11,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { useAuthStore }    from '@/store/authStore'
 import { useTranslation }  from 'react-i18next'
 import { useSidebarStore } from '@/store/sidebarStore'
+import { useSidebarShortcut } from '@/lib/sidebarShortcut'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const navLinkStyle = ({ isActive }: { isActive: boolean }) =>
@@ -41,20 +41,10 @@ function onNavLeave(e: React.MouseEvent<HTMLAnchorElement>) {
   }
 }
 
-// Ctrl+B (⌘B no Mac) abre/recolhe o menu, como nos editores
-const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
-const SHORTCUT = isMac ? '⌘B' : 'Ctrl+B'
-
-function isEditable(target: EventTarget | null) {
-  const el = target as HTMLElement | null
-  if (!el) return false
-  return el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)
-}
-
 // No recolhido o nome some da tela: o balão ao lado do ícone o substitui (também no foco do teclado)
 function WithTooltip({
-  label, enabled, shortcut, children,
-}: { label: string; enabled: boolean; shortcut?: string; children: React.ReactElement }) {
+  label, enabled, children,
+}: { label: string; enabled: boolean; children: React.ReactElement }) {
   if (!enabled) return children
 
   return (
@@ -62,14 +52,6 @@ function WithTooltip({
       <TooltipTrigger asChild>{children}</TooltipTrigger>
       <TooltipContent side="right">
         {label}
-        {shortcut && (
-          <kbd
-            className="ml-2 rounded px-1 py-px text-[11px] font-normal"
-            style={{ color: 'var(--ff-text-muted)', border: '1px solid var(--ff-border)' }}
-          >
-            {shortcut}
-          </kbd>
-        )}
       </TooltipContent>
     </Tooltip>
   )
@@ -133,22 +115,12 @@ export default function Sidebar() {
   const user       = useAuthStore(s => s.user)
   const isAdmin    = user?.role === 'Admin'
   const location   = useLocation()
-  const { isOpen, close, collapsed, toggleCollapsed } = useSidebarStore()
+  const { isOpen, close, collapsed } = useSidebarStore()
+  useSidebarShortcut()
 
   useEffect(() => {
     close()
   }, [location.pathname, close])
-
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey) return
-      if (e.key.toLowerCase() !== 'b' || isEditable(e.target)) return
-      e.preventDefault()
-      toggleCollapsed()
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [toggleCollapsed])
 
   const navItems = [
     { to: '/dashboard',    icon: LayoutDashboard, label: t('nav.dashboard')    },
@@ -169,9 +141,6 @@ export default function Sidebar() {
 
   // compact = só ícones. Só o desktop recolhe; a gaveta do celular sempre mostra o menu completo
   const renderContent = (compact: boolean) => {
-    const toggleLabel = compact ? t('nav.expandMenu') : t('nav.collapseMenu')
-    const ToggleIcon  = compact ? PanelLeftOpen : PanelLeftClose
-
     return (
       <aside
         className={cn(
@@ -180,11 +149,11 @@ export default function Sidebar() {
         )}
         style={{ background: 'var(--ff-bg-card)', borderRight: '1px solid var(--ff-border)' }}
       >
-        {/* Logo */}
+        {/* Logo — mesma altura do cabeçalho, para a linha divisória ficar alinhada */}
         <div
           className={cn(
-            'flex transition-[padding] duration-200 motion-reduce:transition-none',
-            compact ? 'flex-col items-center gap-2 p-3' : 'items-center justify-between p-6'
+            'flex h-16 flex-shrink-0 items-center transition-[padding] duration-200 motion-reduce:transition-none',
+            compact ? 'justify-center px-3' : 'justify-between px-6'
           )}
           style={{ borderBottom: '1px solid var(--ff-border)' }}
         >
@@ -217,25 +186,6 @@ export default function Sidebar() {
           >
             <X size={18} />
           </button>
-
-          {/* Recolher/expandir no desktop */}
-          <WithTooltip label={toggleLabel} enabled shortcut={SHORTCUT}>
-            <button
-              type="button"
-              onClick={toggleCollapsed}
-              aria-label={toggleLabel}
-              aria-expanded={!compact}
-              className={cn(
-                'hidden lg:flex w-9 h-9 flex-shrink-0 items-center justify-center rounded-[10px] border transition-colors',
-                'hover:bg-[var(--ff-bg-elevated)] hover:text-[var(--ff-text-primary)]',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ff-emerald)]',
-                compact ? 'border-[var(--ff-border)]' : 'border-transparent'
-              )}
-              style={{ color: 'var(--ff-text-secondary)' }}
-            >
-              <ToggleIcon size={18} />
-            </button>
-          </WithTooltip>
         </div>
 
         {/* Navegação principal */}
