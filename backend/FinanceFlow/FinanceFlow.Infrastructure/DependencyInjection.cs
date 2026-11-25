@@ -52,6 +52,7 @@ public static class DependencyInjection
         services.AddScoped<ICategoryRuleRepository, CategoryRuleRepository>();
         services.AddScoped<IAiUsageRepository, AiUsageRepository>();
         services.AddScoped<IDismissedRecurrenceRepository, DismissedRecurrenceRepository>();
+        services.AddScoped<IOnboardingRepository, OnboardingRepository>();
         services.AddSingleton<IAccountKeyHasher, AccountKeyHasher>();
 
         // Caching

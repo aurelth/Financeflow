@@ -29,6 +29,7 @@ import PdfExportButton from "@/features/reports/components/PdfExportButton";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { createDriver } from "@/lib/driver";
 import { getTourSteps } from "@/features/onboarding/steps/tourSteps";
+import OnboardingChecklist from "@/features/onboarding/components/OnboardingChecklist";
 
 function getCurrentPeriod() {
   const now = new Date();
@@ -196,6 +197,9 @@ export default function DashboardPage() {
           defaultYear={period.year}
         />
       </div>
+
+      {/* Primeiros passos — some quando dispensado */}
+      <OnboardingChecklist />
 
       {/* Diferença entre o saldo do extrato e o calculado — some quando tudo está conciliado */}
       <ReconciliationAlert />

@@ -102,6 +102,16 @@ Além do OFX, a página **Importar extrato** aceita CSV de qualquer banco ou car
 - **Conta:** CSV não identifica o banco, então a conta é escolhida pelo usuário (sem escolha, usa a conta principal).
 - **Datas:** o CSV só traz o dia, que é gravado ao meio-dia, para o dia não mudar na conversão de fuso.
 
+## Checklist de primeiros passos
+
+O Dashboard mostra o cartão **Primeiros passos** para quem está começando, complementando o tour guiado: registrar a primeira transação, importar um extrato, definir um orçamento e criar uma meta.
+
+- **Progresso calculado, não marcado:** o servidor olha os dados reais do usuário (existe transação, importação confirmada, orçamento, meta), então o checklist nunca fica fora de sincronia, mesmo que o item seja feito pelo celular ou por outro caminho (ex.: a importação já cria transações). São quatro consultas de existência (`EXISTS`), sem carregar dados.
+- **Dispensar vale em qualquer dispositivo:** o estado fica na conta (`Users.OnboardingChecklistDismissedAt`), não no navegador. Em **Configurações** aparece o botão para mostrar o checklist de novo.
+- **Quando termina:** com os quatro passos feitos o cartão vira uma mensagem de conclusão com o botão Fechar.
+- **API:** `GET /api/onboarding/checklist` (`steps[{ key, done }]`, `completed`, `total`, `dismissed`) e `PUT /api/onboarding/checklist/dismissed` (`{ dismissed }`, idempotente). Os passos têm chaves estáveis; texto e destino de cada um ficam no frontend, então incluir um passo novo é uma linha no servidor e uma no frontend.
+- **Migração:** `AddOnboardingChecklistDismissal` (uma coluna `datetime2` anulável; contas existentes veem o checklist).
+
 ## Colar texto na importação
 
 Na aba **Colar texto** da página **Importar extrato** dá para colar o conteúdo do extrato em vez de salvar e enviar um arquivo, o que ajuda no celular e com extratos convertidos por IA (PDF → OFX).

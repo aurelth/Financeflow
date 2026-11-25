@@ -15,6 +15,9 @@ public class User : BaseEntity
     public UserRole Role { get; set; } = UserRole.User;
     public string? AvatarPath { get; set; }
 
+    // Quando o usuário dispensou o checklist de primeiros passos (null = ainda visível)
+    public DateTime? OnboardingChecklistDismissedAt { get; set; }
+
     // Navegação
     public ICollection<Category> Categories { get; set; } = [];
     public ICollection<Transaction> Transactions { get; set; } = [];

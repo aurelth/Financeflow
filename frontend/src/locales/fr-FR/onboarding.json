@@ -24,5 +24,33 @@
     "prev": "← Précédent",
     "done": "Commencer ✓",
     "skip": "Passer le tour"
+  },
+  "checklist": {
+    "title": "Premiers pas",
+    "progress": "{{done}} sur {{total}} terminés",
+    "doneTitle": "Tout est prêt ! 🎉",
+    "doneDescription": "Vous avez utilisé les fonctions essentielles de FinanceFlow.",
+    "completed": "terminé",
+    "dismiss": "Masquer la liste",
+    "close": "Fermer",
+    "restore": "Afficher la liste des premiers pas",
+    "steps": {
+      "transaction": {
+        "title": "Enregistrez votre première transaction",
+        "description": "Ajoutez un revenu ou une dépense pour animer le tableau de bord."
+      },
+      "import": {
+        "title": "Importez un relevé",
+        "description": "Importez les transactions de la banque en OFX, CSV ou en collant le texte."
+      },
+      "budget": {
+        "title": "Définissez un budget",
+        "description": "Limitez les dépenses d'une catégorie et recevez des alertes."
+      },
+      "goal": {
+        "title": "Créez un objectif",
+        "description": "Épargnez pour un projet, comme un voyage."
+      }
+    }
   }
 }

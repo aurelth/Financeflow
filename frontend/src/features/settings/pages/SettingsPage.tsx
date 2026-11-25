@@ -8,6 +8,7 @@ import { useUpdateProfile } from '@/features/auth/api/useAuth'
 import { useOnboarding } from '@/hooks/useOnboarding'
 import { createDriver }  from '@/lib/driver'
 import { getTourSteps }  from '@/features/onboarding/steps/tourSteps'
+import ChecklistRestoreButton from '@/features/onboarding/components/ChecklistRestoreButton'
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
@@ -309,6 +310,11 @@ export default function SettingsPage() {
           <PlayCircle size={15} />
           Ver tutorial
         </button>
+
+        {/* Só aparece depois de o checklist do Dashboard ser dispensado */}
+        <div className="mt-3">
+          <ChecklistRestoreButton />
+        </div>
       </div>
 
       {/* Regras de categorização aprendidas nas importações */}
