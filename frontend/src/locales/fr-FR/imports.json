@@ -1,8 +1,119 @@
 {
-  "page": { "title": "Importer OFX", "subtitle": "Importez des relevés bancaires au format OFX" },
-  "upload": { "drag": "Faites glisser le fichier OFX ici", "or": "ou", "browse": "sélectionnez un fichier", "onlyOFX": "Seuls les fichiers .ofx sont pris en charge.", "send": "Envoyer", "selected": "Fichier sélectionné" },
-  "history": { "title": "Historique des importations", "empty": "Aucune importation trouvée", "transactions": "transactions", "imported": "importées", "duplicates": "doublons", "errors": "erreurs" },
-  "status": { "pending": "En attente", "processing": "En cours", "completed": "Terminé", "failed": "Échoué" },
-  "actions": { "preview": "Voir l'aperçu", "delete": "Supprimer l'importation", "confirm": "Confirmer", "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette importation ?" },
-  "preview": { "title": "Aperçu de l'importation", "selected": "transactions sélectionnées", "selectAll": "Tout sélectionner", "description": "Description", "date": "Date", "category": "Catégorie", "value": "Valeur", "duplicate": "Doublon", "noCategory": "Sans catégorie", "learnedSuggestion": "Apprise de vos imports" }
+  "page": {
+    "title": "Importer un relevé",
+    "subtitle": "Importez vos relevés bancaires en OFX ou CSV"
+  },
+  "upload": {
+    "drag": "Faites glisser le fichier OFX ici",
+    "or": "ou",
+    "browse": "sélectionnez un fichier",
+    "onlyOFX": "Seuls les fichiers .ofx sont pris en charge.",
+    "send": "Envoyer",
+    "selected": "Fichier sélectionné"
+  },
+  "history": {
+    "title": "Historique des importations",
+    "empty": "Aucune importation trouvée",
+    "transactions": "transactions",
+    "imported": "importées",
+    "duplicates": "doublons",
+    "errors": "erreurs"
+  },
+  "status": {
+    "pending": "En attente",
+    "processing": "En cours",
+    "completed": "Terminé",
+    "failed": "Échoué"
+  },
+  "actions": {
+    "preview": "Voir l'aperçu",
+    "delete": "Supprimer l'importation",
+    "confirm": "Confirmer",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette importation ?"
+  },
+  "preview": {
+    "title": "Aperçu de l'importation",
+    "selected": "transactions sélectionnées",
+    "selectAll": "Tout sélectionner",
+    "description": "Description",
+    "date": "Date",
+    "category": "Catégorie",
+    "value": "Valeur",
+    "duplicate": "Doublon",
+    "noCategory": "Sans catégorie",
+    "learnedSuggestion": "Apprise de vos imports"
+  },
+  "csv": {
+    "drag": "Glissez le fichier CSV ici",
+    "browse": "ou cliquez pour sélectionner",
+    "hint": "Fonctionne avec toute banque ou carte : vous indiquez quelles colonnes sont la date, le libellé et le montant.",
+    "onlyCsv": "Seuls les fichiers .csv sont pris en charge.",
+    "tooBig": "Le fichier dépasse 5 Mo.",
+    "analyzing": "Lecture du fichier...",
+    "analyzeError": "Impossible de lire le fichier.",
+    "changeFile": "Changer de fichier",
+    "mapping": {
+      "title": "Comment lire les colonnes",
+      "delimiter": "Séparateur de colonnes",
+      "hasHeader": "La première ligne est l'en-tête",
+      "dateColumn": "Colonne de la date",
+      "dateFormat": "Format de la date",
+      "descriptionColumn": "Colonne du libellé",
+      "amountMode": "Montant",
+      "single": "Une colonne (négatif = dépense)",
+      "split": "Débit et crédit séparés",
+      "amountColumn": "Colonne du montant",
+      "debitColumn": "Colonne de débit",
+      "creditColumn": "Colonne de crédit",
+      "none": "— aucune —",
+      "decimal": "Séparateur décimal",
+      "decimalComma": "Virgule (1.234,56)",
+      "decimalDot": "Point (1,234.56)",
+      "invertSign": "Les valeurs positives sont des dépenses (relevé de carte)",
+      "column": "Colonne"
+    },
+    "delimiters": {
+      "semicolon": "Point-virgule ( ; )",
+      "comma": "Virgule ( , )",
+      "tab": "Tabulation",
+      "pipe": "Barre verticale ( | )"
+    },
+    "roles": {
+      "date": "Date",
+      "description": "Libellé",
+      "amount": "Montant",
+      "debit": "Débit",
+      "credit": "Crédit"
+    },
+    "sample": {
+      "title": "Premières lignes du fichier"
+    },
+    "result": {
+      "title": "Ce qui sera importé",
+      "ready": "Transactions prêtes : {{count}}",
+      "ignored": "Lignes ignorées : {{count}}",
+      "date": "Date",
+      "description": "Libellé",
+      "amount": "Montant",
+      "type": "Type",
+      "income": "Revenu",
+      "expense": "Dépense",
+      "none": "Aucune ligne valide avec ce mappage. Ajustez les colonnes, le format de date ou le séparateur décimal.",
+      "errorsTitle": "Voir les lignes ignorées",
+      "line": "Ligne {{line}}"
+    },
+    "errors": {
+      "InvalidDate": "date invalide",
+      "InvalidAmount": "montant invalide",
+      "ZeroAmount": "montant nul",
+      "MissingColumns": "colonnes manquantes"
+    },
+    "accountHint": "Les fichiers CSV n'identifient pas le compte. Sans choix, nous utilisons le compte principal.",
+    "cancel": "Annuler",
+    "import": "Importer",
+    "importing": "Importation...",
+    "uploaded": "Fichier importé ! Vérifiez l'aperçu.",
+    "skipped": "{{count}} lignes du fichier ont été ignorées.",
+    "uploadError": "Erreur lors de l'importation du CSV."
+  }
 }

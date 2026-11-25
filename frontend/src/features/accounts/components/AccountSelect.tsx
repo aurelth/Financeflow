@@ -6,7 +6,8 @@ interface AccountSelectProps {
   onChange:   (accountId: string) => void
   // Quando informado, adiciona uma primeira opção vazia traduzida:
   // 'all' → "Todas as contas" (filtros) · 'auto' → "Reconhecer automaticamente" (upload de OFX)
-  emptyOption?: 'all' | 'auto'
+  // 'default' → "Conta principal" (upload de CSV, que não identifica a conta)
+  emptyOption?: 'all' | 'auto' | 'default'
   // Garante que uma conta arquivada já usada continue visível ao editar
   currentAccountId?: string
   // Esconde o seletor quando o utilizador só tem uma conta (evita ruído para quem não precisa)
@@ -51,7 +52,9 @@ export default function AccountSelect({
     >
       {emptyOption && (
         <option value="">
-          {emptyOption === 'all' ? t('select.allAccounts') : t('import.auto')}
+          {emptyOption === 'all'
+            ? t('select.allAccounts')
+            : emptyOption === 'default' ? t('import.default') : t('import.auto')}
         </option>
       )}
       {visible.map(a => (

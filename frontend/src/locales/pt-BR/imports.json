@@ -1,7 +1,7 @@
 {
   "page": {
-    "title": "Importar OFX",
-    "subtitle": "Importe extratos bancários no formato OFX"
+    "title": "Importar extrato",
+    "subtitle": "Importe extratos bancários em OFX ou CSV"
   },
   "upload": {
     "drag": "Arraste o arquivo OFX aqui",
@@ -42,5 +42,78 @@
     "duplicate": "Duplicado",
     "noCategory": "Sem categoria",
     "learnedSuggestion": "Aprendida das suas importações"
+  },
+  "csv": {
+    "drag": "Arraste o arquivo CSV aqui",
+    "browse": "ou clique para selecionar",
+    "hint": "Serve para qualquer banco ou cartão: você indica quais colunas são a data, a descrição e o valor.",
+    "onlyCsv": "Apenas arquivos .csv são suportados.",
+    "tooBig": "O arquivo é maior que 5 MB.",
+    "analyzing": "Lendo o arquivo...",
+    "analyzeError": "Não foi possível ler o arquivo.",
+    "changeFile": "Trocar arquivo",
+    "mapping": {
+      "title": "Como ler as colunas",
+      "delimiter": "Separador de colunas",
+      "hasHeader": "A primeira linha é o cabeçalho",
+      "dateColumn": "Coluna da data",
+      "dateFormat": "Formato da data",
+      "descriptionColumn": "Coluna da descrição",
+      "amountMode": "Valor",
+      "single": "Uma coluna (negativo = despesa)",
+      "split": "Débito e crédito separados",
+      "amountColumn": "Coluna do valor",
+      "debitColumn": "Coluna de débito",
+      "creditColumn": "Coluna de crédito",
+      "none": "— nenhuma —",
+      "decimal": "Separador decimal",
+      "decimalComma": "Vírgula (1.234,56)",
+      "decimalDot": "Ponto (1,234.56)",
+      "invertSign": "Valores positivos são despesas (fatura de cartão)",
+      "column": "Coluna"
+    },
+    "delimiters": {
+      "semicolon": "Ponto e vírgula ( ; )",
+      "comma": "Vírgula ( , )",
+      "tab": "Tabulação",
+      "pipe": "Barra vertical ( | )"
+    },
+    "roles": {
+      "date": "Data",
+      "description": "Descrição",
+      "amount": "Valor",
+      "debit": "Débito",
+      "credit": "Crédito"
+    },
+    "sample": {
+      "title": "Primeiras linhas do arquivo"
+    },
+    "result": {
+      "title": "Como ficará a importação",
+      "ready": "Lançamentos prontos: {{count}}",
+      "ignored": "Linhas ignoradas: {{count}}",
+      "date": "Data",
+      "description": "Descrição",
+      "amount": "Valor",
+      "type": "Tipo",
+      "income": "Receita",
+      "expense": "Despesa",
+      "none": "Nenhuma linha válida com este mapeamento. Ajuste as colunas, o formato da data ou o separador decimal.",
+      "errorsTitle": "Ver linhas ignoradas",
+      "line": "Linha {{line}}"
+    },
+    "errors": {
+      "InvalidDate": "data inválida",
+      "InvalidAmount": "valor inválido",
+      "ZeroAmount": "valor zerado",
+      "MissingColumns": "colunas faltando"
+    },
+    "accountHint": "Arquivos CSV não identificam a conta. Sem escolha, usamos a conta principal.",
+    "cancel": "Cancelar",
+    "import": "Importar",
+    "importing": "Importando...",
+    "uploaded": "Arquivo importado! Confira o preview.",
+    "skipped": "{{count}} linhas do arquivo foram ignoradas.",
+    "uploadError": "Erro ao importar o CSV."
   }
 }

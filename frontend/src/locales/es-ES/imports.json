@@ -1,8 +1,119 @@
 {
-  "page": { "title": "Importar OFX", "subtitle": "Importa extractos bancarios en formato OFX" },
-  "upload": { "drag": "Arrastra el archivo OFX aquí", "or": "o", "browse": "selecciona un archivo", "onlyOFX": "Solo se admiten archivos .ofx.", "send": "Enviar", "selected": "Archivo seleccionado" },
-  "history": { "title": "Historial de importaciones", "empty": "No se encontraron importaciones", "transactions": "transacciones", "imported": "importadas", "duplicates": "duplicadas", "errors": "errores" },
-  "status": { "pending": "Pendiente", "processing": "Procesando", "completed": "Completado", "failed": "Fallido" },
-  "actions": { "preview": "Ver vista previa", "delete": "Eliminar importación", "confirm": "Confirmar", "deleteConfirm": "¿Estás seguro de que deseas eliminar esta importación?" },
-  "preview": { "title": "Vista previa de importación", "selected": "transacciones seleccionadas", "selectAll": "Seleccionar todas", "description": "Descripción", "date": "Fecha", "category": "Categoría", "value": "Valor", "duplicate": "Duplicado", "noCategory": "Sin categoría", "learnedSuggestion": "Aprendida de tus importaciones" }
+  "page": {
+    "title": "Importar extracto",
+    "subtitle": "Importa extractos bancarios en OFX o CSV"
+  },
+  "upload": {
+    "drag": "Arrastra el archivo OFX aquí",
+    "or": "o",
+    "browse": "selecciona un archivo",
+    "onlyOFX": "Solo se admiten archivos .ofx.",
+    "send": "Enviar",
+    "selected": "Archivo seleccionado"
+  },
+  "history": {
+    "title": "Historial de importaciones",
+    "empty": "No se encontraron importaciones",
+    "transactions": "transacciones",
+    "imported": "importadas",
+    "duplicates": "duplicadas",
+    "errors": "errores"
+  },
+  "status": {
+    "pending": "Pendiente",
+    "processing": "Procesando",
+    "completed": "Completado",
+    "failed": "Fallido"
+  },
+  "actions": {
+    "preview": "Ver vista previa",
+    "delete": "Eliminar importación",
+    "confirm": "Confirmar",
+    "deleteConfirm": "¿Estás seguro de que deseas eliminar esta importación?"
+  },
+  "preview": {
+    "title": "Vista previa de importación",
+    "selected": "transacciones seleccionadas",
+    "selectAll": "Seleccionar todas",
+    "description": "Descripción",
+    "date": "Fecha",
+    "category": "Categoría",
+    "value": "Valor",
+    "duplicate": "Duplicado",
+    "noCategory": "Sin categoría",
+    "learnedSuggestion": "Aprendida de tus importaciones"
+  },
+  "csv": {
+    "drag": "Arrastra el archivo CSV aquí",
+    "browse": "o haz clic para seleccionar",
+    "hint": "Sirve para cualquier banco o tarjeta: tú indicas qué columnas son la fecha, la descripción y el importe.",
+    "onlyCsv": "Solo se admiten archivos .csv.",
+    "tooBig": "El archivo supera los 5 MB.",
+    "analyzing": "Leyendo el archivo...",
+    "analyzeError": "No se pudo leer el archivo.",
+    "changeFile": "Cambiar archivo",
+    "mapping": {
+      "title": "Cómo leer las columnas",
+      "delimiter": "Separador de columnas",
+      "hasHeader": "La primera fila es el encabezado",
+      "dateColumn": "Columna de la fecha",
+      "dateFormat": "Formato de fecha",
+      "descriptionColumn": "Columna de la descripción",
+      "amountMode": "Importe",
+      "single": "Una columna (negativo = gasto)",
+      "split": "Débito y crédito separados",
+      "amountColumn": "Columna del importe",
+      "debitColumn": "Columna de débito",
+      "creditColumn": "Columna de crédito",
+      "none": "— ninguna —",
+      "decimal": "Separador decimal",
+      "decimalComma": "Coma (1.234,56)",
+      "decimalDot": "Punto (1,234.56)",
+      "invertSign": "Los valores positivos son gastos (extracto de tarjeta)",
+      "column": "Columna"
+    },
+    "delimiters": {
+      "semicolon": "Punto y coma ( ; )",
+      "comma": "Coma ( , )",
+      "tab": "Tabulación",
+      "pipe": "Barra vertical ( | )"
+    },
+    "roles": {
+      "date": "Fecha",
+      "description": "Descripción",
+      "amount": "Importe",
+      "debit": "Débito",
+      "credit": "Crédito"
+    },
+    "sample": {
+      "title": "Primeras filas del archivo"
+    },
+    "result": {
+      "title": "Cómo quedará la importación",
+      "ready": "Movimientos listos: {{count}}",
+      "ignored": "Filas omitidas: {{count}}",
+      "date": "Fecha",
+      "description": "Descripción",
+      "amount": "Importe",
+      "type": "Tipo",
+      "income": "Ingreso",
+      "expense": "Gasto",
+      "none": "Ninguna fila válida con este mapeo. Ajusta las columnas, el formato de fecha o el separador decimal.",
+      "errorsTitle": "Ver filas omitidas",
+      "line": "Fila {{line}}"
+    },
+    "errors": {
+      "InvalidDate": "fecha no válida",
+      "InvalidAmount": "importe no válido",
+      "ZeroAmount": "importe cero",
+      "MissingColumns": "faltan columnas"
+    },
+    "accountHint": "Los archivos CSV no identifican la cuenta. Si no eliges una, usamos la cuenta principal.",
+    "cancel": "Cancelar",
+    "import": "Importar",
+    "importing": "Importando...",
+    "uploaded": "¡Archivo importado! Revisa la vista previa.",
+    "skipped": "Se omitieron {{count}} filas del archivo.",
+    "uploadError": "Error al importar el CSV."
+  }
 }

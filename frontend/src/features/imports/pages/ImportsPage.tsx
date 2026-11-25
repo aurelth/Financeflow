@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Upload, FileText, CheckCircle, XCircle, Clock, Loader2, RefreshCw, Trash2 } from 'lucide-react'
 import { useImports, useUploadOFX, useDeleteImport } from '../api/useImports'
 import OFXUploadZone from '../components/OFXUploadZone'
+import CsvImport from '../components/CsvImport'
 import type { BankImportDto, BankImportStatus } from '../types/imports.types'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
@@ -129,7 +130,20 @@ export default function ImportsPage() {
   const { mutate: upload, isPending }              = useUploadOFX()
   const { mutate: deleteImport, isPending: isDeleting } = useDeleteImport()
   const [uploading, setUploading]                  = useState(false)
+  const [format, setFormat]                        = useState<'ofx' | 'csv'>('ofx')
   const [deletingId, setDeletingId]                = useState<string | null>(null)
+
+  // Informa como a conta foi decidida, para o utilizador poder corrigir antes de confirmar, e abre o preview
+  function openPreview(result: BankImportDto) {
+    const name = result.accountName ?? ''
+    if (result.accountResolution === 'Recognized')
+      toast.info(t('import.recognized', { name }))
+    else if (result.accountResolution === 'Learned')
+      toast.info(t('import.learned', { name }))
+    else if (result.accountResolution === 'Defaulted')
+      toast.info(t('import.defaulted', { name }))
+    navigate(`/imports/${result.id}/preview`)
+  }
 
   function handleFileSelect(file: File, accountId?: string) {
     setUploading(true)
@@ -137,15 +151,7 @@ export default function ImportsPage() {
       onSuccess: (result) => {
         setUploading(false)
         toast.success('Arquivo enviado! Processando...')
-        const name = result.accountName ?? ''
-        // Informa como a conta foi decidida, para o utilizador poder corrigir antes de confirmar
-        if (result.accountResolution === 'Recognized')
-          toast.info(t('import.recognized', { name }))
-        else if (result.accountResolution === 'Learned')
-          toast.info(t('import.learned', { name }))
-        else if (result.accountResolution === 'Defaulted')
-          toast.info(t('import.defaulted', { name }))
-        navigate(`/imports/${result.id}/preview`)
+        openPreview(result)
       },
       onError: () => {
         setUploading(false)
@@ -178,10 +184,10 @@ export default function ImportsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-xl font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
-            Importar OFX
+            Importar extrato
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--ff-text-muted)' }}>
-            Importe extratos bancários no formato OFX
+            Importe extratos bancários em OFX ou CSV
           </p>
         </div>
         <button
@@ -207,13 +213,45 @@ export default function ImportsPage() {
         className="p-6 rounded-2xl"
         style={{ background: 'var(--ff-bg-card)', border: '1px solid var(--ff-border)' }}
       >
-        <div className="flex items-center gap-2 mb-4">
-          <Upload size={16} style={{ color: 'var(--ff-emerald)' }} />
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
-            Novo arquivo
-          </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2">
+            <Upload size={16} style={{ color: 'var(--ff-emerald)' }} />
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--ff-text-primary)' }}>
+              Novo arquivo
+            </h2>
+          </div>
+
+          {/* Formato do arquivo */}
+          <div
+            role="tablist"
+            aria-label="Formato do arquivo"
+            className="inline-flex p-0.5 rounded-xl"
+            style={{ background: 'var(--ff-bg-elevated)', border: '1px solid var(--ff-border)' }}
+          >
+            {(['ofx', 'csv'] as const).map(f => (
+              <button
+                key={f}
+                type="button"
+                role="tab"
+                aria-selected={format === f}
+                onClick={() => setFormat(f)}
+                className="h-8 px-4 rounded-[10px] text-xs font-semibold transition-colors"
+                style={
+                  format === f
+                    ? { background: 'var(--ff-emerald-subtle)', color: 'var(--ff-emerald)' }
+                    : { color: 'var(--ff-text-muted)' }
+                }
+              >
+                {f.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
-        <OFXUploadZone onFileSelect={handleFileSelect} isLoading={isPending || uploading} />
+
+        {format === 'ofx'
+          ? <OFXUploadZone onFileSelect={handleFileSelect} isLoading={isPending || uploading} />
+          : <CsvImport onImported={openPreview} />
+        }
       </div>
 
       {/* Histórico */}

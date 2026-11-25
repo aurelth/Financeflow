@@ -27,5 +27,7 @@ public record BankImportDto(
     DateTime CreatedAt,
     Guid? AccountId = null,
     string? AccountName = null,
-    string? AccountResolution = null
+    string? AccountResolution = null,
+    // Só no upload de CSV: linhas do arquivo que não viraram transação (data ou valor inválidos)
+    int? SkippedRows = null
 );

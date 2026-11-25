@@ -41,6 +41,8 @@ export interface BankImportDto {
   accountName?: string | null
   // Só vem preenchido na resposta do upload
   accountResolution?: AccountResolution | null
+  // Só no upload de CSV: linhas do arquivo ignoradas por data ou valor inválido
+  skippedRows?: number | null
 }
 
 // Lançamento já existente com o qual a linha foi confundida
@@ -100,3 +102,56 @@ export interface ConfirmImportRequestDto {
 
 // Códigos de erro por linha devolvidos pela API quando a confirmação é bloqueada (HTTP 422)
 export type ImportRowError = 'MissingCategory' | 'InvalidCategory' | 'UnknownTransferDirection'
+
+
+// ── Importação de CSV ─────────────────────────────────────────────────────────
+
+export const CSV_DATE_FORMATS = [
+  'dd/MM/yyyy', 'dd/MM/yy', 'dd-MM-yyyy', 'dd.MM.yyyy', 'yyyy-MM-dd', 'MM/dd/yyyy',
+] as const
+
+export type CsvDelimiter = ';' | ',' | '\t' | '|'
+
+// Como ler as colunas do arquivo. Os índices começam em 0
+export interface CsvMapping {
+  delimiter: string
+  hasHeader: boolean
+  dateColumn: number
+  descriptionColumn: number
+  // Valor em uma coluna com sinal OU débito/crédito separados
+  amountColumn: number | null
+  debitColumn: number | null
+  creditColumn: number | null
+  dateFormat: string
+  decimalSeparator: ',' | '.'
+  // Faturas de cartão listam compras como positivas
+  invertSign: boolean
+}
+
+export type CsvRowErrorCode = 'InvalidDate' | 'InvalidAmount' | 'ZeroAmount' | 'MissingColumns'
+
+export interface CsvRowError {
+  line: number
+  code: CsvRowErrorCode
+}
+
+export interface CsvPreviewRow {
+  line: number
+  date: string
+  amount: number
+  description: string
+  type: TransactionType
+}
+
+export interface CsvAnalysis {
+  encoding: string
+  columns: number
+  headers: string[]
+  sampleRows: string[][]
+  totalRows: number
+  mapping: CsvMapping
+  validRows: number
+  invalidRows: number
+  preview: CsvPreviewRow[]
+  errors: CsvRowError[]
+}
