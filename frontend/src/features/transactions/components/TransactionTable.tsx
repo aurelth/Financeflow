@@ -16,6 +16,15 @@ interface TransactionTableProps {
   onShowInstallments?: (transaction: Transaction) => void
   // Mostra o nome da conta sob a descrição (útil quando o utilizador tem mais de uma conta)
   showAccount?: boolean
+  // Seleção múltipla para as ações em lote (sem isso a tabela não mostra caixas de seleção)
+  selection?:   TransactionSelection
+}
+
+export interface TransactionSelection {
+  selectedIds: ReadonlySet<string>
+  onToggle:    (id: string) => void
+  // Marca todas as linhas da página; se todas já estão marcadas, desmarca
+  onToggleAll: () => void
 }
 
 const statusConfig: Record<TransactionStatus, { label: string; bg: string; color: string; border: string }> = {
@@ -65,8 +74,16 @@ function getAmountColor(type: TransactionType): string {
   return 'var(--ff-expense)'
 }
 
-export default function TransactionTable({ transactions, onEdit, onDelete, onUnlink, onShowInstallments, showAccount = false }: TransactionTableProps) {
+export default function TransactionTable({ transactions, onEdit, onDelete, onUnlink, onShowInstallments, showAccount = false, selection }: TransactionTableProps) {
   const { t } = useTranslation('transactions')
+
+  const selectedCount = selection ? transactions.filter(tx => selection.selectedIds.has(tx.id)).length : 0
+  const allSelected   = selection !== undefined && selectedCount === transactions.length && transactions.length > 0
+  const someSelected  = selectedCount > 0 && !allSelected
+
+  // Com seleção, o card mobile ganha uma coluna à esquerda para a caixa e as demais células andam uma coluna
+  const col1 = selection ? 'max-md:col-start-2' : 'max-md:col-start-1'
+  const col2 = selection ? 'max-md:col-start-3' : 'max-md:col-start-2'
 
   if (transactions.length === 0) {
     return (
@@ -83,9 +100,37 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
       className="rounded-xl overflow-hidden"
       style={{ border: '1px solid var(--ff-border)' }}
     >
+      {/* No mobile o cabeçalho some, então "selecionar todos" ganha uma barra própria */}
+      {selection && (
+        <label
+          className="flex items-center gap-3 px-4 py-3 text-sm md:hidden"
+          style={{ background: 'var(--ff-bg-card)', borderBottom: '1px solid var(--ff-border)', color: 'var(--ff-text-secondary)' }}
+        >
+          <input
+            type="checkbox"
+            className="size-5 cursor-pointer accent-[var(--ff-emerald)]"
+            checked={allSelected}
+            ref={el => { if (el) el.indeterminate = someSelected }}
+            onChange={selection.onToggleAll}
+          />
+          Selecionar todos da página
+        </label>
+      )}
       <table className="w-full text-sm max-md:block">
         <thead className="max-md:hidden">
           <tr style={{ background: 'var(--ff-bg-card)', borderBottom: '1px solid var(--ff-border)' }}>
+            {selection && (
+              <th className="w-10 px-3 py-3">
+                <input
+                  type="checkbox"
+                  className="size-4 cursor-pointer accent-[var(--ff-emerald)]"
+                  aria-label="Selecionar todas as transações da página"
+                  checked={allSelected}
+                  ref={el => { if (el) el.indeterminate = someSelected }}
+                  onChange={selection.onToggleAll}
+                />
+              </th>
+            )}
             {['Descrição', 'Categoria', 'Data', 'Status', 'Valor', 'Ações'].map((h, i) => (
               <th
                 key={h}
@@ -102,17 +147,34 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
             const type   = resolveType(tx.type)
             const status = resolveStatus(tx.status)
             const s      = statusConfig[status] ?? statusConfig[TransactionStatus.Paid]
+            const isSelected = selection?.selectedIds.has(tx.id) ?? false
+            const rowBackground = isSelected ? 'rgba(16,185,129,0.07)' : 'var(--ff-bg-card)'
 
             return (
               <tr
                 key={tx.id}
-                className="transition-colors duration-150 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-3 max-md:gap-y-2 max-md:p-3"
-                style={{ background: 'var(--ff-bg-card)', borderBottom: '1px solid var(--ff-border-subtle)' }}
+                aria-selected={selection ? isSelected : undefined}
+                className={`transition-colors duration-150 max-md:grid max-md:gap-x-3 max-md:gap-y-2 max-md:p-3 ${
+                  selection ? 'max-md:grid-cols-[auto_minmax(0,1fr)_auto]' : 'max-md:grid-cols-[minmax(0,1fr)_auto]'
+                }`}
+                style={{ background: rowBackground, borderBottom: '1px solid var(--ff-border-subtle)' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--ff-bg-elevated)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'var(--ff-bg-card)')}
+                onMouseLeave={e => (e.currentTarget.style.background = rowBackground)}
               >
+                {selection && (
+                  <td className="w-10 px-3 py-3 max-md:col-start-1 max-md:row-span-3 max-md:row-start-1 max-md:self-start max-md:p-0 max-md:pt-0.5">
+                    <input
+                      type="checkbox"
+                      className="size-4 cursor-pointer accent-[var(--ff-emerald)] max-md:size-5"
+                      aria-label={`Selecionar ${tx.description || 'transação'}`}
+                      checked={isSelected}
+                      onChange={() => selection.onToggle(tx.id)}
+                    />
+                  </td>
+                )}
+
                 {/* Descrição */}
-                <td className="px-4 py-3 max-md:p-0 max-md:col-start-1 max-md:row-start-1 max-md:min-w-0">
+                <td className={`px-4 py-3 max-md:p-0 ${col1} max-md:row-start-1 max-md:min-w-0`}>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
                       className="font-medium md:truncate md:max-w-[200px] max-md:break-words max-md:min-w-0"
@@ -208,7 +270,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
                 </td>
 
                 {/* Categoria */}
-                <td className="px-4 py-3 max-md:p-0 max-md:col-start-1 max-md:row-start-2 max-md:min-w-0">
+                <td className={`px-4 py-3 max-md:p-0 ${col1} max-md:row-start-2 max-md:min-w-0`}>
                   <div className="flex items-center gap-2">
                     {/* Ícone especial para Transfer */}
                     {type === TransactionType.Transfer ? (
@@ -246,12 +308,12 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
                 </td>
 
                 {/* Data */}
-                <td className="px-4 py-3 whitespace-nowrap max-md:p-0 max-md:col-start-2 max-md:row-start-2 max-md:text-right max-md:text-xs max-md:self-center" style={{ color: 'var(--ff-text-muted)' }}>
+                <td className={`px-4 py-3 whitespace-nowrap max-md:p-0 ${col2} max-md:row-start-2 max-md:text-right max-md:text-xs max-md:self-center`} style={{ color: 'var(--ff-text-muted)' }}>
                   {formatDate(tx.date)}
                 </td>
 
                 {/* Status */}
-                <td className="px-4 py-3 max-md:p-0 max-md:col-start-1 max-md:row-start-3 max-md:self-center">
+                <td className={`px-4 py-3 max-md:p-0 ${col1} max-md:row-start-3 max-md:self-center`}>
                   {type === TransactionType.Transfer ? (                    
                     <span
                       className="text-xs px-2 py-0.5 rounded-full font-medium"
@@ -270,14 +332,14 @@ export default function TransactionTable({ transactions, onEdit, onDelete, onUnl
                 </td>
 
                 {/* Valor */}
-                <td className="px-4 py-3 text-right whitespace-nowrap font-semibold max-md:p-0 max-md:col-start-2 max-md:row-start-1">
+                <td className={`px-4 py-3 text-right whitespace-nowrap font-semibold max-md:p-0 ${col2} max-md:row-start-1`}>
                   <span style={{ color: getAmountColor(type) }}>
                     {formatAmount(tx.amount, type)}
                   </span>
                 </td>
 
                 {/* Ações */}
-                <td className="px-4 py-3 max-md:p-0 max-md:col-start-2 max-md:row-start-3">
+                <td className={`px-4 py-3 max-md:p-0 ${col2} max-md:row-start-3`}>
                   <div className="flex items-center justify-end gap-1">
                     {onUnlink && tx.transferLinkId && (
                       <button

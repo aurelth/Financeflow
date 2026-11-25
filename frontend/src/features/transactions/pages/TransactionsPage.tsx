@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ArrowLeftRight, Plus, Receipt, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useTransactions }           from '../api/useTransactions'
@@ -9,6 +9,9 @@ import TransactionFilters            from '../components/TransactionFilters'
 import TransactionForm               from '../components/TransactionForm'
 import DeleteTransactionDialog       from '../components/DeleteTransactionDialog'
 import InstallmentPlanDialog         from '../components/InstallmentPlanDialog'
+import TransactionBatchBar           from '../components/TransactionBatchBar'
+import BatchEditDialog               from '../components/BatchEditDialog'
+import BatchDeleteDialog             from '../components/BatchDeleteDialog'
 import TransferFormDialog             from '@/features/transfers/components/TransferFormDialog'
 import UnlinkTransferDialog          from '@/features/transfers/components/UnlinkTransferDialog'
 import PendingTransfersPanel         from '@/features/transfers/components/PendingTransfersPanel'
@@ -45,12 +48,16 @@ export default function TransactionsPage() {
   // Fila de rascunhos da IA: o formulário abre um por vez, em ordem
   const [aiBatch, setAiBatch]       = useState<QuickEntryBatch | null>(null)
   const [aiIndex, setAiIndex]       = useState(0)
+  // Seleção para ações em lote: vale só para a página e os filtros atuais
+  const [selectedIds, setSelectedIds]       = useState<ReadonlySet<string>>(new Set())
+  const [showBatchEdit, setShowBatchEdit]   = useState(false)
+  const [showBatchDelete, setShowBatchDelete] = useState(false)
 
   const { data, isLoading }       = useTransactions(filters)
   const { data: categories = [] } = useCategories()
   const { data: accounts = [] }   = useAccounts()
 
-  const transactions = data?.items      ?? []
+  const transactions = useMemo(() => data?.items ?? [], [data])
   const totalPages   = data?.totalPages ?? 1
   const currentPage  = filters.page     ?? 1
 
@@ -58,6 +65,30 @@ export default function TransactionsPage() {
   const filterYear  = filters.dateFrom ? new Date(filters.dateFrom).getFullYear()  : undefined
 
   const isEmpty = !isLoading && transactions.length === 0
+
+  // Só conta o que ainda está na página: uma linha que sumiu do refetch não fica selecionada "fantasma"
+  const selectedTransactions = useMemo(
+    () => transactions.filter(tx => selectedIds.has(tx.id)),
+    [transactions, selectedIds],
+  )
+
+  function clearSelection() {
+    setSelectedIds(new Set())
+  }
+
+  function handleToggleSelected(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function handleToggleAll() {
+    const allSelected = transactions.length > 0 && transactions.every(tx => selectedIds.has(tx.id))
+    setSelectedIds(allSelected ? new Set() : new Set(transactions.map(tx => tx.id)))
+  }
 
   function handleEdit(tx: Transaction) {
     setEditingTx(tx)
@@ -82,10 +113,12 @@ export default function TransactionsPage() {
   }
 
   function handleFilterChange(newFilters: GetTransactionsQuery) {
+    clearSelection()
     setFilters({ ...newFilters, page: 1 })
   }
 
   function handlePageChange(page: number) {
+    clearSelection()
     setFilters(f => ({ ...f, page }))
   }
 
@@ -146,7 +179,7 @@ export default function TransactionsPage() {
         filters={filters}
         categories={categories}
         onChange={handleFilterChange}
-        onClear={() => setFilters(DEFAULT_FILTERS)}
+        onClear={() => { clearSelection(); setFilters(DEFAULT_FILTERS) }}
       />
 
       {/* Skeleton loading em vez de spinner */}
@@ -161,6 +194,20 @@ export default function TransactionsPage() {
           onUnlink={tx => setUnlinkingTx(tx)}
           onShowInstallments={tx => setPlanGroupId(tx.installmentGroupId ?? null)}
           showAccount={accounts.length > 1}
+          selection={{
+            selectedIds,
+            onToggle:    handleToggleSelected,
+            onToggleAll: handleToggleAll,
+          }}
+        />
+      )}
+
+      {selectedTransactions.length > 0 && (
+        <TransactionBatchBar
+          count={selectedTransactions.length}
+          onEdit={() => setShowBatchEdit(true)}
+          onDelete={() => setShowBatchDelete(true)}
+          onClear={clearSelection}
         />
       )}
 
@@ -279,6 +326,22 @@ export default function TransactionsPage() {
 
       {deletingTx && (
         <DeleteTransactionDialog transaction={deletingTx} onClose={() => setDeletingTx(null)} />
+      )}
+
+      {showBatchEdit && selectedTransactions.length > 0 && (
+        <BatchEditDialog
+          transactions={selectedTransactions}
+          onClose={() => setShowBatchEdit(false)}
+          onDone={clearSelection}
+        />
+      )}
+
+      {showBatchDelete && selectedTransactions.length > 0 && (
+        <BatchDeleteDialog
+          transactions={selectedTransactions}
+          onClose={() => setShowBatchDelete(false)}
+          onDone={clearSelection}
+        />
       )}
     </div>
   )

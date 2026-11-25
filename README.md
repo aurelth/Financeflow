@@ -82,6 +82,15 @@ Toda **segunda-feira, a partir das 8h no fuso do usuário**, o FinanceFlow envia
 - Endpoints internos, exclusivos do JWT de serviço do Worker (policy `RequireService`): `GET /api/weekly-summary/internal/candidates`, `GET /api/weekly-summary/internal/{userId}/notification`, `POST /api/weekly-summary/internal/{userId}/email`.
 - O e-mail usa `SendGrid:*` e o link do rodapé usa `Frontend:BaseUrl`. Textos e valores em pt-BR.
 
+## Edição em lote de transações
+
+Na lista de **Transações**, as caixas de seleção (e "selecionar todos da página") ligam uma barra de ações: **Editar** altera categoria, conta e/ou status de todos os selecionados de uma vez, preenchendo só o que se quer mudar, e **Remover** exclui os selecionados. A seleção vale para a página e os filtros atuais e é limpa ao trocar de página ou filtro; o limite é de 200 lançamentos por operação.
+
+- Cada lançamento é validado individualmente: os que não comportam a mudança (categoria de outro tipo, transferência vinculada que trocaria de conta, status de transferência) ficam de fora e a tela mostra quantos e por quê, sem desfazer os demais. Categoria ou conta inexistente/arquivada recusa o lote inteiro.
+- O que for aplicado entra num único `SaveChanges` (tudo ou nada) e o cache do dashboard dos meses afetados é invalidado. Ao trocar a categoria a subcategoria é limpa, pois pertence à categoria antiga.
+- Remover em lote apaga só os selecionados (nunca o resto de uma recorrência ou de uma compra parcelada) e desfaz o vínculo das transferências selecionadas.
+- API: `PATCH /api/transactions/batch` (`ids`, `categoryId?`, `accountId?`, `status?`) e `POST /api/transactions/batch/delete` (`ids`); ambos devolvem `{ requested, succeeded, skipped: [{ id, description, reason }] }`.
+
 ## Experiência mobile
 
 O frontend é responsivo de 320 px (celulares pequenos) até desktop, sem rolagem horizontal da página:

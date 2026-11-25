@@ -9,7 +9,10 @@ import type {
   CreateTransactionRequest,
   UpdateTransactionRequest,
   GetTransactionsQuery,
+  BatchUpdateTransactionsRequest,
+  BatchTransactionResult,
 } from '../types/transaction.types'
+import { reportBatchResult } from '../lib/batchResult'
 
 // Queries
 
@@ -123,6 +126,46 @@ export const useDeleteTransaction = () => {
       toast.success('Transação removida com sucesso!')
     },
     onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao remover transação. Tente novamente.')),
+  })
+}
+
+// Operações em lote
+
+// Mexe em saldo, dashboard, orçamentos e conciliação: invalida o mesmo que as mutações individuais
+function invalidateAfterBatch(qc: ReturnType<typeof useQueryClient>) {
+  qc.invalidateQueries({ queryKey: ['transactions'] })
+  qc.invalidateQueries({ queryKey: ['dashboard'] })
+  qc.invalidateQueries({ queryKey: ['accounts'] })
+  qc.invalidateQueries({ queryKey: ['budgets'] })
+}
+
+// Aplica categoria, conta e/ou status a vários lançamentos de uma vez
+export const useBatchUpdateTransactions = () => {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: BatchUpdateTransactionsRequest) =>
+      api.patch<BatchTransactionResult>('/api/transactions/batch', data).then(r => r.data),
+    onSuccess: result => {
+      invalidateAfterBatch(qc)
+      reportBatchResult(result, 'update')
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao atualizar as transações. Tente novamente.')),
+  })
+}
+
+// Remove (soft delete) só os lançamentos selecionados, nunca o restante de uma série
+export const useBatchDeleteTransactions = () => {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: (ids: string[]) =>
+      api.post<BatchTransactionResult>('/api/transactions/batch/delete', { ids }).then(r => r.data),
+    onSuccess: result => {
+      invalidateAfterBatch(qc)
+      reportBatchResult(result, 'delete')
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err, 'Erro ao remover as transações. Tente novamente.')),
   })
 }
 
