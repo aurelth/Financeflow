@@ -115,5 +115,18 @@
     "uploaded": "Fichier importé ! Vérifiez l'aperçu.",
     "skipped": "{{count}} lignes du fichier ont été ignorées.",
     "uploadError": "Erreur lors de l'importation du CSV."
+  },
+  "paste": {
+    "tab": "Coller le texte",
+    "label": "Texte du relevé",
+    "placeholder": "Collez ici le contenu OFX ou CSV...",
+    "tip": "Astuce : demandez à l'IA « convertis ce relevé en OFX » et collez toute la réponse. Les blocs de code et le texte superflu sont ignorés.",
+    "fromClipboard": "Coller depuis le presse-papiers",
+    "clear": "Effacer",
+    "detected": "Format détecté : {{format}}",
+    "unknown": "Impossible de reconnaître OFX ou CSV dans ce texte.",
+    "tooBig": "Le texte dépasse 5 Mo.",
+    "continue": "Continuer",
+    "clipboardDenied": "Impossible de lire le presse-papiers. Collez directement dans la zone."
   }
 }

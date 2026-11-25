@@ -63,14 +63,16 @@ function Field({ id, label, children }: FieldProps) {
 
 interface Props {
   onImported: (result: BankImportDto) => void
+  // Arquivo que já chega escolhido (ex.: texto colado na aba "Colar texto")
+  initialFile?: File
 }
 
-export default function CsvImport({ onImported }: Props) {
+export default function CsvImport({ onImported, initialFile }: Props) {
   const { t } = useTranslation('imports')
   const { t: tAccounts } = useTranslation('accounts')
   const { formatCurrency, formatDate } = useLocale()
 
-  const [file, setFile]         = useState<File | null>(null)
+  const [file, setFile]         = useState<File | null>(initialFile ?? null)
   const [fileError, setFileError] = useState<string | null>(null)
   const [dragging, setDragging]   = useState(false)
   // applied = mapeamento já enviado para análise (null = o que o back-end sugeriu na primeira leitura).

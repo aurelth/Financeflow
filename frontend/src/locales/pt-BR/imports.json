@@ -115,5 +115,18 @@
     "uploaded": "Arquivo importado! Confira o preview.",
     "skipped": "{{count}} linhas do arquivo foram ignoradas.",
     "uploadError": "Erro ao importar o CSV."
+  },
+  "paste": {
+    "tab": "Colar texto",
+    "label": "Texto do extrato",
+    "placeholder": "Cole aqui o conteúdo OFX ou CSV...",
+    "tip": "Dica: peça à IA \"converta este extrato para OFX\" e cole a resposta inteira. Cercas de código e textos extras são ignorados.",
+    "fromClipboard": "Colar da área de transferência",
+    "clear": "Limpar",
+    "detected": "Formato detectado: {{format}}",
+    "unknown": "Não reconhecemos OFX nem CSV neste texto.",
+    "tooBig": "O texto passa de 5 MB.",
+    "continue": "Continuar",
+    "clipboardDenied": "Não foi possível ler a área de transferência. Cole direto na caixa."
   }
 }

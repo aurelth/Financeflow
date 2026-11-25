@@ -102,6 +102,15 @@ Além do OFX, a página **Importar extrato** aceita CSV de qualquer banco ou car
 - **Conta:** CSV não identifica o banco, então a conta é escolhida pelo usuário (sem escolha, usa a conta principal).
 - **Datas:** o CSV só traz o dia, que é gravado ao meio-dia, para o dia não mudar na conversão de fuso.
 
+## Colar texto na importação
+
+Na aba **Colar texto** da página **Importar extrato** dá para colar o conteúdo do extrato em vez de salvar e enviar um arquivo, o que ajuda no celular e com extratos convertidos por IA (PDF → OFX).
+
+- **Detecção automática:** o texto é reconhecido como OFX ou CSV e segue para o fluxo do formato (OFX: escolha da conta e envio; CSV: mapeamento de colunas), com o texto já carregado.
+- **Limpeza do que vem da IA:** cercas de código (```), texto antes e depois delas, BOM e recuo nas linhas do OFX são removidos antes do envio.
+- **Sem caminho paralelo no servidor:** o texto vira um arquivo em memória e usa os mesmos endpoints, limites (5 MB) e validações do upload.
+- **Botão "Colar da área de transferência":** aparece quando o navegador permite; se a permissão for negada, basta colar na caixa.
+
 ## Menu lateral recolhível
 
 No desktop, o botão no topo do menu (ou **Ctrl+B** / **⌘B**) recolhe o menu para um trilho de 72 px só com ícones; o nome de cada item aparece em um balão ao passar o mouse ou focar com o teclado. A escolha fica salva no navegador (`ff:sidebar-collapsed`). O padrão é aberto. Celular e tablet continuam com o menu deslizante.

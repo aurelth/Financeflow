@@ -19,8 +19,12 @@ namespace FinanceFlow.API.Controllers;
 [Authorize]
 public class ImportsController(IMediator mediator) : BaseController(mediator)
 {
+    // Limite de upload (OFX e CSV): 5 MB do arquivo mais margem para os campos do formulário
+    private const long UploadRequestLimit = CsvStatementParser.MaxBytes + 64 * 1024;
+
     /// <summary>Faz upload de um ficheiro OFX e inicia o processamento.</summary>
     [HttpPost("ofx")]
+    [RequestSizeLimit(UploadRequestLimit)]
     [ProducesResponseType(typeof(BankImportDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UploadOFX(
@@ -46,15 +50,12 @@ public class ImportsController(IMediator mediator) : BaseController(mediator)
         return CreatedAtAction(nameof(GetPreview), new { id = result.Id }, result);
     }
 
-    // Margem para os campos do formulário além do arquivo
-    private const long CsvRequestLimit = CsvStatementParser.MaxBytes + 64 * 1024;
-
     /// <summary>
     /// Lê um CSV e devolve as primeiras linhas, o mapeamento sugerido (ou o enviado) e o que ele produz.
     /// Não grava nada: o arquivo é reenviado no upload final, assim o servidor não guarda estado entre as etapas.
     /// </summary>
     [HttpPost("csv/analyze")]
-    [RequestSizeLimit(CsvRequestLimit)]
+    [RequestSizeLimit(UploadRequestLimit)]
     [ProducesResponseType(typeof(CsvAnalysisDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> AnalyzeCsv(
@@ -75,7 +76,7 @@ public class ImportsController(IMediator mediator) : BaseController(mediator)
 
     /// <summary>Faz upload de um CSV com o mapeamento das colunas e cria a importação (mesmo fluxo do OFX).</summary>
     [HttpPost("csv")]
-    [RequestSizeLimit(CsvRequestLimit)]
+    [RequestSizeLimit(UploadRequestLimit)]
     [ProducesResponseType(typeof(BankImportDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public async Task<IActionResult> UploadCsv(
