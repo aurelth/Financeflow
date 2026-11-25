@@ -44,7 +44,9 @@ public class SettingsController(IMediator mediator) : ControllerBase
             TransactionDueTomorrowEnabled: request.TransactionDueTomorrowEnabled,
             TransactionDueIn3DaysEnabled: request.TransactionDueIn3DaysEnabled,
             TransactionDueTodayEnabled: request.TransactionDueTodayEnabled,
-            TransactionOverdueEnabled: request.TransactionOverdueEnabled
+            TransactionOverdueEnabled: request.TransactionOverdueEnabled,
+            WeeklySummaryEnabled: request.WeeklySummaryEnabled,
+            WeeklySummaryEmailEnabled: request.WeeklySummaryEmailEnabled
         ), cancellationToken);
 
         return NoContent();

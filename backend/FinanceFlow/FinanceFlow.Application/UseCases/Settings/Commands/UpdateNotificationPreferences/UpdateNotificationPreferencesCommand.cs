@@ -9,5 +9,7 @@ public record UpdateNotificationPreferencesCommand(
     bool TransactionDueTomorrowEnabled,
     bool TransactionDueIn3DaysEnabled,
     bool TransactionDueTodayEnabled = true,
-    bool TransactionOverdueEnabled = true
+    bool TransactionOverdueEnabled = true,
+    bool WeeklySummaryEnabled = true,
+    bool WeeklySummaryEmailEnabled = true
 ) : IRequest;

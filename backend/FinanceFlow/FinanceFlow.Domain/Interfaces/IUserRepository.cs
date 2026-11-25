@@ -17,6 +17,9 @@ public interface IUserRepository
 
     /// <summary>Retorna IDs de todos os usuários ativos (uso interno do Worker).</summary>
     Task<IEnumerable<Guid>> GetAllIdsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Usuários ativos com as preferências de notificação (somente leitura) — uso interno do Worker.</summary>
+    Task<List<User>> GetActiveWithNotificationPreferencesAsync(CancellationToken cancellationToken = default);
     Task<(IEnumerable<User> Users, int Total)> GetAllPagedAsync(
         int page, int pageSize, string? search, bool? isActive,
         CancellationToken cancellationToken = default);

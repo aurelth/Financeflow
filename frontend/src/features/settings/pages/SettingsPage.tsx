@@ -25,6 +25,8 @@ const DEFAULT_PREFS: NotificationPreferences = {
   transactionDueIn3DaysEnabled:  true,
   transactionDueTodayEnabled:    true,
   transactionOverdueEnabled:     true,
+  weeklySummaryEnabled:          true,
+  weeklySummaryEmailEnabled:     true,
 }
 
 interface ToggleProps {
@@ -255,6 +257,22 @@ export default function SettingsPage() {
               description="Receba um aviso quando uma despesa vencer sem ter sido paga"
               checked={currentPrefs.transactionOverdueEnabled}
               onChange={val => handleToggle('transactionOverdueEnabled', val)}
+            />
+          </div>
+          <div style={{ borderTop: '1px solid var(--ff-border-subtle)' }}>
+            <Toggle
+              label="Resumo semanal no app"
+              description="Toda segunda-feira, uma notificação com o balanço da semana que passou e o que vence nos próximos dias"
+              checked={currentPrefs.weeklySummaryEnabled}
+              onChange={val => handleToggle('weeklySummaryEnabled', val)}
+            />
+          </div>
+          <div style={{ borderTop: '1px solid var(--ff-border-subtle)' }}>
+            <Toggle
+              label="Resumo semanal por e-mail"
+              description="Receba o mesmo resumo na sua caixa de entrada, toda segunda-feira de manhã"
+              checked={currentPrefs.weeklySummaryEmailEnabled}
+              onChange={val => handleToggle('weeklySummaryEmailEnabled', val)}
             />
           </div>
         </div>

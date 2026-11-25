@@ -9,7 +9,8 @@ public class NotificationDispatchService(
     ApiAuthService authService,
     ILogger<NotificationDispatchService> logger)
 {
-    public async Task ProcessAsync(
+    /// <summary>Persiste e dispara a notificação. Devolve false se a API recusou, para quem precisa tentar de novo depois.</summary>
+    public async Task<bool> ProcessAsync(
         NotificationEvent notification,
         CancellationToken cancellationToken)
     {
@@ -35,11 +36,13 @@ public class NotificationDispatchService(
             logger.LogWarning(
                 "Erro ao persistir notificação para UserId {UserId}: {Status}",
                 notification.UserId, response.StatusCode);
-            return;
+            return false;
         }
 
         logger.LogInformation(
             "Notificação [{Type}] despachada para UserId {UserId}",
             notification.Type, notification.UserId);
+
+        return true;
     }
 }

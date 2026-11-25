@@ -27,6 +27,8 @@ public class GetNotificationPreferencesQueryHandler(
                 TransactionDueIn3DaysEnabled = true,
                 TransactionDueTodayEnabled = true,
                 TransactionOverdueEnabled = true,
+                WeeklySummaryEnabled = true,
+                WeeklySummaryEmailEnabled = true,
             };
             await repository.CreateAsync(prefs, cancellationToken);
         }
@@ -37,7 +39,9 @@ public class GetNotificationPreferencesQueryHandler(
             TransactionDueTomorrowEnabled: prefs.TransactionDueTomorrowEnabled,
             TransactionDueIn3DaysEnabled: prefs.TransactionDueIn3DaysEnabled,
             TransactionDueTodayEnabled: prefs.TransactionDueTodayEnabled,
-            TransactionOverdueEnabled: prefs.TransactionOverdueEnabled
+            TransactionOverdueEnabled: prefs.TransactionOverdueEnabled,
+            WeeklySummaryEnabled: prefs.WeeklySummaryEnabled,
+            WeeklySummaryEmailEnabled: prefs.WeeklySummaryEmailEnabled
         );
     }
 }

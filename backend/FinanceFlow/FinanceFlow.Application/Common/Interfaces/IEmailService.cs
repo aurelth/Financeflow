@@ -1,3 +1,5 @@
+using FinanceFlow.Application.DTOs.WeeklySummary;
+
 namespace FinanceFlow.Application.Common.Interfaces;
 
 public interface IEmailService
@@ -9,5 +11,16 @@ public interface IEmailService
         string toEmail,
         string toName,
         string resetLink,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Envia o resumo semanal. Lança exceção se o provedor recusar o envio, para o chamador tentar de novo mais tarde.
+    /// </summary>
+    Task SendWeeklySummaryEmailAsync(
+        string toEmail,
+        string toName,
+        WeeklySummaryDto summary,
+        string dashboardUrl,
+        string settingsUrl,
         CancellationToken cancellationToken = default);
 }

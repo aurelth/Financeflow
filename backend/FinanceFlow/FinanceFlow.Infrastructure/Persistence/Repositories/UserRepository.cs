@@ -60,6 +60,15 @@ public class UserRepository(FinanceFlowDbContext context) : IUserRepository
         .Select(u => u.Id)
         .ToListAsync(cancellationToken);
 
+    public async Task<List<User>> GetActiveWithNotificationPreferencesAsync(
+        CancellationToken cancellationToken = default) =>
+        await context.Users
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Include(u => u.NotificationPreferences)
+            .Where(u => u.DeletedAt == null)
+            .ToListAsync(cancellationToken);
+
     // Soft-delete do utilizador
     public async Task DeleteAsync(
         Guid id,
