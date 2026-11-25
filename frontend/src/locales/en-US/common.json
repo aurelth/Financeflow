@@ -33,7 +33,7 @@
     "budgets": "Budgets",
     "reports": "Reports",
     "exports": "Exports",
-    "imports": "Import OFX",
+    "imports": "Import statement",
     "settings": "Settings",
     "profile": "Profile",
     "admin": "Administration",
@@ -42,6 +42,9 @@
     "healthScore": "Financial Health",
     "goals": "Goals",
     "accounts": "Accounts",
-    "calendar": "Calendar"
+    "calendar": "Calendar",
+    "collapseMenu": "Collapse menu",
+    "expandMenu": "Expand menu",
+    "closeMenu": "Close menu"
   }
 }

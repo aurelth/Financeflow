@@ -65,6 +65,7 @@
     "question": "Qual conta é este extrato?",
     "hint": "Se o arquivo já foi reconhecido antes, a conta certa é usada automaticamente.",
     "auto": "Reconhecer automaticamente",
+    "default": "Conta principal",
     "recognized": "Conta reconhecida pelo arquivo: {{name}}",
     "learned": "Conta {{name}} vinculada a este banco. Os próximos extratos serão reconhecidos sozinhos.",
     "defaulted": "Nenhuma conta informada — usamos {{name}}. Você pode escolher outra antes de importar.",

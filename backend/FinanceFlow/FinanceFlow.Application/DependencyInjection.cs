@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IAvatarService, AvatarService>();
 
         // Importação de extratos
+        services.AddScoped<IStatementImportService, StatementImportService>();
         services.AddScoped<IImportDeduplicationService, ImportDeduplicationService>();
         services.AddScoped<ITransferMatchingService, TransferMatchingService>();
         services.AddScoped<IDashboardCacheInvalidator, DashboardCacheInvalidator>();

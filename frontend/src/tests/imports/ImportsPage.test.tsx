@@ -81,7 +81,7 @@ describe('ImportsPage', () => {
 
     it('deve renderizar o título da página', () => {
         renderPage()
-        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Importar OFX')
+        expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Importar extrato')
     })
 
     it('deve exibir a zona de upload', () => {

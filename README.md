@@ -91,6 +91,21 @@ Na lista de **Transações**, as caixas de seleção (e "selecionar todos da pá
 - Remover em lote apaga só os selecionados (nunca o resto de uma recorrência ou de uma compra parcelada) e desfaz o vínculo das transferências selecionadas.
 - API: `PATCH /api/transactions/batch` (`ids`, `categoryId?`, `accountId?`, `status?`) e `POST /api/transactions/batch/delete` (`ids`); ambos devolvem `{ requested, succeeded, skipped: [{ id, description, reason }] }`.
 
+## Importação de CSV
+
+Além do OFX, a página **Importar extrato** aceita CSV de qualquer banco ou cartão (até 5 MB e 5.000 linhas).
+
+- **Mapeamento de colunas:** o sistema lê o arquivo (UTF-8 ou ISO-8859-1), descobre o separador (`;` `,` tabulação `|`), o cabeçalho, o formato da data e o separador decimal, e sugere quais colunas são data, descrição e valor. O usuário ajusta o que precisar e vê, na hora, as primeiras linhas já convertidas e quantas serão ignoradas.
+- **Formatos de valor:** uma coluna com sinal, ou débito e crédito separados; aceita `1.234,56`, `-150,00`, `(150,00)`, `150,00-`, `R$ 150,00` e sufixo `D`/`C`. Faturas de cartão (compras positivas) têm a opção de inverter o sinal, sugerida automaticamente quando quase tudo é positivo.
+- **Mesmo fluxo do OFX:** depois do upload a importação cai no preview, com sugestão de categorias, detecção de duplicatas (inclusive reimportar o mesmo arquivo), pareamento de transferências e confirmação. A criação da importação foi extraída para `StatementImportService`, compartilhado entre OFX e CSV.
+- **Sem estado no servidor:** `POST /api/imports/csv/analyze` (lê e mostra o resultado, não grava nada) e `POST /api/imports/csv` (cria a importação) recebem o arquivo e o mapeamento; o arquivo é reenviado na segunda etapa.
+- **Conta:** CSV não identifica o banco, então a conta é escolhida pelo usuário (sem escolha, usa a conta principal).
+- **Datas:** o CSV só traz o dia, que é gravado ao meio-dia, para o dia não mudar na conversão de fuso.
+
+## Menu lateral recolhível
+
+No desktop, o botão no topo do menu (ou **Ctrl+B** / **⌘B**) recolhe o menu para um trilho de 72 px só com ícones; o nome de cada item aparece em um balão ao passar o mouse ou focar com o teclado. A escolha fica salva no navegador (`ff:sidebar-collapsed`). O padrão é aberto. Celular e tablet continuam com o menu deslizante.
+
 ## Experiência mobile
 
 O frontend é responsivo de 320 px (celulares pequenos) até desktop, sem rolagem horizontal da página:

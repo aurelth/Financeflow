@@ -65,6 +65,7 @@
     "question": "De quel compte provient ce relevé ?",
     "hint": "Si le fichier a déjà été reconnu, le bon compte est utilisé automatiquement.",
     "auto": "Reconnaître automatiquement",
+    "default": "Compte principal",
     "recognized": "Compte reconnu à partir du fichier : {{name}}",
     "learned": "Compte {{name}} lié à cette banque. Les prochains relevés seront reconnus automatiquement.",
     "defaulted": "Aucun compte indiqué — nous avons utilisé {{name}}. Vous pouvez en choisir un autre avant d'importer.",

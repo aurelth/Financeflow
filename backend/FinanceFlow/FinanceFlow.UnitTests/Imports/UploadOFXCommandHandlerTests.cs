@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs.Imports;
+using FinanceFlow.Application.Services;
 using FinanceFlow.Application.UseCases.Imports.Commands.UploadOFX;
 using FinanceFlow.Domain.Entities;
 using FinanceFlow.Domain.Enums;
@@ -47,15 +48,17 @@ public class UploadOFXCommandHandlerTests
             .Build();
     }
 
+    // O handler só lê o OFX; criar a importação é do serviço compartilhado com o CSV
     private UploadOFXCommandHandler CreateHandler() =>
-        new(_bankImportRepository.Object,
-            _ofxParserService.Object,
-            _categoryRepository.Object,
-            _categoryRuleRepository.Object,
-            _accountRepository.Object,
-            _accountKeyHasher.Object,
-            _eventPublisher.Object,
-            _configuration);
+        new(_ofxParserService.Object,
+            new StatementImportService(
+                _bankImportRepository.Object,
+                _categoryRepository.Object,
+                _categoryRuleRepository.Object,
+                _accountRepository.Object,
+                _accountKeyHasher.Object,
+                _eventPublisher.Object,
+                _configuration));
 
     [Fact]
     public async Task Handle_DeveCriarBankImport_QuandoOFXValido()

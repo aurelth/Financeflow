@@ -1,9 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import type {
   BankImportDto,
   BankImportPreviewDto,
   ConfirmImportRequestDto,
+  CsvAnalysis,
+  CsvMapping,
 } from '../types/imports.types'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -91,6 +93,58 @@ export function useUploadOFX() {
       queryClient.invalidateQueries({ queryKey: ['imports'] })
       // O backend pode ter vinculado a chave do banco à conta escolhida
       queryClient.invalidateQueries({ queryKey: ['accounts'] })
+    },
+  })
+}
+
+function csvForm(file: File, mapping: CsvMapping | null) {
+  const formData = new FormData()
+  formData.append('file', file)
+  if (mapping) formData.append('mapping', JSON.stringify(mapping))
+  return formData
+}
+
+// POST /api/imports/csv/analyze — lê o CSV e mostra o que o mapeamento produz (não grava nada).
+// Sem mapeamento o back-end sugere um. Mantém a análise anterior na tela enquanto a nova carrega.
+export function useCsvAnalysis(file: File | null, mapping: CsvMapping | null) {
+  return useQuery<CsvAnalysis>({
+    queryKey: ['csv-analysis', file?.name, file?.size, file?.lastModified, mapping],
+    queryFn: async () => {
+      const { data } = await axios.post(
+        `${API_URL}/api/imports/csv/analyze`,
+        csvForm(file!, mapping),
+        { headers: { ...getAuthHeaders(), 'Content-Type': 'multipart/form-data' } }
+      )
+      return data
+    },
+    enabled: !!file,
+    placeholderData: keepPreviousData,
+    staleTime: Infinity,
+    gcTime: 60_000,
+    retry: false,
+  })
+}
+
+export interface UploadCsvVariables {
+  file: File
+  mapping: CsvMapping
+  accountId?: string
+}
+
+// POST /api/imports/csv — cria a importação; daí em diante é o mesmo fluxo do OFX (preview → confirmar)
+export function useUploadCsv() {
+  const queryClient = useQueryClient()
+  return useMutation<BankImportDto, Error, UploadCsvVariables>({
+    mutationFn: async ({ file, mapping, accountId }) => {
+      const formData = csvForm(file, mapping)
+      if (accountId) formData.append('accountId', accountId)
+      const { data } = await axios.post(`${API_URL}/api/imports/csv`, formData, {
+        headers: { ...getAuthHeaders(), 'Content-Type': 'multipart/form-data' },
+      })
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['imports'] })
     },
   })
 }

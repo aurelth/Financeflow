@@ -1,23 +1,27 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useMatch } from 'react-router-dom'
 import { useEffect } from 'react'
 import {
   LayoutDashboard, ArrowLeftRight, Tag, PiggyBank,
   BarChart3, GitCompare, FileText, Settings, ShieldCheck, Upload, X, TrendingUp, Sparkles, HeartPulse, Target, Landmark, CalendarDays,
+  PanelLeftClose, PanelLeftOpen,
+  type LucideIcon,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useAuthStore }    from '@/store/authStore'
 import { useTranslation }  from 'react-i18next'
 import { useSidebarStore } from '@/store/sidebarStore'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const navLinkStyle = ({ isActive }: { isActive: boolean }) =>
   isActive
     ? { background: 'var(--ff-emerald-subtle)', color: 'var(--ff-emerald)' }
     : { color: 'var(--ff-text-muted)' }
 
-const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+const navLinkClass = (compact: boolean) => ({ isActive }: { isActive: boolean }) =>
   cn(
-    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
+    'flex items-center h-11 rounded-xl text-sm font-medium transition-all duration-200',
+    compact ? 'justify-center gap-0' : 'gap-3 px-3',
     isActive ? 'ff-nav-active' : 'ff-nav-default'
   )
 
@@ -37,16 +41,114 @@ function onNavLeave(e: React.MouseEvent<HTMLAnchorElement>) {
   }
 }
 
+// Ctrl+B (⌘B no Mac) abre/recolhe o menu, como nos editores
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
+const SHORTCUT = isMac ? '⌘B' : 'Ctrl+B'
+
+function isEditable(target: EventTarget | null) {
+  const el = target as HTMLElement | null
+  if (!el) return false
+  return el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)
+}
+
+// No recolhido o nome some da tela: o balão ao lado do ícone o substitui (também no foco do teclado)
+function WithTooltip({
+  label, enabled, shortcut, children,
+}: { label: string; enabled: boolean; shortcut?: string; children: React.ReactElement }) {
+  if (!enabled) return children
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side="right">
+        {label}
+        {shortcut && (
+          <kbd
+            className="ml-2 rounded px-1 py-px text-[11px] font-normal"
+            style={{ color: 'var(--ff-text-muted)', border: '1px solid var(--ff-border)' }}
+          >
+            {shortcut}
+          </kbd>
+        )}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+function ItemLabel({ compact, children }: { compact: boolean; children: React.ReactNode }) {
+  return (
+    <span
+      className={cn(
+        'truncate transition-[max-width,opacity] duration-200 motion-reduce:transition-none',
+        compact ? 'max-w-0 opacity-0 overflow-hidden' : 'max-w-[11rem] opacity-100'
+      )}
+    >
+      {children}
+    </span>
+  )
+}
+
+interface SidebarLinkProps {
+  to: string
+  label: string
+  compact: boolean
+  // Ícone do item; use `leading` quando o item tem outro elemento à esquerda (ex.: avatar do perfil)
+  icon?: LucideIcon
+  leading?: React.ReactNode
+}
+
+function SidebarLink({ to, label, compact, icon: Icon, leading }: SidebarLinkProps) {
+  // O Radix (asChild) junta className/style como texto, então o estado ativo é calculado aqui
+  // e o NavLink recebe valores prontos, nunca funções
+  const isActive = !!useMatch({ path: to, end: false })
+
+  return (
+    <WithTooltip label={label} enabled={compact}>
+      <NavLink
+        to={to}
+        aria-label={compact ? label : undefined}
+        className={navLinkClass(compact)({ isActive })}
+        style={navLinkStyle({ isActive })}
+        onMouseEnter={onNavEnter}
+        onMouseLeave={onNavLeave}
+      >
+        {leading ?? (Icon && <Icon size={18} className="flex-shrink-0" />)}
+        <ItemLabel compact={compact}>{label}</ItemLabel>
+      </NavLink>
+    </WithTooltip>
+  )
+}
+
+function Divider() {
+  return (
+    <div
+      className="my-2"
+      style={{ borderTop: '1px solid var(--ff-border)', marginLeft: '-4px', marginRight: '-4px' }}
+    />
+  )
+}
+
 export default function Sidebar() {
   const { t }      = useTranslation('common')
   const user       = useAuthStore(s => s.user)
   const isAdmin    = user?.role === 'Admin'
   const location   = useLocation()
-  const { isOpen, close } = useSidebarStore()
+  const { isOpen, close, collapsed, toggleCollapsed } = useSidebarStore()
 
   useEffect(() => {
     close()
   }, [location.pathname, close])
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey) return
+      if (e.key.toLowerCase() !== 'b' || isEditable(e.target)) return
+      e.preventDefault()
+      toggleCollapsed()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [toggleCollapsed])
 
   const navItems = [
     { to: '/dashboard',    icon: LayoutDashboard, label: t('nav.dashboard')    },
@@ -65,164 +167,143 @@ export default function Sidebar() {
 
   const apiUrl = import.meta.env.VITE_API_URL ?? ''
 
-  const sidebarContent = (
-    <aside
-      className="w-64 flex flex-col h-full"
-      style={{ background: 'var(--ff-bg-card)', borderRight: '1px solid var(--ff-border)' }}
-    >
-      {/* Logo */}
-      <div className="p-6 flex items-center justify-between" style={{ borderBottom: '1px solid var(--ff-border)' }}>
-        <div className="flex items-center gap-3">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: 'var(--ff-emerald)' }}
-          >
-            <TrendingUp size={18} style={{ color: 'var(--ff-emerald-subtle)' }} />
-          </div>
-          <div>
-            <p style={{ color: 'var(--ff-text-primary)', fontWeight: 600, fontSize: 14 }}>FinanceFlow</p>
-            <p style={{ color: 'var(--ff-text-muted)', fontSize: 11 }}>Gestão Financeira</p>
-          </div>
-        </div>
-        {/* Botão fechar em mobile */}
-        <button
-          onClick={close}
-          className="lg:hidden p-1.5 rounded-lg transition-colors"
-          style={{ color: 'var(--ff-text-muted)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-text-primary)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-text-muted)')}
-        >
-          <X size={18} />
-        </button>
-      </div>
+  // compact = só ícones. Só o desktop recolhe; a gaveta do celular sempre mostra o menu completo
+  const renderContent = (compact: boolean) => {
+    const toggleLabel = compact ? t('nav.expandMenu') : t('nav.collapseMenu')
+    const ToggleIcon  = compact ? PanelLeftOpen : PanelLeftClose
 
-      {/* Navegação principal */}
-      <nav className="flex-1 p-4 space-y-0.5 overflow-y-auto">
-        {navItems.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={navLinkClass}
-            style={navLinkStyle}
-            onMouseEnter={onNavEnter}
-            onMouseLeave={onNavLeave}
-          >
-            <Icon size={18} />
-            {label}
-          </NavLink>
-        ))}
-
-        {/* Divisor e link do Assistente IA */}
-        <div
-          className="my-2"
-          style={{ borderTop: '1px solid var(--ff-border)', marginLeft: '-4px', marginRight: '-4px' }}
-        />
-        <NavLink
-          to="/assistant"
-          className={navLinkClass}
-          style={navLinkStyle}
-          onMouseEnter={onNavEnter}
-          onMouseLeave={onNavLeave}
-        >
-          <Sparkles size={18} />
-          {t('nav.assistant')}
-        </NavLink>
-
-        {isAdmin && (
-          <>
-            <div
-              className="my-2"
-              style={{ borderTop: '1px solid var(--ff-border)', marginLeft: '-4px', marginRight: '-4px' }}
-            />
-            <NavLink
-              to="/admin"
-              className={navLinkClass}
-              style={navLinkStyle}
-              onMouseEnter={onNavEnter}
-              onMouseLeave={onNavLeave}
-            >
-              <ShieldCheck size={18} />
-              {t('nav.admin')}
-            </NavLink>
-          </>
+    return (
+      <aside
+        className={cn(
+          'flex flex-col h-full overflow-hidden transition-[width] duration-200 ease-out motion-reduce:transition-none',
+          compact ? 'w-[72px]' : 'w-64'
         )}
-      </nav>
-
-      {/* Perfil e Configurações */}
-      <div className="p-4 space-y-1" style={{ borderTop: '1px solid var(--ff-border)' }}>
-
-        {/* Perfil com avatar */}
-        <NavLink
-          to="/profile"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
-          style={({ isActive }) =>
-            isActive
-              ? { background: 'var(--ff-emerald-subtle)', color: 'var(--ff-emerald)' }
-              : { color: 'var(--ff-text-muted)' }
-          }
-          onMouseEnter={e => {
-            e.currentTarget.style.color      = 'var(--ff-text-secondary)'
-            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
-          }}
-          onMouseLeave={e => {
-            if (window.location.pathname !== '/profile') {
-              e.currentTarget.style.color      = 'var(--ff-text-muted)'
-              e.currentTarget.style.background = 'transparent'
-            }
-          }}
+        style={{ background: 'var(--ff-bg-card)', borderRight: '1px solid var(--ff-border)' }}
+      >
+        {/* Logo */}
+        <div
+          className={cn(
+            'flex transition-[padding] duration-200 motion-reduce:transition-none',
+            compact ? 'flex-col items-center gap-2 p-3' : 'items-center justify-between p-6'
+          )}
+          style={{ borderBottom: '1px solid var(--ff-border)' }}
         >
-          <div
-            className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold flex-shrink-0"
-            style={{
-              background: user?.avatarUrl ? 'transparent' : 'var(--ff-emerald)',
-              color:      'var(--ff-emerald-subtle)',
-              border:     '1px solid var(--ff-border)',
-            }}
-          >
-            {user?.avatarUrl
-              ? <img
-                  src={`${apiUrl}/uploads/avatars/${user.avatarUrl}`}
-                  alt={user.name}
-                  className="w-full h-full object-cover"
-                />
-              : user?.name?.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
-            }
+          <div className={cn('flex items-center min-w-0', compact ? 'gap-0' : 'gap-3')}>
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'var(--ff-emerald)' }}
+            >
+              <TrendingUp size={18} style={{ color: 'var(--ff-emerald-subtle)' }} />
+            </div>
+            <div
+              className={cn(
+                'overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200 motion-reduce:transition-none',
+                compact ? 'max-w-0 opacity-0' : 'max-w-[10rem] opacity-100'
+              )}
+            >
+              <p style={{ color: 'var(--ff-text-primary)', fontWeight: 600, fontSize: 14 }}>FinanceFlow</p>
+              <p style={{ color: 'var(--ff-text-muted)', fontSize: 11 }}>Gestão Financeira</p>
+            </div>
           </div>
-          <span className="truncate">{user?.name ?? 'Perfil'}</span>
-        </NavLink>
 
-        {/* Configurações */}
-        <NavLink
-          to="/settings"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200"
-          style={({ isActive }) =>
-            isActive
-              ? { background: 'var(--ff-emerald-subtle)', color: 'var(--ff-emerald)' }
-              : { color: 'var(--ff-text-muted)' }
-          }
-          onMouseEnter={e => {
-            e.currentTarget.style.color      = 'var(--ff-text-secondary)'
-            e.currentTarget.style.background = 'var(--ff-bg-elevated)'
-          }}
-          onMouseLeave={e => {
-            if (window.location.pathname !== '/settings') {
-              e.currentTarget.style.color      = 'var(--ff-text-muted)'
-              e.currentTarget.style.background = 'transparent'
-            }
-          }}
+          {/* Botão fechar em mobile */}
+          <button
+            onClick={close}
+            aria-label={t('nav.closeMenu')}
+            className="lg:hidden p-1.5 rounded-lg transition-colors"
+            style={{ color: 'var(--ff-text-muted)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--ff-text-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--ff-text-muted)')}
+          >
+            <X size={18} />
+          </button>
+
+          {/* Recolher/expandir no desktop */}
+          <WithTooltip label={toggleLabel} enabled shortcut={SHORTCUT}>
+            <button
+              type="button"
+              onClick={toggleCollapsed}
+              aria-label={toggleLabel}
+              aria-expanded={!compact}
+              className={cn(
+                'hidden lg:flex w-9 h-9 flex-shrink-0 items-center justify-center rounded-[10px] border transition-colors',
+                'hover:bg-[var(--ff-bg-elevated)] hover:text-[var(--ff-text-primary)]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ff-emerald)]',
+                compact ? 'border-[var(--ff-border)]' : 'border-transparent'
+              )}
+              style={{ color: 'var(--ff-text-secondary)' }}
+            >
+              <ToggleIcon size={18} />
+            </button>
+          </WithTooltip>
+        </div>
+
+        {/* Navegação principal */}
+        <nav
+          className={cn(
+            'flex-1 space-y-0.5 overflow-y-auto overflow-x-hidden transition-[padding] duration-200 motion-reduce:transition-none',
+            compact ? 'p-3' : 'p-4'
+          )}
         >
-          <Settings size={18} />
-          {t('nav.settings')}
-        </NavLink>
-      </div>
-    </aside>
-  )
+          {navItems.map(({ to, icon, label }) => (
+            <SidebarLink key={to} to={to} icon={icon} label={label} compact={compact} />
+          ))}
+
+          {/* Divisor e link do Assistente IA */}
+          <Divider />
+          <SidebarLink to="/assistant" icon={Sparkles} label={t('nav.assistant')} compact={compact} />
+
+          {isAdmin && (
+            <>
+              <Divider />
+              <SidebarLink to="/admin" icon={ShieldCheck} label={t('nav.admin')} compact={compact} />
+            </>
+          )}
+        </nav>
+
+        {/* Perfil e Configurações */}
+        <div
+          className={cn('space-y-1 transition-[padding] duration-200 motion-reduce:transition-none', compact ? 'p-3' : 'p-4')}
+          style={{ borderTop: '1px solid var(--ff-border)' }}
+        >
+          {/* Perfil com avatar */}
+          <SidebarLink
+            to="/profile"
+            label={user?.name ?? t('nav.profile')}
+            compact={compact}
+            leading={
+              <div
+                className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold flex-shrink-0"
+                style={{
+                  background: user?.avatarUrl ? 'transparent' : 'var(--ff-emerald)',
+                  color:      'var(--ff-emerald-subtle)',
+                  border:     '1px solid var(--ff-border)',
+                }}
+              >
+                {user?.avatarUrl
+                  ? <img
+                      src={`${apiUrl}/uploads/avatars/${user.avatarUrl}`}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  : user?.name?.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+                }
+              </div>
+            }
+          />
+
+          {/* Configurações */}
+          <SidebarLink to="/settings" icon={Settings} label={t('nav.settings')} compact={compact} />
+        </div>
+      </aside>
+    )
+  }
 
   return (
-    <>
-      {/* Desktop — sidebar sempre visível */}
+    <TooltipProvider>
+      {/* Desktop — sidebar sempre visível (aberta ou recolhida) */}
       <div className="hidden lg:flex">
-        {sidebarContent}
+        {renderContent(collapsed)}
       </div>
 
       {/* Mobile — sidebar com overlay animado */}
@@ -247,11 +328,11 @@ export default function Sidebar() {
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="fixed inset-y-0 left-0 z-50 lg:hidden"
             >
-              {sidebarContent}
+              {renderContent(false)}
             </motion.div>
           </>
         )}
       </AnimatePresence>
-    </>
+    </TooltipProvider>
   )
 }
