@@ -26,6 +26,15 @@ public interface ITransactionRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Lançamentos (não excluídos) do usuário com os ids informados, sem rastreamento e com o vínculo de
+    /// transferência carregado. Ids inexistentes ou de outro usuário simplesmente não voltam. Alimenta as operações em lote.
+    /// </summary>
+    Task<List<Transaction>> GetByIdsAsync(
+        Guid userId,
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Verifica se houve transações criadas ou alteradas no período após a data informada.
     /// </summary>
     Task<bool> HasChangedSinceAsync(

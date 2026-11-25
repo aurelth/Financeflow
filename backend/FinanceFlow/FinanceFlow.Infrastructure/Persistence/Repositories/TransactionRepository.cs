@@ -95,6 +95,21 @@ public class TransactionRepository(FinanceFlowDbContext context) : ITransactionR
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
+    public async Task<List<Transaction>> GetByIdsAsync(
+        Guid userId,
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default) =>
+        await context.Transactions
+            .IgnoreQueryFilters()
+            .Include(t => t.LinkAsOut)
+            .Include(t => t.LinkAsIn)
+            .Where(t =>
+                ids.Contains(t.Id) &&
+                t.UserId == userId &&
+                t.DeletedAt == null)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
     public async Task<IEnumerable<Transaction>> GetDueTransactionsAsync(
     DateTime targetDate,
     CancellationToken cancellationToken = default)

@@ -1,5 +1,7 @@
 using FinanceFlow.Application.Common.Interfaces;
 using FinanceFlow.Application.DTOs;
+using FinanceFlow.Application.UseCases.Transactions.Commands.BatchDeleteTransactions;
+using FinanceFlow.Application.UseCases.Transactions.Commands.BatchUpdateTransactions;
 using FinanceFlow.Application.UseCases.Transactions.Commands.CancelInstallments;
 using FinanceFlow.Application.UseCases.Transactions.Commands.CreateTransaction;
 using FinanceFlow.Application.UseCases.Transactions.Commands.DeleteTransaction;
@@ -167,6 +169,42 @@ public class TransactionsController(
         var command = new DeleteTransactionCommand(id, CurrentUserId, deleteFuture);
         await Mediator.Send(command, cancellationToken);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Altera categoria, conta e/ou status de vários lançamentos de uma vez. Os que não comportam a mudança
+    /// ficam de fora e voltam na lista de ignorados, com o motivo.
+    /// </summary>
+    [HttpPatch("batch")]
+    [ProducesResponseType(typeof(BatchTransactionResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> BatchUpdate(
+        [FromBody] BatchUpdateTransactionsRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        var command = new BatchUpdateTransactionsCommand(
+            UserId: CurrentUserId,
+            Ids: request.Ids ?? [],
+            CategoryId: request.CategoryId,
+            AccountId: request.AccountId,
+            Status: request.Status);
+
+        var result = await Mediator.Send(command, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Exclui (soft delete) vários lançamentos de uma vez; só os selecionados saem, nunca o resto da série.</summary>
+    [HttpPost("batch/delete")]
+    [ProducesResponseType(typeof(BatchTransactionResultDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public async Task<IActionResult> BatchDelete(
+        [FromBody] BatchDeleteTransactionsRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(
+            new BatchDeleteTransactionsCommand(CurrentUserId, request.Ids ?? []), cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>Plano de uma compra parcelada: parcelas, vencimentos, valores e quanto já foi pago.</summary>

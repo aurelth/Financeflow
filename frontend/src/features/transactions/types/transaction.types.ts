@@ -102,6 +102,29 @@ export interface UpdateTransactionRequest {
   propagateToFuture: boolean
 }
 
+// Operações em lote
+
+// Só os campos informados são aplicados a todos os lançamentos selecionados
+export interface BatchUpdateTransactionsRequest {
+  ids:         string[]
+  categoryId?: string
+  accountId?:  string
+  status?:     TransactionStatus
+}
+
+export interface BatchTransactionSkipped {
+  id:          string
+  description: string
+  reason:      string
+}
+
+// O que foi aplicado e o que ficou de fora (com o motivo), sem derrubar o restante do lote
+export interface BatchTransactionResult {
+  requested: number
+  succeeded: number
+  skipped:   BatchTransactionSkipped[]
+}
+
 export interface GetTransactionsQuery {
   page?:          number
   pageSize?:      number
