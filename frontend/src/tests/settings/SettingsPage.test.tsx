@@ -16,6 +16,8 @@ const mockPrefs = {
   transactionDueIn3DaysEnabled:  true,
   transactionDueTodayEnabled:    true,
   transactionOverdueEnabled:     true,
+  weeklySummaryEnabled:          true,
+  weeklySummaryEmailEnabled:     true,
 }
 
 vi.mock('@/features/settings/api/useSettings', () => ({

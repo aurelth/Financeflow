@@ -5,6 +5,8 @@ export interface NotificationPreferences {
   transactionDueIn3DaysEnabled:  boolean
   transactionDueTodayEnabled:    boolean
   transactionOverdueEnabled:     boolean
+  weeklySummaryEnabled:          boolean
+  weeklySummaryEmailEnabled:     boolean
 }
 
 export interface UpdateNotificationPreferencesRequest {
@@ -14,6 +16,8 @@ export interface UpdateNotificationPreferencesRequest {
   transactionDueIn3DaysEnabled:  boolean
   transactionDueTodayEnabled:    boolean
   transactionOverdueEnabled:     boolean
+  weeklySummaryEnabled:          boolean
+  weeklySummaryEmailEnabled:     boolean
 }
 
 export interface DeleteAccountRequest {

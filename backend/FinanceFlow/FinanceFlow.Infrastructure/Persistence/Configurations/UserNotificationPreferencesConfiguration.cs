@@ -37,6 +37,14 @@ public class UserNotificationPreferencesConfiguration
                .IsRequired()
                .HasDefaultValue(true);
 
+        builder.Property(p => p.WeeklySummaryEnabled)
+               .IsRequired()
+               .HasDefaultValue(true);
+
+        builder.Property(p => p.WeeklySummaryEmailEnabled)
+               .IsRequired()
+               .HasDefaultValue(true);
+
         // Relação 1-to-1 com User
         builder.HasOne(p => p.User)
                .WithOne(u => u.NotificationPreferences)

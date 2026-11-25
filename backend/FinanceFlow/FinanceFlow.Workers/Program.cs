@@ -84,6 +84,16 @@ builder.Services.AddQuartz(q =>
             .WithIntervalInHours(1)
             .RepeatForever()));
 
+    // WeeklySummaryJob — roda a cada hora; a API indica quem está na janela de segunda-feira no fuso de cada um
+    var weeklySummaryJobKey = new JobKey("WeeklySummaryJob");
+    q.AddJob<WeeklySummaryJob>(opts => opts.WithIdentity(weeklySummaryJobKey));
+    q.AddTrigger(opts => opts
+        .ForJob(weeklySummaryJobKey)
+        .WithIdentity("WeeklySummaryJob-trigger")
+        .WithSimpleSchedule(s => s
+            .WithIntervalInHours(1)
+            .RepeatForever()));
+
     // BankImportConsumerJob
     var bankImportJobKey = new JobKey("BankImportConsumerJob");
     q.AddJob<BankImportConsumerJob>(opts => opts.WithIdentity(bankImportJobKey));

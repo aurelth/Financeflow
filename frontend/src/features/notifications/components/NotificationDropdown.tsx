@@ -35,6 +35,7 @@ export default function NotificationDropdown() {
     TransactionDueIn3Days:  { bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)', color: 'var(--ff-scheduled)', label: '📅 Vence em 3 dias' },
     TransactionDueToday:    { bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', color: 'var(--ff-pending)',   label: '🔔 Vence hoje'      },
     TransactionOverdue:     { bg: 'rgba(244,63,94,0.08)',  border: 'rgba(244,63,94,0.2)',  color: 'var(--ff-expense)',   label: '⚠️ Vencida'         },
+    WeeklySummary:          { bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)', color: 'var(--ff-scheduled)', label: '📊 Resumo semanal'  },
   }
 
   const defaultType = { bg: 'var(--ff-bg-elevated)', border: 'var(--ff-border)', color: 'var(--ff-text-muted)', label: '🔔 Notificação' }

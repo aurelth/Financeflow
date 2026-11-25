@@ -62,6 +62,8 @@ public class RegisterUserCommandHandler(
                 TransactionDueIn3DaysEnabled = true,
                 TransactionDueTodayEnabled = true,
                 TransactionOverdueEnabled = true,
+                WeeklySummaryEnabled = true,
+                WeeklySummaryEmailEnabled = true,
             }
         };
 

@@ -74,6 +74,14 @@ A página **Calendário** mostra o mês dia a dia: contas a pagar (despesas em a
 - Lembretes (worker `TransactionDueAlertJob`, só despesas ainda não pagas): vence em 3 dias, vence amanhã, **vence hoje** e **venceu ontem sem pagamento** (avisa uma vez). Cada um tem seu interruptor em Configurações → Notificações. Antes, lançamentos Pendentes eram ignorados pelo job e lançamentos já pagos podiam gerar aviso; agora só o que está em aberto avisa.
 - API: `GET /api/calendar?month=&year=`, `POST /api/transactions/{id}/pay` (idempotente; transferências ficam de fora).
 
+## Resumo semanal proativo
+
+Toda **segunda-feira, a partir das 8h no fuso do usuário**, o FinanceFlow envia o balanço da última semana fechada (segunda a domingo): quanto entrou e saiu (só o que foi pago) com a variação sobre a semana anterior, as três categorias que mais pesaram, o que vence nos próximos 7 dias, as despesas vencidas e não pagas e os orçamentos do mês acima de 80%. O resumo chega como notificação no app e por e-mail, e cada canal tem seu interruptor em Configurações → Notificações (ambos ligados por padrão). Semana sem movimento, sem vencimentos e sem alertas não gera envio.
+
+- Worker `WeeklySummaryJob` (roda a cada hora): a API informa quem está na janela de envio naquele momento, então cada fuso recebe na sua manhã de segunda. O Redis (`notif:weekly:{usuário}:{canal}:{semana}`, TTL de 8 dias) garante um envio por usuário, semana e canal, e só marca como enviado quando o envio deu certo — se o SendGrid ou a API falharem, a próxima hora tenta de novo (até o fim da segunda-feira).
+- Endpoints internos, exclusivos do JWT de serviço do Worker (policy `RequireService`): `GET /api/weekly-summary/internal/candidates`, `GET /api/weekly-summary/internal/{userId}/notification`, `POST /api/weekly-summary/internal/{userId}/email`.
+- O e-mail usa `SendGrid:*` e o link do rodapé usa `Frontend:BaseUrl`. Textos e valores em pt-BR.
+
 ## Experiência mobile
 
 O frontend é responsivo de 320 px (celulares pequenos) até desktop, sem rolagem horizontal da página:

@@ -16,4 +16,8 @@ public class UserNotificationPreferences : BaseEntity
     // Lembrete no próprio dia do vencimento e aviso (uma vez) de conta que venceu sem ser paga
     public bool TransactionDueTodayEnabled { get; set; } = true;
     public bool TransactionOverdueEnabled { get; set; } = true;
+
+    // Resumo semanal proativo (segunda de manhã, no fuso do usuário): notificação no app e e-mail
+    public bool WeeklySummaryEnabled { get; set; } = true;
+    public bool WeeklySummaryEmailEnabled { get; set; } = true;
 }

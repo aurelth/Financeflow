@@ -76,6 +76,10 @@ public static class ApiExtensions
         {
             options.AddPolicy("RequireAdmin", policy =>
                 policy.RequireClaim("role", "Admin"));
+
+            // Endpoints internos do Worker: só o JWT de serviço (role "service"), nunca um usuário comum
+            options.AddPolicy("RequireService", policy =>
+                policy.RequireClaim("role", "service"));
         });
 
         return services;
